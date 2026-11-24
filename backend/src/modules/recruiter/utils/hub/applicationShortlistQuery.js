@@ -19,13 +19,24 @@ function pagination(query = {}) {
   return { page: integer(query.page, 1, 1000000), limit: integer(query.limit, 100, 100) };
 }
 
-// Both joins and the consent/source-tuple checks precede the facet, so inaccessible,
-// orphaned or mismatched evaluations cannot change either page contents or totals.
-function buildPipeline(ctx, { page, limit }) {
+// Production IDs pass source-tuple/consent validation in the same snapshot
+// session before this facet. Keep the native branch as an independent baseline.
+function buildPipeline(ctx, { page, limit }, verifiedIds) {
   const owner = {
     recruiterId: new mongoose.Types.ObjectId(ctx.recruiterId),
     organizationId: new mongoose.Types.ObjectId(ctx.organizationId)
   };
+  if (verifiedIds)
+    return [
+      { $match: { ...owner, _id: { $in: verifiedIds } } },
+      { $sort: { updatedAt: -1, _id: 1 } },
+      {
+        $facet: {
+          rows: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+          count: [{ $count: 'total' }]
+        }
+      }
+    ];
   return [
     {
       $match: {

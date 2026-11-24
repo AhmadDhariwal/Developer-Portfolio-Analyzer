@@ -56,7 +56,7 @@
   </div>
 
   <p *ngIf="match?.job?.sharedTeam">
-    {{ match?.job?.owner?.name }} � {{ match.job.sharedTeam.name }} �
+    {{ match?.job?.owner?.name }} · {{ match.job.sharedTeam.name }} ·
     {{ match?.access?.manage ? 'Can manage evaluations' : 'Read only' }}
   </p>
   <div class="match-card__meta">
@@ -113,7 +113,7 @@
   </div>
 
   <p class="match-card__summary">
-    {{ match?.recommendation || match?.explanation || 'AI ranking complete.' }}
+    {{ match?.recommendation || match?.explanation || 'Weighted ranking complete.' }}
   </p>
 
   <div

@@ -61,7 +61,7 @@
           label="Analyzed"
           [value]="analytics.metrics.candidatesAnalyzed"
           tone="cyan"
-          hint="AI-enhanced screenings"
+          hint="Profile fit summaries"
         />
         <app-recruiter-stat-card
           label="Matches"
@@ -204,8 +204,8 @@
           [trendLabel]="trendLabelFor(analytics.charts.matchGenerationTrend)"
         />
         <app-recruiter-performance-chart
-          title="AI Ranking Usage"
-          subtitle="AI screening & match assist operations"
+          title="Assessment Activity"
+          subtitle="Profile assessments and weighted match runs"
           mode="column"
           tone="cyan"
           [items]="analytics.charts.aiUsageGraph"

@@ -74,6 +74,15 @@ describe('MatchesComponent', () => {
     fixture.detectChanges();
   });
 
+  it('labels shared jobs without replacement characters', () => {
+    component.jobs = [
+      { _id: 'shared', title: 'Shared role', status: 'open', access: { isOwner: false } },
+    ];
+    expect(component.jobOptions).toEqual([
+      { value: 'shared', label: 'Shared role · Shared (open)' },
+    ]);
+  });
+
   it('hydrates persisted match _id after generation so status transitions work cleanly', () => {
     matchServiceMock.listMatches.mockReturnValueOnce(
       of({

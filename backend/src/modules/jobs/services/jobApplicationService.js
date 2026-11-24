@@ -377,5 +377,6 @@ module.exports = {
   withdraw,
   submittedResume,
   permittedRecruiterStatuses,
+  canonicalApplicationId: applicationId,
   portfolioSnapshot
 };

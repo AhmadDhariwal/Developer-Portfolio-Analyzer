@@ -38,6 +38,18 @@ describe('Recruiter Analytics population accuracy', () => {
     expect(component.analytics.charts.supplyVsDemand[0].supply).toBe(3100);
   });
 
+  it('describes deterministic assessment activity without claiming AI execution', async () => {
+    const { fixture } = await mount(
+      of({ metrics: { candidatesAnalyzed: 2 }, charts: { aiUsageGraph: [] } }),
+    );
+    const analyzed = fixture.nativeElement.querySelector(
+      'app-recruiter-stat-card[label="Analyzed"]',
+    );
+    expect(analyzed.getAttribute('hint')).toBe('Profile fit summaries');
+    expect(fixture.nativeElement.querySelector('[title="Assessment Activity"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[title="AI Ranking Usage"]')).toBeNull();
+  });
+
   it('accepts old payloads without claiming exactness', async () => {
     const { component } = await mount(of({ analytics: { metrics: { totalCandidates: 0 } } }));
     expect(component.populationAccuracyHint).toContain('not reported');

@@ -1,0 +1,109 @@
+{
+  "branch": "fix/P1-project",
+  "target": "not applicable",
+  "head": "9a207034512c65a8a16dc0d2f2f1375753a19f70",
+  "stagedBaseline": [
+    {
+      "path": "backend/src/modules/jobs/services/jobApplicationService.js",
+      "indexBlob": "503f937c894df7d58de03e49db48a15ebdfc9fea",
+      "workingSha256": "621a8a2dcb32fb648fd3ce0e8ac72e94bc5e55a75652e0ddc56edda40a9e894f"
+    },
+    {
+      "path": "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+      "indexBlob": "69ef01d7074b2f5db7f74ab57dd6439affe36c0d",
+      "workingSha256": "92fc5edcd3380cd517d266fab6d5687ddca7a59246e6105b7f09efb62c23d232"
+    },
+    {
+      "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+      "indexBlob": "97b5ee19df36c452706d32d90dae4cd5ce92a911",
+      "workingSha256": "8803e4f970a7c25e6dc6ac705a44579b26df5d6b87754bc6aacf2f6b78094f95"
+    },
+    {
+      "path": "backend/src/modules/recruiter/utils/hub/applicationKeyExpression.js",
+      "indexBlob": "f9f36d18139d4879cbdb0251e8ded719c3fa4e0d",
+      "workingSha256": "0c51f2064f8c38d7ecf31b944f016dada367feead697221aa54ac217de77e356"
+    },
+    {
+      "path": "backend/src/modules/recruiter/utils/hub/applicationShortlistQuery.js",
+      "indexBlob": "2db503aac7535619f9ff41d228ef2444fe332600",
+      "workingSha256": "8944bf868411ae2abf8fe35f887e19bfe8ac8780fd3482e6429426a0e9f5f8f1"
+    },
+    {
+      "path": "backend/src/tests/recruiter/applicationWorkflow.integration.test.js",
+      "indexBlob": "518f8ade139c2173cee8af60a38ff2392d2eaff4",
+      "workingSha256": "8f1a464eaa881f81f5cf75ed4b3566619d757610a2424fe9c43c0ad924f6aae1"
+    },
+    {
+      "path": "backend/verification/jobs-hub/p1.4b-implementation.json",
+      "indexBlob": "7e935a5b05f1c26f6feb6e00c4d2b042778f039a",
+      "workingSha256": "be50365f20522c0b65b0849ada3d112aca2becc6b72bb76c6ed75489ae579c0f"
+    },
+    {
+      "path": "backend/verification/jobs-hub/p1.4b-notifications/integration-results.json",
+      "indexBlob": "17eb2b882b37c4f0d1e0c620253b664761922cfb",
+      "workingSha256": "25a5c23f63f6b91b91f9c8187eaba0d9fb6bfd4bd54c1039f3d568aa067a0ac4"
+    },
+    {
+      "path": "backend/verification/jobs-hub/p1.4b-workflow-tests.json",
+      "indexBlob": "7066de20c0b8dd389062e0ed094d1a70bb6f4f1f",
+      "workingSha256": "b765078da3e23dd1fc9b34a140100b41af032dc81c5b3cf6d2ff6dfff7f9eefb"
+    },
+    {
+      "path": "backend/verification/notifications/integration-results.json",
+      "indexBlob": "df3027514c7667d8bc41af067be32e8cf955ac4a",
+      "workingSha256": "ca414aff98a9c5dae6106b448577faae0bd4c73861943f7662905f1dd8bd0e1c"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+      "indexBlob": "37fe9570a755bd66ae6e1b6a048ee124429d5529",
+      "workingSha256": "9d9b4d7f6d72947c82319d63cf07d64948525a224ba08e90954a67a31df265f5"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.ts",
+      "indexBlob": "93fa928fbcacd3e08a99889f702b9950202e3257",
+      "workingSha256": "468ae3989264d73a47c6a838fe6840c50040900fe50e4a7eb0bdb1f3d1d4803d"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.html",
+      "indexBlob": "e01977bdae3ffe7bda61b48e5a989b282e53f3ee",
+      "workingSha256": "5367e141c5324d22ea8bf9b9b856f9c54bb25d260bd7b1dc9c5af0c332e487a2"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+      "indexBlob": "0b84a41c23bafae9f1497e27b8c8e5521423c04d",
+      "workingSha256": "2cc291f7a5f1cdfbbe7f5eb27ed92c2c1b643d2f8e15b1ce368bcfb0ca84f0b3"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/services/recruiter-domain-services.spec.ts",
+      "indexBlob": "0b4b04c971cd09af707285cbafa5aaab67300c6b",
+      "workingSha256": "f3afc522a9cbc2f96504e27a9529e9e279c995c1c4ac80ee12ad2c326f57910e"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/services/recruiter-match.service.ts",
+      "indexBlob": "487bd1ea73813de3b3cf9a4bfd46342fa275a65d",
+      "workingSha256": "0c4e2c3cc757897b3e91a30c640b6a759daa805b76ecfbf68597ed026806b80a"
+    },
+    {
+      "path": "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+      "indexBlob": "7e14754f65aaf58ac892ca96048c66307a1537e9",
+      "workingSha256": "aa796cbe66c31ae067ff2f25ed102b31c992afdb7e3a8dcaaf726538906c99b1"
+    },
+    {
+      "path": "frontend/src/app/shared/components/direct-applications/job-applicants.component.html",
+      "indexBlob": "5b1f6b7a9142b6334eadee4d7e644331730fb50b",
+      "workingSha256": "9e43143dd86e9bd46d3e7267c1a44e9975e4901ee13b2f7809cc64efc035111f"
+    },
+    {
+      "path": "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+      "indexBlob": "bed3be089b9c385ed4bdedae597f05f895ffb0ec",
+      "workingSha256": "a2098a20423b6d6e7dbb98e7471f22037e1a5d609e8f590964b53031fb014edf"
+    },
+    {
+      "path": "frontend/src/app/shared/services/api.service.ts",
+      "indexBlob": "9c474cc55110304ef6eece42d1ccaea0a60e19a3",
+      "workingSha256": "e3c7b04a21297e0905698877c3a527b5916d701cf628b240bd18ec983f468f02"
+    }
+  ],
+  "unstagedBaseline": [],
+  "independentAcceptance": "User supplied P1.4B acceptance and 261-record QA measurements. No separately named independent P1.4A/B report found in jobs-hub or recruiter verification folders; existing implementation/test evidence retained."
+}

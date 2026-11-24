@@ -1,4 +1,3 @@
-const { createHash } = require('node:crypto');
 const Shortlist = require('../../models/RecruiterShortlist');
 const Job = require('../../models/Job');
 const Candidate = require('../../models/Candidate');
@@ -7,13 +6,20 @@ const User = require('../../../auth/models/user');
 const Settings = require('../../../super-admin/models/platformSettings');
 const access = require('../../utils/hub/recruiterEvaluationAccess');
 const { pagination, buildPipeline } = require('../../utils/hub/applicationShortlistQuery');
-const { permittedRecruiterStatuses } = require('../../../jobs/services/jobApplicationService');
+const {
+  permittedRecruiterStatuses,
+  canonicalApplicationId: applicationKey
+} = require('../../../jobs/services/jobApplicationService');
+const {
+  verifyApplicationIdentities,
+  remainingBudget,
+  genuine,
+  canonicalRow
+} = require('../../utils/hub/applicationIdentityValidation');
 const { requireObjectId, invalidInput } = require('../../utils/recruiterValidation');
 
 const ACTIVE = new Set(['submitted', 'reviewing']);
 const STAGES = new Set(Shortlist.schema.path('status').enumValues);
-const applicationKey = (jobId, applicantId) =>
-  createHash('sha256').update(`${jobId}:${applicantId}`).digest('hex');
 const id = (value) => String(value || '');
 const unavailable = () => access.denied('Application evaluation not found.', 404);
 
@@ -21,21 +27,6 @@ function applicationId(value) {
   if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value))
     throw invalidInput('Invalid application identifier.');
   return value;
-}
-function genuine(application, job) {
-  return (
-    job &&
-    application &&
-    id(application.jobId) === id(job._id) &&
-    id(application.organizationId) === id(job.organizationId) &&
-    id(application.recruiterId) === id(job.recruiterId) &&
-    application._id === applicationKey(job._id, application.applicantId) &&
-    application.consent?.version === 'direct-apply-v1' &&
-    typeof application.consent.sharePortfolio === 'boolean' &&
-    application.consent.submittedAt &&
-    Number.isFinite(+new Date(application.consent.submittedAt)) &&
-    ['submitted', 'reviewing', 'rejected', 'withdrawn'].includes(application.status)
-  );
 }
 async function withPrivateAccess(scope, work) {
   await Promise.all([Shortlist, Application, Settings, Candidate].map((model) => model.init()));
@@ -125,17 +116,6 @@ function view(row, application, job) {
     }
   };
 }
-function canonicalRow(row, application, job) {
-  return (
-    row &&
-    row.applicationId === application._id &&
-    id(row.candidateId) === id(application.applicantId) &&
-    id(row.jobId) === id(job._id) &&
-    id(row.recruiterId) === id(job.recruiterId) &&
-    id(row.organizationId) === id(job.organizationId)
-  );
-}
-
 async function linkApplication({ jobId, applicationId: value, payload = {}, ...scope }) {
   if (
     !payload ||
@@ -204,11 +184,38 @@ async function linkApplication({ jobId, applicationId: value, payload = {}, ...s
 async function listApplicationShortlists({ query, ...scope }) {
   const { page, limit } = pagination(query);
   return withPrivateAccess(scope, async (ctx) => {
-    const [result] = await Shortlist.aggregate(buildPipeline(ctx, { page, limit }))
+    const identities = await verifyApplicationIdentities(ctx);
+    const [result] = await Shortlist.aggregate(buildPipeline(ctx, { page, limit }, identities.ids))
       .session(ctx.session)
-      .option({ maxTimeMS: 5000 });
+      .option({ maxTimeMS: remainingBudget(identities.deadline) });
     const valid = result.rows;
     const total = result.count[0]?.total || 0;
+    remainingBudget(identities.deadline);
+    const jobs = await Job.find({
+      _id: { $in: valid.map((row) => row.jobId) },
+      recruiterId: ctx.recruiterId,
+      organizationId: ctx.organizationId
+    })
+      .select('_id title')
+      .session(ctx.session)
+      .maxTimeMS(remainingBudget(identities.deadline))
+      .lean();
+    const applications = await Application.find({
+      _id: { $in: valid.map((row) => row.applicationId) },
+      recruiterId: ctx.recruiterId,
+      organizationId: ctx.organizationId
+    })
+      .select('_id applicantId applicantName status jobTitle createdAt')
+      .session(ctx.session)
+      .maxTimeMS(remainingBudget(identities.deadline))
+      .lean();
+    const jobMap = new Map(jobs.map((job) => [id(job._id), job]));
+    const appMap = new Map(applications.map((application) => [application._id, application]));
+    if (
+      jobs.length !== new Set(valid.map((row) => id(row.jobId))).size ||
+      applications.length !== valid.length
+    )
+      throw access.denied('Application access changed. Refresh before retrying.', 409);
     if (valid.length) {
       const lockedJobs = await Job.collection.updateMany(
         {
@@ -235,7 +242,9 @@ async function listApplicationShortlists({ query, ...scope }) {
         throw access.denied('Application access changed. Refresh before retrying.', 409);
     }
     return {
-      shortlists: valid.map((row) => view(row, row.linkedApplication, row.linkedJob)),
+      shortlists: valid.map((row) =>
+        view(row, appMap.get(row.applicationId), jobMap.get(id(row.jobId)))
+      ),
       meta: {
         scope: 'owner-only-applications',
         limit,

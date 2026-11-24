@@ -83,6 +83,25 @@ describe('Recruiter standalone UI components', () => {
     expect(shortlistFixture.nativeElement.textContent).toContain('Aliya');
   });
 
+  it('renders shared ownership labels without encoding artifacts', () => {
+    TestBed.configureTestingModule({
+      imports: [MatchCardComponent, ShortlistCardComponent],
+      providers: [provideRouter([])],
+    });
+    const job = { _id: 'job', owner: { name: 'Owner' }, sharedTeam: { name: 'Team' } };
+    const match = TestBed.createComponent(MatchCardComponent);
+    match.componentRef.setInput('match', { _id: 'm', job, status: 'generated' });
+    match.detectChanges();
+    expect(match.nativeElement.textContent).toContain('Weighted ranking complete.');
+    const shortlist = TestBed.createComponent(ShortlistCardComponent);
+    shortlist.componentRef.setInput('item', { _id: 's', job, status: 'shortlisted' });
+    shortlist.detectChanges();
+    for (const fixture of [match, shortlist]) {
+      expect(fixture.nativeElement.textContent).toContain('Owner · Team ·');
+      expect(fixture.nativeElement.textContent).not.toContain('�');
+    }
+  });
+
   it('computes ComparisonTableComponent best metrics and optional match row', () => {
     TestBed.configureTestingModule({ imports: [ComparisonTableComponent] });
     const fixture = TestBed.createComponent(ComparisonTableComponent);

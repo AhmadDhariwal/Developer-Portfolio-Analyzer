@@ -15,7 +15,7 @@ describe('notification navigation', () => {
       '/app/jobs?view=internal',
     );
     expect(notificationTarget(notice({ target: '/app/jobs?view=internal' }), 'recruiter')).toBe(
-      '/app/notifications',
+      '/app/recruiter/notifications',
     );
     expect(notificationTarget(notice({ target: '/app/recruiter/jobs' }), 'recruiter')).toBe(
       '/app/recruiter/jobs',
@@ -23,6 +23,15 @@ describe('notification navigation', () => {
     expect(notificationTarget(notice({ target: '/app/recruiter/jobs' }), 'developer')).toBe(
       '/app/notifications',
     );
+  });
+  it('keeps Recruiter fallback destinations inside its notification workspace', () => {
+    for (const meta of [
+      {},
+      { target: '/app/notifications' },
+      { target: 'https://attacker.test' },
+    ]) {
+      expect(notificationTarget(notice(meta), 'recruiter')).toBe('/app/recruiter/notifications');
+    }
   });
   it('rejects external links, script URLs, protocol-relative paths and admin routes', () => {
     for (const target of [

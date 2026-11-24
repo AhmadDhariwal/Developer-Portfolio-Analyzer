@@ -64,7 +64,7 @@ export class MatchesComponent implements OnInit {
 
   get jobOptions(): Array<{ label: string; value: string }> {
     return this.jobs.map((job) => ({
-      label: `${job.title}${job.access?.isOwner ? '' : ' � Shared'} (${job.status || 'open'})`,
+      label: `${job.title}${job.access?.isOwner ? '' : ' · Shared'} (${job.status || 'open'})`,
       value: job._id || job.id,
     }));
   }

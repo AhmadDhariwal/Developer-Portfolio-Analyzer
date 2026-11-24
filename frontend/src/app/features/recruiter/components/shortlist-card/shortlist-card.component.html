@@ -50,7 +50,7 @@
   </div>
 
   <p *ngIf="item?.job?.sharedTeam">
-    {{ item?.job?.owner?.name }} � {{ item.job.sharedTeam.name }} �
+    {{ item?.job?.owner?.name }} · {{ item.job.sharedTeam.name }} ·
     {{ item?.access?.manage ? 'Can manage evaluations' : 'Read only' }}
   </p>
   <div

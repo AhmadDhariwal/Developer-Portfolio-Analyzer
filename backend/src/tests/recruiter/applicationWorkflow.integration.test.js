@@ -48,7 +48,8 @@ test(
       else process.env.JWT_SECRET = secret;
       if (evidence.status === 'running') evidence.status = 'failed';
       await fs.writeFile(
-        path.resolve(__dirname, '../../../verification/jobs-hub/p1.4b-workflow-tests.json'),
+        process.env.APPLICATION_WORKFLOW_EVIDENCE_FILE ||
+          path.resolve(__dirname, '../../../verification/jobs-hub/p1.4b-workflow-tests.json'),
         JSON.stringify(evidence, null, 2) + '\n'
       );
     });

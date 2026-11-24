@@ -1,0 +1,228 @@
+{
+  "status": "passed",
+  "localOnly": true,
+  "queryBudgetMs": 5000,
+  "protocol": "Fresh disposable Mongo process per count. Seven sequential measured requests per mode after one warmup; two waves of three simultaneous reads per mode; two optimized reads plus an explicit lifecycle update. Same source generation and preserved P1.4B index baseline. No Angular build or other database suite overlapped final measurements. Explain runs outside transactions as required by MongoDB; actual request validation/count uses existing snapshot transaction.",
+  "fixtures": [
+    {
+      "count": 261,
+      "evidence": "backend/verification/jobs-hub/p1.5a-benchmarks-261.json",
+      "baseline": {
+        "requests": 7,
+        "p50Ms": 656.8284000000021,
+        "p95Ms": 3073.4071000000004,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "optimized": {
+        "requests": 7,
+        "p50Ms": 140.0254000000059,
+        "p95Ms": 418.47619999999733,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "baselineSimultaneousReads": {
+        "requests": 6,
+        "p50Ms": 1993.3941999999988,
+        "p95Ms": 2930.5995999999977,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "optimizedSimultaneousReads": {
+        "requests": 6,
+        "p50Ms": 292.36409999999887,
+        "p95Ms": 577.5137999999934,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "optimizedMixed": {
+        "reads": {
+          "requests": 2,
+          "p50Ms": 500.39660000000003,
+          "p95Ms": 625.9653000000035,
+          "failures": 0,
+          "timeoutRate": 0,
+          "samples": [
+            {
+              "ms": 625.9653000000035,
+              "status": 200,
+              "timeout": false,
+              "memory": {
+                "rss": 147734528,
+                "heapUsed": 65888080
+              }
+            },
+            {
+              "ms": 500.39660000000003,
+              "status": 200,
+              "timeout": false,
+              "memory": {
+                "rss": 147292160,
+                "heapUsed": 60607024
+              }
+            }
+          ]
+        },
+        "statusAction": 200
+      },
+      "memory": {
+        "baseline": {
+          "before": {
+            "rss": 125620224,
+            "heapTotal": 62357504,
+            "heapUsed": 57705896,
+            "external": 23167963,
+            "arrayBuffers": 18978570
+          },
+          "after": {
+            "rss": 128159744,
+            "heapTotal": 63025152,
+            "heapUsed": 57893664,
+            "external": 23852464,
+            "arrayBuffers": 19663071
+          },
+          "peakSampleRss": 128630784,
+          "peakSampleHeap": 57885104,
+          "meaning": "Process RSS/heap snapshots, including driver and fixture; not isolated allocation attribution."
+        },
+        "optimized": {
+          "before": {
+            "rss": 142544896,
+            "heapTotal": 79278080,
+            "heapUsed": 61118408,
+            "external": 24621572,
+            "arrayBuffers": 20432179
+          },
+          "after": {
+            "rss": 145129472,
+            "heapTotal": 80326656,
+            "heapUsed": 67237208,
+            "external": 25005040,
+            "arrayBuffers": 20815647
+          },
+          "peakSampleRss": 145129472,
+          "peakSampleHeap": 68099840,
+          "meaning": "Process RSS/heap snapshots, including driver and fixture; not isolated allocation attribution."
+        }
+      },
+      "cleanup": {
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 328,
+        "productionDataUsed": false
+      }
+    },
+    {
+      "count": 1000,
+      "evidence": "backend/verification/jobs-hub/p1.5a-benchmarks-1000.json",
+      "baseline": {
+        "requests": 7,
+        "p50Ms": 5062.395700000001,
+        "p95Ms": 5092.785499999998,
+        "failures": 7,
+        "timeoutRate": 1
+      },
+      "optimized": {
+        "requests": 7,
+        "p50Ms": 202.4996000000101,
+        "p95Ms": 231.22060000000056,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "baselineSimultaneousReads": {
+        "requests": 6,
+        "p50Ms": 10213.376499999998,
+        "p95Ms": 15313.9375,
+        "failures": 6,
+        "timeoutRate": 1
+      },
+      "optimizedSimultaneousReads": {
+        "requests": 6,
+        "p50Ms": 263.60130000000936,
+        "p95Ms": 419.7804000000033,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "optimizedMixed": {
+        "reads": {
+          "requests": 2,
+          "p50Ms": 218.86170000000857,
+          "p95Ms": 345.35629999999946,
+          "failures": 0,
+          "timeoutRate": 0,
+          "samples": [
+            {
+              "ms": 345.35629999999946,
+              "status": 200,
+              "timeout": false,
+              "memory": {
+                "rss": 196349952,
+                "heapUsed": 81615416
+              }
+            },
+            {
+              "ms": 218.86170000000857,
+              "status": 200,
+              "timeout": false,
+              "memory": {
+                "rss": 195026944,
+                "heapUsed": 66496768
+              }
+            }
+          ]
+        },
+        "statusAction": 200
+      },
+      "memory": {
+        "baseline": {
+          "before": {
+            "rss": 124444672,
+            "heapTotal": 61308928,
+            "heapUsed": 57011688,
+            "external": 23115687,
+            "arrayBuffers": 18926294
+          },
+          "after": {
+            "rss": 128413696,
+            "heapTotal": 63811584,
+            "heapUsed": 59517880,
+            "external": 23382471,
+            "arrayBuffers": 19193078
+          },
+          "peakSampleRss": 128405504,
+          "peakSampleHeap": 59991944,
+          "meaning": "Process RSS/heap snapshots, including driver and fixture; not isolated allocation attribution."
+        },
+        "optimized": {
+          "before": {
+            "rss": 149000192,
+            "heapTotal": 99725312,
+            "heapUsed": 69208104,
+            "external": 24672247,
+            "arrayBuffers": 20486791
+          },
+          "after": {
+            "rss": 165990400,
+            "heapTotal": 100249600,
+            "heapUsed": 63022904,
+            "external": 24711522,
+            "arrayBuffers": 20526066
+          },
+          "peakSampleRss": 166080512,
+          "peakSampleHeap": 63020072,
+          "meaning": "Process RSS/heap snapshots, including driver and fixture; not isolated allocation attribution."
+        }
+      },
+      "cleanup": {
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 328,
+        "productionDataUsed": false
+      }
+    }
+  ],
+  "diagnostics": [
+    "Initial default-sandbox replica startup timed out; rerun with localhost access.",
+    "Initial two-fixture same-process harness retained a Settings singleton across reconnect; final harness requires fresh process per fixture without changing runtime fail-closed policy.",
+    "Initial explain-in-transaction attempt returned Mongo error 263; corrected diagnostic protocol.",
+    "Intermediate optimization kept per-row joins and was refined after measurement; see p1.5a-optimization-evaluation.json."
+  ]
+}
