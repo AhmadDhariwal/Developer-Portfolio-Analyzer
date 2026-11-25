@@ -71,5 +71,25 @@ describe('RecruiterPerformanceChartComponent', () => {
     heatmapFixture.detectChanges();
     expect(heatmap.isCanvasMode).toBe(false);
     expect(heatmap.heatCellsFor({ label: 'Tue', count: 8 }).length).toBe(6);
+    expect(heatmap.heatCellsFor({ label: 'Mon', count: 2 }).every((op) => op <= 0.45)).toBe(true);
+  });
+
+  it('applies a default minimum axis/funnel scale of 10 for count charts and 100 for percentage charts', () => {
+    component.mode = 'funnel';
+    component.items = [
+      { label: 'Shortlisted', count: 1 },
+      { label: 'Interview', count: 3 },
+    ];
+    expect(component.effectiveAxisMinMax).toBe(10);
+    expect(component.funnelBaseline).toBe(10);
+    expect(component.funnelPercent({ label: 'Shortlisted', count: 1 })).toBe(10);
+    expect(component.funnelPercent({ label: 'Interview', count: 3 })).toBe(30);
+
+    component.items = [{ label: 'Shortlisted', count: 25 }];
+    expect(component.funnelBaseline).toBe(25);
+    expect(component.funnelPercent({ label: 'Shortlisted', count: 25 })).toBe(100);
+
+    component.valueSuffix = '%';
+    expect(component.effectiveAxisMinMax).toBe(100);
   });
 });

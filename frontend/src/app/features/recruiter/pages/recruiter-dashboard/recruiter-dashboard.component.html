@@ -241,9 +241,11 @@
         />
         <app-recruiter-performance-chart
           title="Supply vs Demand"
+          [subtitle]="supplyVsDemandSubtitle"
           tone="green"
           mode="dual"
           [height]="220"
+          [seriesLabels]="['Candidate Supply', 'Job Demand']"
           [items]="dashboard.charts.supplyVsDemand"
         />
         <app-recruiter-performance-chart

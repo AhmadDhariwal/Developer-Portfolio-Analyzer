@@ -119,6 +119,18 @@ export class RecruiterDashboardComponent implements OnInit {
     return this.dashboard?.widgets?.aiInsights || [];
   }
 
+  get hasSupplyDemandDemand(): boolean {
+    return (this.dashboard?.charts?.supplyVsDemand || []).some(
+      (item: any) => Number(item?.demand || 0) > 0,
+    );
+  }
+
+  get supplyVsDemandSubtitle(): string {
+    return this.hasSupplyDemandDemand
+      ? 'Eligible candidates per skill (Supply) vs your created jobs (Demand)'
+      : 'Eligible candidates per skill (Supply) · Create jobs with required skills to populate Demand';
+  }
+
   get funnelItems(): Array<{ label: string; value: number; percent: number; tone: string }> {
     const m = this.dashboard?.metrics || {};
     const rows = [
@@ -128,7 +140,7 @@ export class RecruiterDashboardComponent implements OnInit {
       { label: 'Matches Generated', value: Number(m.matchesGenerated || 0), tone: 'purple' },
       { label: 'Shortlisted', value: Number(m.shortlistedCandidates || 0), tone: 'green' },
     ];
-    const baseline = Math.max(1, ...rows.map((r) => r.value));
+    const baseline = Math.max(10, ...rows.map((r) => r.value));
     return rows.map((row) => ({
       ...row,
       percent: Math.round((row.value / baseline) * 100),

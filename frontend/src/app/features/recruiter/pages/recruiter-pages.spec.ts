@@ -273,6 +273,26 @@ describe('Recruiter Hub page components', () => {
 
     expect(component.loading).toBe(false);
     expect(tenantContextMock['syncOrganization']).toHaveBeenCalled();
+
+    // Dashboard pipeline funnel scales small counts against min baseline 10 instead of 100%
+    component.dashboard.metrics = {
+      ...component.dashboard.metrics,
+      totalCandidates: 3,
+      candidatesViewed: 3,
+      candidatesAnalyzed: 1,
+      matchesGenerated: 0,
+      shortlistedCandidates: 0,
+    };
+    expect(component.funnelItems.map((item) => item.percent)).toEqual([30, 30, 10, 0, 0]);
+    expect(component.supplyVsDemandSubtitle).toContain('Create jobs with required skills');
+
+    // Scales dynamically above 10 when pool grows past 10
+    component.dashboard.metrics.totalCandidates = 20;
+    component.dashboard.charts.supplyVsDemand = [{ label: 'TypeScript', supply: 2, demand: 1 }];
+    expect(component.funnelItems[0].percent).toBe(100);
+    expect(component.funnelItems[1].percent).toBe(15);
+    expect(component.supplyVsDemandSubtitle).toContain('vs your created jobs (Demand)');
+
     component.openRoute('/app/recruiter/jobs');
     expect(navSpy).toHaveBeenCalledWith(['/app/recruiter/jobs']);
   });

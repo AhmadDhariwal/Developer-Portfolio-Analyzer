@@ -223,11 +223,7 @@
         />
         <app-recruiter-performance-chart
           title="Skill Supply vs Demand"
-          [subtitle]="
-            analytics.meta?.candidatePopulation?.mode === 'exact'
-              ? 'Complete eligible candidate supply compared against your job requirements'
-              : 'Candidate supply compared against your job requirements; coverage unreported'
-          "
+          [subtitle]="supplyVsDemandSubtitle"
           tone="green"
           mode="dual"
           [seriesLabels]="['Candidate Supply', 'Job Demand']"

@@ -66,6 +66,22 @@ export class RecruiterAnalyticsComponent implements OnInit {
     return `${shortlistCount} shortlisted`;
   }
 
+  get hasSupplyDemandDemand(): boolean {
+    return (this.analytics?.charts?.supplyVsDemand || []).some(
+      (item: any) => Number(item?.demand || 0) > 0,
+    );
+  }
+
+  get supplyVsDemandSubtitle(): string {
+    const exact = this.analytics?.meta?.candidatePopulation?.mode === 'exact';
+    if (!exact) {
+      return 'Candidate supply compared against your job requirements; coverage unreported';
+    }
+    return this.hasSupplyDemandDemand
+      ? 'Complete eligible candidate supply compared against your created job requirements'
+      : 'Complete eligible candidate supply per skill · Create jobs with required skills to populate demand';
+  }
+
   get populationAccuracyHint(): string {
     const population = this.analytics?.meta?.candidatePopulation;
     return population?.mode === 'exact'
