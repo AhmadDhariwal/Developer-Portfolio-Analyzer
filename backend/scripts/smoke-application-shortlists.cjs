@@ -11,7 +11,8 @@ const Notification = require('../src/modules/notifications/models/notification')
 const { startBrowser } = require('../src/tests/fixtures/disposableBrowser');
 
 const root = path.resolve(__dirname, '../..');
-const output = path.join(root, 'frontend/verification/recruiter/p1.5a');
+const liveAngular = process.argv.includes('--angular-server');
+const output = path.join(root, 'frontend/verification/recruiter', liveAngular ? 'p1.5b' : 'p1.5a');
 const dist = path.join(root, 'frontend/dist/frontend/browser');
 const evidence = {
   status: 'running',
@@ -24,11 +25,12 @@ const evidence = {
 async function main() {
   fs.mkdirSync(output, { recursive: true });
   assert.ok(fs.existsSync(path.join(dist, 'index.html')), 'Build current Angular first.');
-  let fixture, browser;
+  let fixture, browser, angular;
   try {
     fixture = await startApplicationFixture({
       count: 261,
       configure(app) {
+        if (liveAngular) return;
         app.use(express.static(dist));
         app.use((req, res, next) =>
           req.method === 'GET' && !req.path.startsWith('/api/')
@@ -37,12 +39,27 @@ async function main() {
         );
       }
     });
+    if (liveAngular) console.log('Disposable Express API ready; starting Angular dev server.');
+    if (liveAngular)
+      angular = await require('../src/tests/fixtures/disposableAngular').startAngular(
+        fixture.origin
+      );
+    const uiOrigin = angular?.origin || fixture.origin;
+    evidence.angularDevServer = Boolean(angular);
+    if (liveAngular) console.log('Angular dev server ready; starting real-browser checks.');
     browser = await startBrowser();
     browser.on('Runtime.exceptionThrown', (event) => {
       evidence.errors.push(
         event.exceptionDetails.exception?.description || event.exceptionDetails.text
       );
     });
+    if (liveAngular)
+      browser.on('Runtime.consoleAPICalled', (event) => {
+        if (event.type === 'error')
+          evidence.errors.push(
+            event.args.map((item) => String(item.value ?? item.description ?? '')).join(' ')
+          );
+      });
     browser.on('Network.responseReceived', (event) => {
       const url = new URL(event.response.url);
       if (url.pathname.startsWith('/api/'))
@@ -70,7 +87,7 @@ async function main() {
         }
       })()`;
       const page = await browser.page({ ...viewport, init });
-      await page.navigate(fixture.origin + '/app/recruiter/shortlists?source=applications');
+      await page.navigate(uiOrigin + '/app/recruiter/shortlists?source=applications');
       const ready =
         String(actor) === String(fixture.owner)
           ? `document.querySelectorAll('app-shortlist-card').length === 20`
@@ -154,10 +171,48 @@ async function main() {
       );
       await view.screenshot(path.join(output, name + '.png'));
       await view.close();
+      if (liveAngular) console.log('Verified responsive appearance: ' + name);
     }
     const peer = await pageFor(fixture.peer);
     assert.equal(await peer.evaluate(`document.querySelectorAll('app-shortlist-card').length`), 0);
     await peer.close();
+    if (liveAngular) {
+      const analytics = await pageFor(fixture.owner);
+      await analytics.navigate(uiOrigin + '/app/recruiter/analytics');
+      await analytics.wait(
+        `document.body.innerText.includes('Assessment & Match Actions')`,
+        'accurate analytics labels'
+      );
+      assert.equal(
+        await analytics.evaluate(`/AI usage trends|AI Actions/.test(document.body.innerText)`),
+        false
+      );
+      await analytics.screenshot(path.join(output, 'analytics-desktop.png'));
+      evidence.navigation = [];
+      for (const [route, selector] of [
+        ['dashboard', 'app-recruiter-dashboard'],
+        ['jobs', 'app-recruiter-jobs'],
+        [`jobs/${fixture.job._id}`, 'app-recruiter-job-details'],
+        ['candidates', 'app-recruiter-candidates'],
+        ['matches', 'app-recruiter-matches'],
+        ['comparison', 'app-recruiter-comparison'],
+        ['shortlists', 'app-recruiter-shortlists'],
+        ['activity-logs', 'app-recruiter-activity-logs'],
+        ['profile', 'app-recruiter-profile']
+      ]) {
+        await analytics.navigate(uiOrigin + '/app/recruiter/' + route);
+        await analytics.wait(
+          `!!document.querySelector(${JSON.stringify(selector)}) && !document.querySelector(${JSON.stringify(selector + ' app-recruiter-loader')})`,
+          'live recruiter route ' + route
+        );
+        evidence.navigation.push({ route, component: selector, rendered: true });
+        console.log('Verified recruiter route: ' + route);
+      }
+      await analytics.close();
+      evidence.checks.push(
+        'Actual Angular dev server proxies production Express routes; analytics describes assessment/match actions without claiming AI execution.'
+      );
+    }
     const denied = await fixture.request('/api/recruiter-hub/shortlists/applications', {
       actor: fixture.peer
     });
@@ -182,6 +237,7 @@ async function main() {
     evidence.status = 'passed';
   } finally {
     if (browser) evidence.browserCleanup = await browser.stop();
+    if (angular) evidence.angularCleanup = await angular.stop();
     if (fixture) evidence.cleanup = await fixture.stop();
   }
 }

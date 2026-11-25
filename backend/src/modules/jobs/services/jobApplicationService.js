@@ -10,6 +10,7 @@ const storage = require('../../resume/services/resumeStorageService');
 const { requireObjectId } = require('../../recruiter/utils/recruiterValidation');
 const notifications = require('../../notifications/services/notificationService');
 const persistence = require('../../notifications/services/notificationTransactionService');
+const workflowBudget = require('../../recruiter/utils/hub/applicationWorkflowBudget');
 const fail = (message, statusCode = 400) => Object.assign(Error(message), { statusCode });
 const eligible = { published: true, status: 'open', archivedAt: null };
 const applicationId = (job, applicant) =>
@@ -306,42 +307,56 @@ function permittedRecruiterStatuses(status) {
   return [];
 }
 async function transition(filter, actorId, status, expectedStatus, scope) {
-  return persistence.transaction(async (session) => {
-    await persistence.fence(actorId, session);
-    if (scope) {
-      const locked = await Job.updateOne(
-        { _id: filter.jobId, recruiterId: scope.recruiterId, organizationId: scope.organizationId },
-        { $inc: { __v: 1 } },
-        { session, timestamps: false }
-      );
-      if (!locked.matchedCount) throw fail('Job not found.', 404);
-    }
-    const current = await Application.findOne(filter).session(session).lean();
-    if (!current) throw fail('Application not found.', 404);
-    // Retried withdrawal is an idempotent acknowledgement, without another event.
-    if (status === 'withdrawn' && current.status === 'withdrawn') return current;
-    const permitted = scope
-      ? permittedRecruiterStatuses(current.status).includes(status)
-      : ['submitted', 'reviewing'].includes(current.status);
-    if (!permitted || (expectedStatus !== undefined && current.status !== expectedStatus))
-      throw fail('Application changed. Refresh before trying again.', 409);
-    const updated = await Application.findOneAndUpdate(
-      { ...filter, status: current.status },
-      {
-        $set: { status },
-        $push: { history: { from: current.status, to: status, actorId, at: new Date() } }
+  const beforeAttempt = scope ? workflowBudget.retryGuard(scope.deadline) : null;
+  try {
+    return await persistence.transaction(
+      async (session) => {
+        if (beforeAttempt) await beforeAttempt();
+        await persistence.fence(actorId, session);
+        if (scope) {
+          const locked = await Job.updateOne(
+            {
+              _id: filter.jobId,
+              recruiterId: scope.recruiterId,
+              organizationId: scope.organizationId
+            },
+            { $inc: { __v: 1 } },
+            { session, timestamps: false }
+          );
+          if (!locked.matchedCount) throw fail('Job not found.', 404);
+        }
+        const current = await Application.findOne(filter).session(session).lean();
+        if (!current) throw fail('Application not found.', 404);
+        // Retried withdrawal is an idempotent acknowledgement, without another event.
+        if (status === 'withdrawn' && current.status === 'withdrawn') return current;
+        const permitted = scope
+          ? permittedRecruiterStatuses(current.status).includes(status)
+          : ['submitted', 'reviewing'].includes(current.status);
+        if (!permitted || (expectedStatus !== undefined && current.status !== expectedStatus))
+          throw fail('Application changed. Refresh before trying again.', 409);
+        const updated = await Application.findOneAndUpdate(
+          { ...filter, status: current.status },
+          {
+            $set: { status },
+            $push: { history: { from: current.status, to: status, actorId, at: new Date() } }
+          },
+          { session, returnDocument: 'after' }
+        ).lean();
+        if (!updated) throw fail('Application changed. Refresh before trying again.', 409);
+        await notifyApplication(updated, status, session);
+        return updated;
       },
-      { session, returnDocument: 'after' }
-    ).lean();
-    if (!updated) throw fail('Application changed. Refresh before trying again.', 409);
-    await notifyApplication(updated, status, session);
-    return updated;
-  });
+      { deadline: scope?.deadline }
+    );
+  } catch (error) {
+    throw scope ? workflowBudget.failure(error, true) : error;
+  }
 }
 async function changeStatus(scope, jobId, id, status, expectedStatus) {
   if (!['reviewing', 'rejected'].includes(status)) throw fail('Invalid application status.');
   if (expectedStatus !== undefined && !['submitted', 'reviewing'].includes(expectedStatus))
     throw fail('Invalid expected status.');
+  scope = { ...scope, deadline: scope.deadline ?? workflowBudget.deadline() };
   const application = await transition(
     ownedApplication(scope, jobId, id),
     scope.recruiterId,

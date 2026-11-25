@@ -176,7 +176,7 @@ export class JobApplicantsComponent implements OnChanges {
         error: (e) => {
           if (version !== this.loadVersion || jobId !== this.jobId) return;
           this.busy = false;
-          if ([403, 404, 409].includes(e.status)) this.load();
+          if ([403, 404, 409, 503].includes(e.status)) this.load();
           this.actionError =
             e.status === 409
               ? 'Application changed. Refresh and review the current status before trying again.'

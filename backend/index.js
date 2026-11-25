@@ -293,6 +293,16 @@ const startServer = async () => {
   if (await startupCancelled()) return;
   await initializeRedisAtStartup();
   if (await startupCancelled()) return;
+  let retention;
+  let courses;
+  if (!localApiOnly) {
+    retention = require('./src/modules/notifications/services/notificationRetentionService');
+    if (process.env.COURSES_MAINTENANCE_ENABLED !== 'false') {
+      courses = require('./src/modules/courses/services/courseCatalogMaintenanceService');
+    }
+    await initTracing();
+    if (await startupCancelled()) return;
+  }
   await startSettingsSynchronization();
   if (await startupCancelled()) return;
 
@@ -302,19 +312,19 @@ const startServer = async () => {
       logger.info('development API-only mode: loopback listener; background workers disabled.');
       return;
     }
-    const retention = require('./src/modules/notifications/services/notificationRetentionService');
     startWorker(retention.start, retention.stop);
     startWorker(startEmailRetryWorker, stopEmailRetryWorker);
     startWorker(startIntegrationSyncWorker, stopIntegrationSyncWorker);
     startWorker(startJobSourceSyncWorker, stopJobSourceSyncWorker);
     startWorker(startNewsIngestionScheduler, stopNewsIngestionScheduler);
-    const courses = require('./src/modules/courses/services/courseCatalogMaintenanceService');
-    startWorker(courses.start, courses.stop);
-    initTracing();
+    if (courses) startWorker(courses.start, courses.stop);
     if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api')
       startWorker(startWeeklyReportScheduler, stopWeeklyReportScheduler);
     startWorker(startInterviewQuestionIngestionScheduler, stopInterviewQuestionIngestionScheduler);
-    startWorker(startInterviewQuestionMaintenanceScheduler, stopInterviewQuestionMaintenanceScheduler);
+    startWorker(
+      startInterviewQuestionMaintenanceScheduler,
+      stopInterviewQuestionMaintenanceScheduler,
+    );
     getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
@@ -324,24 +334,13 @@ const startServer = async () => {
     } else {
       logger.info('GitHub token detected; using authenticated API quota.');
     }
-    // Jobs Hub source startup validation
-    const {
-      getIntegrationSecretsSync,
-    } = require('./src/modules/super-admin/services/platformSettingsService');
-    const integrations = getIntegrationSecretsSync();
-    const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
-
-    const jsearchConfigured =
-      integrations?.jobsEnabled !== false && Boolean(rapidApiKey && rapidApiKey !== 'your_rapidapi_key');
-    const joobleConfigured = Boolean(String(process.env.JOOBLE_API_KEY || '').trim());
-    const adzunaConfigured = Boolean(
-      String(process.env.ADZUNA_APP_ID || '').trim() && String(process.env.ADZUNA_APP_KEY || '').trim(),
-    );
     // Jobs Hub cache health startup check
     const { getCacheHealth } = require('./src/modules/jobs/services/jobService');
     getCacheHealth()
       .then((health) => {
-        console.log(`[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`);
+        console.log(
+          `[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`,
+        );
         if (health.cacheStatus === 'LOW') {
           console.warn('[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).');
         }
@@ -365,7 +364,9 @@ const shutdown = () => {
   stopSettingsSynchronization();
   // Shutdown must not refresh policy settings after synchronization/storage stop.
   const deadline = setTimeout(() => {
-    console.error('shutdown deadline exceeded; unfinished jobs retain their durable recovery leases');
+    console.error(
+      'shutdown deadline exceeded; unfinished jobs retain their durable recovery leases',
+    );
     server?.closeAllConnections();
     process.exit(1);
   }, 15000);

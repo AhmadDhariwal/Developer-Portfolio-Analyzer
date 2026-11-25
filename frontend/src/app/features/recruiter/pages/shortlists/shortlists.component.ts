@@ -413,7 +413,10 @@ export class ShortlistsComponent implements OnInit {
   }
 
   private refreshAfterDenied(error: any): void {
-    if ([403, 404, 409].includes(error?.status)) {
+    if (
+      [403, 404, 409].includes(error?.status) ||
+      (this.source === 'applications' && error?.status === 503)
+    ) {
       this.shortlists = [];
       this.loadShortlists();
     }

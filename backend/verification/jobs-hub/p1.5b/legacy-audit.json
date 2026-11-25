@@ -1,0 +1,250 @@
+{
+  "privateFrontendPackage": true,
+  "scope": "Complete repository source, test, script, string and documentation references; binary/runtime/dependency/build artifacts excluded. Backend symbols with identical names are separate contracts.",
+  "inventory": [
+    {
+      "name": "getRecruiterDashboard",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-FRONTEND-BACKEND-DATA-FLOW.md:40:  3. `recruiterDashboardController.getDashboard` -> `recruiterDashboardService.getRecruiterDashboard(req)`:",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:38:| `GET /api/recruiter-hub/analytics/dashboard` | `recruiterDashboardController.getDashboard` | `recruiterDashboardService.getRecruiterDashboard` | `getRecruiterHubDashboard()` -> `RecruiterHubService.getDashboard()` | **Verified** — Consumed by `RecruiterDashboardComponent`. |",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:69:| `GET /api/recruiter/dashboard` | `dashboardController.getRecruiterDashboard` | `matchingService.listCandidates` + direct `Job`/`User` queries | `getRecruiterDashboard()` | **None (0 callers)** | **Defective:** Omits `organizationId` in `listCandidates({ limit: 200 })`; org-scoped jobs without `recruiterId` filter; divergent payload `{ stats, topCandidates, recentJobs, charts }`. |",
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterDashboardService.js:6:const getRecruiterDashboard = async (req) => {",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterDashboardService.js:46:  getRecruiterDashboard",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:10:  getRecruiterDashboard,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:29:router.get('/dashboard', getRecruiterDashboard);",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:18:const { getRecruiterDashboard } = require('./dashboardController');\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:21:  getRecruiterDashboard,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\dashboardController.js:10:const getRecruiterDashboard = async (req, res) => {",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\dashboardController.js:139:module.exports = { getRecruiterDashboard };",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterDashboardController.js:1:const { getRecruiterDashboard } = require('../../services/hub/recruiterDashboardService');\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterDashboardController.js:5:    const dashboard = await getRecruiterDashboard(req);\r",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:631:  getRecruiterDashboard(): Observable<any> {\r",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:893:          \"name\": \"getRecruiterDashboard\",\r",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:217:- Line 21, `GET`: `'/dashboard' → getRecruiterDashboard`\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1207:    \"args\": [\"'/dashboard'\", \"getRecruiterDashboard\"]"
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:631:  getRecruiterDashboard(): Observable<any> {"
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "getRecruiterHubDashboard"
+    },
+    {
+      "name": "getRecruiterCandidates",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:70:| `GET /api/recruiter/candidates` | `candidateController.getRecruiterCandidates` | `matchingService.listCandidates` | `getRecruiterCandidates()` | **None (0 callers)** | Duplicate of `/recruiter-hub/candidates` without pagination/enrichment. |",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:218:- Line 24, `GET`: `'/candidates' → getRecruiterCandidates`\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1214:    \"args\": [\"'/candidates'\", \"getRecruiterCandidates\"]\r",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterAnalyticsService.js:7:const { getRecruiterCandidatesByIds } = require('./candidateService');\r",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterAnalyticsService.js:117:  const visible = await getRecruiterCandidatesByIds(\r",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterActivityService.js:3:const { getRecruiterCandidatesByIds } = require('./candidateService');",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterActivityService.js:53:    getRecruiterCandidatesByIds(candidateIds, organizationId)",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\comparisonService.js:1:const { getRecruiterCandidatesByIds, formatCandidateComparison } = require('./candidateService');",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\comparisonService.js:16:  const available = await getRecruiterCandidatesByIds(candidateIds, organizationId);",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\candidateService.js:35:const getRecruiterCandidatesByIds = async (candidateIds, organizationId, session) => {",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\candidateService.js:42:  const candidates = await getRecruiterCandidatesByIds([id], organizationId);",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\candidateService.js:132:  getRecruiterCandidatesByIds,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:11:  getRecruiterCandidates,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:32:router.get('/candidates', getRecruiterCandidates);",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:2:  getRecruiterCandidates,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:22:  getRecruiterCandidates,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\candidateController.js:6:const getRecruiterCandidates = async (req, res) => {\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\candidateController.js:44:  getRecruiterCandidates,\r",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:897:          \"name\": \"getRecruiterCandidates\",\r",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:635:  getRecruiterCandidates("
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:635:  getRecruiterCandidates("
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "getRecruiterHubCandidates"
+    },
+    {
+      "name": "getRecruiterCandidateById",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:71:| `GET /api/recruiter/candidate/:id` | `candidateController.getRecruiterCandidateById` | `matchingService.getCandidateById` | `getRecruiterCandidateById()` | **None (0 callers)** | Duplicate of `/recruiter-hub/candidates/:id` without view audit log or profile completeness. |",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:219:- Line 25, `GET`: `'/candidate/:id' → getRecruiterCandidateById`\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1221:    \"args\": [\"'/candidate/:id'\", \"getRecruiterCandidateById\"]\r",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:659:  getRecruiterCandidateById(candidateId: string): Observable<any> {\r",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:901:          \"name\": \"getRecruiterCandidateById\",\r",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:12:  getRecruiterCandidateById,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:33:router.get('/candidate/:id', getRecruiterCandidateById);",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:3:  getRecruiterCandidateById\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:23:  getRecruiterCandidateById,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\candidateController.js:26:const getRecruiterCandidateById = async (req, res) => {\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\candidateController.js:45:  getRecruiterCandidateById"
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:659:  getRecruiterCandidateById(candidateId: string): Observable<any> {"
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "getRecruiterHubCandidate"
+    },
+    {
+      "name": "getRecruiterJobs",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:73:| `GET /api/recruiter/jobs` | `jobController.getRecruiterJobs` | `matchingService.listJobs` | `getRecruiterJobs()` | **None (0 callers)** | Returns ALL org jobs (ignores `recruiterId`), unlike Hub which scopes by `recruiterId`. |",
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:221:- Line 29, `GET`: `'/jobs' → getRecruiterJobs`\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1235:    \"args\": [\"'/jobs'\", \"getRecruiterJobs\"]\r",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:663:  getRecruiterJobs(): Observable<any> {\r",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:905:          \"name\": \"getRecruiterJobs\",\r",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:16:  getRecruiterJobs,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:37:router.get('/jobs', getRecruiterJobs);",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js:80:const getRecruiterJobs = async (req, res) => {",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js:98:  getRecruiterJobs",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:10:  getRecruiterJobs\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:27:  getRecruiterJobs,"
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:663:  getRecruiterJobs(): Observable<any> {"
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "getRecruiterHubJobs"
+    },
+    {
+      "name": "createRecruiterJob",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-FRONTEND-BACKEND-DATA-FLOW.md:88:     - `recruiterJobController` gets `scope`, calls `createRecruiterJob` / `updateRecruiterJob`.",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:45:| `POST /api/recruiter-hub/jobs` | `recruiterJobController.createJob` | `recruiterJobService.createRecruiterJob` | `createRecruiterHubJob()` -> `RecruiterJobService.createJob()` | **Defective** if `description === \"\"` due to `Job` schema `required: true`. |",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:72:| `POST /api/recruiter/job` | `jobController.createRecruiterJob` | `matchingService.createJob` | `createRecruiterJob()` | **None (0 callers)** | Duplicate of `POST /recruiter-hub/jobs`; weaker validation (`title` & `description` only). |",
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:220:- Line 28, `POST`: `'/job' → createRecruiterJob`\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1228:    \"args\": [\"'/job'\", \"createRecruiterJob\"]\r",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:667:  createRecruiterJob(payload: any): Observable<any> {\r",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:909:          \"name\": \"createRecruiterJob\",\r",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterJobService.js:216:const createRecruiterJob = async ({ payload = {}, ...scope }) => {",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterJobService.js:344:  createRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:13:  createRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:36:router.post('/job', createRecruiterJob);",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js:8:const createRecruiterJob = async (req, res) => {",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js:95:  createRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:7:  createRecruiterJob,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:24:  createRecruiterJob,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterJobController.js:4:  createRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterJobController.js:47:    const job = await createRecruiterJob({ ...scope, payload: req.body || {} });"
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:667:  createRecruiterJob(payload: any): Observable<any> {"
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "createRecruiterHubJob"
+    },
+    {
+      "name": "updateRecruiterJob",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-SECURITY-CACHE-DEPENDENCY-AUDIT.md:34:   - `recruiterJobService.js` (`getRecruiterJobDetails`, `updateRecruiterJob`, `archiveRecruiterJob`, `deleteRecruiterJob`), `matchService.js` (`generateRecruiterMatches`, `getRecruiterMatchDetails`, `updateMatchStatus`), `shortlistService.js` (`addToShortlist`, `updateShortlist`, `removeShortlist`), and `comparisonService.js` (`compareCandidates`) pass `req.params.id` / `req.body.jobId` / `req.body.candidateId` directly to Mongoose `findOne` without `mongoose.Types.ObjectId.isValid()`. Malformed IDs return `500` instead of `400`/`404`.",
+        ".\\RECRUITER-FRONTEND-BACKEND-DATA-FLOW.md:88:     - `recruiterJobController` gets `scope`, calls `createRecruiterJob` / `updateRecruiterJob`.",
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:47:| `PATCH /api/recruiter-hub/jobs/:id` | `recruiterJobController.updateJob` | `recruiterJobService.updateRecruiterJob` | `updateRecruiterHubJob()` -> `RecruiterJobService.updateJob()` | **Verified** — Scoped to `{ _id, recruiterId, organizationId }`. |",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:74:| `PUT /api/recruiter/job/:id` | `jobController.updateRecruiterJob` | `matchingService.updateJob` | `updateRecruiterJob()` | **None (0 callers)** | **Security/Ownership Risk:** Scopes by `organizationId` only, allowing cross-recruiter job modification within an org. |",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:671:  updateRecruiterJob(jobId: string, payload: any): Observable<any> {\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1242:    \"args\": [\"'/job/:id'\", \"updateRecruiterJob\"]\r",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:222:- Line 30, `PUT`: `'/job/:id' → updateRecruiterJob`\r",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterJobService.js:249:const updateRecruiterJob = async ({ jobId, payload = {}, ...scope }) => {",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterJobService.js:345:  updateRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:14:  updateRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:38:router.put('/job/:id', updateRecruiterJob);",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js:33:const updateRecruiterJob = async (req, res) => {",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js:96:  updateRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:8:  updateRecruiterJob,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:25:  updateRecruiterJob,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterJobController.js:5:  updateRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterJobController.js:81:    const job = await updateRecruiterJob({",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:913:          \"name\": \"updateRecruiterJob\","
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:671:  updateRecruiterJob(jobId: string, payload: any): Observable<any> {"
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "updateRecruiterHubJob"
+    },
+    {
+      "name": "deleteRecruiterJob",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-TECHNICAL-DEBT-AND-IMPLEMENTATION-ROADMAP.md:58:| **DEBT-08** | **Medium** | `backend/src/modules/recruiter/services/hub/recruiterJobService.js` (`deleteRecruiterJob`) & `admin/controllers/recruiterController.js` (`deleteRecruiter`) | Deleting a job leaves orphaned `RecruiterMatch` and `RecruiterShortlist` documents; Admin `deleteRecruiter` leaves orphaned `Job`, `RecruiterMatch`, and `RecruiterShortlist` documents. | **Verified** |",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:49:| `DELETE /api/recruiter-hub/jobs/:id` | `recruiterJobController.deleteJob` | `recruiterJobService.deleteRecruiterJob` | `deleteRecruiterHubJob()` -> `RecruiterJobService.deleteJob()` | **Verified** — Does not clean up linked `RecruiterMatch`/`RecruiterShortlist`. |",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:75:| `DELETE /api/recruiter/job/:id` | `jobController.deleteRecruiterJob` | `matchingService.deleteJob` | `deleteRecruiterJob()` | **None (0 callers)** | **Security/Ownership Risk:** Scopes by `organizationId` only, allowing cross-recruiter job deletion within an org. |",
+        ".\\RECRUITER-SECURITY-CACHE-DEPENDENCY-AUDIT.md:34:   - `recruiterJobService.js` (`getRecruiterJobDetails`, `updateRecruiterJob`, `archiveRecruiterJob`, `deleteRecruiterJob`), `matchService.js` (`generateRecruiterMatches`, `getRecruiterMatchDetails`, `updateMatchStatus`), `shortlistService.js` (`addToShortlist`, `updateShortlist`, `removeShortlist`), and `comparisonService.js` (`compareCandidates`) pass `req.params.id` / `req.body.jobId` / `req.body.candidateId` directly to Mongoose `findOne` without `mongoose.Types.ObjectId.isValid()`. Malformed IDs return `500` instead of `400`/`404`.",
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:675:  deleteRecruiterJob(jobId: string): Observable<any> {\r",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:223:- Line 31, `DELETE`: `'/job/:id' → deleteRecruiterJob`\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1249:    \"args\": [\"'/job/:id'\", \"deleteRecruiterJob\"]\r",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:917:          \"name\": \"deleteRecruiterJob\",\r",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterJobService.js:324:const deleteRecruiterJob = async ({ jobId, ...scope }) =>",
+        ".\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterJobService.js:347:  deleteRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:15:  deleteRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:39:router.delete('/job/:id', deleteRecruiterJob);",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js:57:const deleteRecruiterJob = async (req, res) => {",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js:97:  deleteRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:9:  deleteRecruiterJob,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:26:  deleteRecruiterJob,\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterJobController.js:7:  deleteRecruiterJob,",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterJobController.js:155:    const deleted = await deleteRecruiterJob({"
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:675:  deleteRecruiterJob(jobId: string): Observable<any> {"
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "deleteRecruiterHubJob"
+    },
+    {
+      "name": "matchRecruiterCandidates",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:76:| `POST /api/recruiter/match` | `matchController.matchCandidates` | `matchingService.matchCandidatesToJob` | `matchRecruiterCandidates()` | **None (0 callers)** | **Defective:** `matchCandidatesToJob` omits `organizationId` in `listCandidates()`; does NOT persist `RecruiterMatch`. |",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:679:  matchRecruiterCandidates(payload: { jobId: string; candidateIds?: string[] }): Observable<any> {\r",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:921:          \"name\": \"matchRecruiterCandidates\","
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:679:  matchRecruiterCandidates(payload: { jobId: string; candidateIds?: string[] }): Observable<any> {"
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "generateRecruiterHubMatches"
+    },
+    {
+      "name": "aiRankCandidates",
+      "completeRepositoryReferences": [
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:25:| 15 | **Legacy `/api/recruiter/*` Surface** | *None* (9 unused methods in `ApiService`) | `/api/recruiter/*` (`recruiter.routes.js`, `controllers/matching/*`) | `Job`, `User` + dev collections, `Candidate` | **Verified (Orphaned / Divergent)** — Not used by frontend; diverges on response schemas, missing `organizationId` scoping in `dashboardController` and `aiRankCandidates`, and missing `recruiterId` ownership check on `PUT/DELETE /job/:id`. |",
+        ".\\RECRUITER-FEATURE-AND-API-INVENTORY.md:77:| `POST /api/recruiter/ai-rank` | `matchController.aiRankCandidates` | `aiRankingService.rankCandidates` | `aiRankCandidates()` | **None (0 callers)** | **Defective:** Omits `organizationId` in `listCandidates()`, accepts inline `job`/`candidates` bypassing DB persistence, and is the ONLY route regex tracked by `adminConsoleService.js` (`aiRankCalls`). |",
+        ".\\RECRUITER-ARCHITECTURE-OVERVIEW.md:23:   - **Verified:** `ApiService` defines 9 `/api/recruiter/*` methods (`getRecruiterDashboard`, `getRecruiterCandidates`, `getRecruiterCandidateById`, `getRecruiterJobs`, `createRecruiterJob`, `updateRecruiterJob`, `deleteRecruiterJob`, `matchRecruiterCandidates`, `aiRankCandidates`), **none** of which are called anywhere in `frontend/src`.",
+        ".\\REFRESH-PERFORMANCE-AND-RISKS.md:16:| **High** | **Legacy Recruiter & Admin AI-Rank return empty candidate lists under `'organization'` visibility** | `backend/src/modules/recruiter/services/matching/matchingService.js:172-190, 719`; `matching/matchController.js:52, 60`; `backend/src/modules/admin/controllers/jobController.js:145` | `matchCandidatesToJob` & `aiRankCandidates` call `listCandidates` without `organizationId`, causing `listPublicDeveloperUserIds` to return `[]` whenever `PlatformSettings.recruiter.candidateVisibility === 'organization'`. |\r",
+        ".\\frontend\\src\\app\\shared\\services\\api.service.ts:683:  aiRankCandidates(payload: {\r",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:18:  aiRankCandidates",
+        ".\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js:43:router.post('/ai-rank', aiRankCandidates);",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\matchController.js:37:const aiRankCandidates = async (req, res) => {",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\matchController.js:100:  aiRankCandidates",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:15:  aiRankCandidates\r",
+        ".\\backend\\src\\modules\\recruiter\\controllers\\matching\\index.js:29:  aiRankCandidates\r",
+        ".\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json:925:          \"name\": \"aiRankCandidates\",\r",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:225:- Line 35, `POST`: `'/ai-rank' → aiRankCandidates`\r",
+        ".\\backend\\verification\\architecture\\REQUEST-ENDPOINT-INVENTORY.md:263:- Line 45, `POST`: `'/ai-rank' → aiRankCandidates`\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1263:    \"args\": [\"'/ai-rank'\", \"aiRankCandidates\"]\r",
+        ".\\backend\\verification\\architecture\\request-endpoint-inventory.json:1492:    \"args\": [\"'/ai-rank'\", \"aiRankCandidates\"]\r",
+        ".\\backend\\src\\modules\\admin\\routes\\admin.routes.js:21:const { getAdminJobs, createAdminJob, updateAdminJob, closeAdminJob, deleteAdminJob, aiRankCandidates } = require('../controllers/jobController');\r",
+        ".\\backend\\src\\modules\\admin\\routes\\admin.routes.js:45:router.post('/ai-rank', aiRankCandidates);\r",
+        ".\\backend\\src\\modules\\admin\\controllers\\jobController.js:130:const aiRankCandidates = async (req, res) => {",
+        ".\\backend\\src\\modules\\admin\\controllers\\jobController.js:180:  aiRankCandidates"
+      ],
+      "frontendRuntimeOrTestReferences": [
+        "frontend/src\\app\\shared\\services\\api.service.ts:683:  aiRankCandidates(payload: {"
+      ],
+      "postRemovalFrontendReferences": [],
+      "existingHubReplacement": "generateRecruiterHubMatches / analyzeRecruiterHubCandidate (deterministic; not a drop-in legacy ranking contract)"
+    }
+  ],
+  "dynamicApiReferences": [],
+  "publishedClientFiles": [],
+  "decision": "All nine app-local wrappers have no callers or reflective dispatch. This private Angular application is not a published client library. Remove only these wrappers; do not redirect legacy requests to Hub response shapes.",
+  "compatibility": "Hub replacements are already used by domain services. Legacy payload/error schemas differ; no parity is claimed and no mounted endpoint is changed. Candidate, Recruiter, Stats, account-deletion compatibility and all Admin/Tenant controllers retained.",
+  "routeDeprecationPrerequisites": [
+    "Obtain gateway/traffic and supported client inventory plus consumer-owner confirmation",
+    "Document payload/error differences and migration guides",
+    "Agree deprecation window and rollback and obtain explicit retirement approval",
+    "Review historical retention and account-deletion policy before any model retirement"
+  ],
+  "angularProjectType": "application"
+}

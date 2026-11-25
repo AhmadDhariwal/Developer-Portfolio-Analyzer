@@ -1,5 +1,6 @@
 const service = require('./services/jobApplicationService');
 const { getRecruiterScope } = require('../recruiter/utils/hub/recruiterAccess');
+const workflowBudget = require('../recruiter/utils/hub/applicationWorkflowBudget');
 const handle = (work) => async (req, res) => {
   res.set('Cache-Control', 'no-store');
   try {
@@ -43,6 +44,7 @@ module.exports = {
     })
   ),
   status: handle(async (req, res) => {
+    const deadline = workflowBudget.deadline();
     if (
       !req.body ||
       Object.keys(req.body).some((key) => !['status', 'expectedStatus'].includes(key))
@@ -50,7 +52,7 @@ module.exports = {
       return res.status(400).json({ message: 'Only status and expectedStatus may be supplied.' });
     res.json({
       application: await service.changeStatus(
-        await getRecruiterScope(req),
+        { ...(await getRecruiterScope(req)), deadline },
         req.params.id,
         req.params.applicationId,
         req.body.status,

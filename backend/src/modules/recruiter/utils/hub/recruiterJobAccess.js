@@ -5,6 +5,8 @@ const Membership = require('../../../admin/models/membership');
 const Team = require('../../../admin/models/team');
 const { requireObjectId } = require('../recruiterValidation');
 const { isRoleAtLeast } = require('../../../admin/services/tenantService');
+const { Types } = require('mongoose');
+const workflowBudget = require('./applicationWorkflowBudget');
 
 const denied = (message = 'Job access is unavailable.', statusCode = 403) =>
   Object.assign(new Error(message), { statusCode });
@@ -20,35 +22,63 @@ async function fence(model, record, filter, session) {
   if (!result.matchedCount) throw denied('Job access changed. Refresh and try again.');
 }
 
-async function context(scope, session) {
+async function readWithFence(model, filter, session, projection) {
+  return model.collection.findOneAndUpdate(
+    filter,
+    { $inc: { recruiterJobAccessRevision: 1 } },
+    { session, projection, returnDocument: 'after', includeResultMetadata: false }
+  );
+}
+
+async function context(scope, session, atomicActorFence = false) {
   const recruiterId = requireObjectId(scope.recruiterId, 'recruiterId');
   const organizationId = requireObjectId(scope.organizationId, 'organizationId');
-  const actor = await User.findOne({
+  const actorFilter = {
     _id: recruiterId,
     organizationId,
     role: 'recruiter',
     isActive: { $ne: false }
-  })
-    .session(session)
-    .lean();
-  const organization = await Organization.findOne({
-    _id: organizationId,
-    isSuspended: { $ne: true }
-  })
-    .session(session)
-    .lean();
-  if (!actor || !organization) throw denied();
-  const actorFilter = {
-    role: 'recruiter',
-    organizationId: organization._id,
-    isActive: { $ne: false }
   };
+  const fenceFilter = { ...actorFilter };
+  delete fenceFilter._id;
   if (scope.sessionRevision !== undefined)
-    actorFilter.$expr = { $eq: [{ $ifNull: ['$sessionRevision', 0] }, scope.sessionRevision] };
-  await fence(User, actor, actorFilter, session);
-  await fence(Organization, organization, { isSuspended: { $ne: true } }, session);
+    fenceFilter.$expr = { $eq: [{ $ifNull: ['$sessionRevision', 0] }, scope.sessionRevision] };
+  // Acquire the existing actor fence as the first transaction operation. Reading
+  // actor/organization before this write creates a stale snapshot on every rival
+  // commit and repeats those reads on conflict. The filter retains all authority.
+  const actor = atomicActorFence
+    ? await readWithFence(
+        User,
+        {
+          ...fenceFilter,
+          _id: new Types.ObjectId(recruiterId),
+          organizationId: new Types.ObjectId(organizationId)
+        },
+        session,
+        { _id: 1, organizationId: 1, role: 1, isActive: 1, sessionRevision: 1 }
+      )
+    : await User.findOne(actorFilter).session(session).lean();
+  const organization = atomicActorFence
+    ? await readWithFence(
+        Organization,
+        { _id: new Types.ObjectId(organizationId), isSuspended: { $ne: true } },
+        session
+      )
+    : await Organization.findOne({
+        _id: organizationId,
+        isSuspended: { $ne: true }
+      })
+        .session(session)
+        .setOptions(workflowBudget.cursorOptions(session))
+        .lean();
+  if (!actor || !organization) throw denied();
+  if (!atomicActorFence)
+    await fence(User, actor, { ...fenceFilter, organizationId: organization._id }, session);
+  if (!atomicActorFence)
+    await fence(Organization, organization, { isSuspended: { $ne: true } }, session);
   const memberships = await Membership.find({ userId: actor._id, organizationId: organization._id })
     .session(session)
+    .setOptions(workflowBudget.cursorOptions(session))
     .lean();
   const direct = memberships.find((entry) => !entry.teamId);
   if (direct && direct.status !== 'active') throw denied('Organization membership is not active.');
@@ -59,6 +89,7 @@ async function context(scope, session) {
     isActive: true
   })
     .session(session)
+    .setOptions(workflowBudget.cursorOptions(session))
     .lean();
   const grants = new Map();
   for (const membership of active) {
@@ -138,12 +169,26 @@ async function jobView(job, ctx) {
   };
 }
 
-async function withAccess(scope, work) {
+async function withAccess(scope, work, { deadline } = {}) {
   await Promise.all([Job, User, Organization, Membership, Team].map((model) => model.init()));
-  return Job.db.transaction(async (session) => work(await context(scope, session)), {
-    readConcern: { level: 'snapshot' },
-    writeConcern: { w: 'majority' }
-  });
+  const beforeAttempt = deadline === undefined ? null : workflowBudget.retryGuard(deadline);
+  return Job.db.transaction(
+    async (session) => {
+      if (beforeAttempt) await beforeAttempt();
+      const ctx = await context(scope, session, deadline !== undefined);
+      return work({ ...ctx, deadline });
+    },
+    {
+      readConcern: { level: 'snapshot' },
+      writeConcern: { w: 'majority' },
+      ...(deadline === undefined
+        ? {}
+        : {
+            timeoutMS: workflowBudget.remaining(deadline),
+            maxCommitTimeMS: Math.min(2000, workflowBudget.remaining(deadline))
+          })
+    }
+  );
 }
 
 module.exports = {
@@ -153,5 +198,6 @@ module.exports = {
   sharingTeam,
   jobView,
   denied,
-  fence
+  fence,
+  readWithFence
 };

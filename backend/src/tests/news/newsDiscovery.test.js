@@ -459,3 +459,59 @@ test('discovered articles preserve feed ranking, pagination, skill evidence and 
   assert.notDeepEqual(other.recommendedBasedOn.detectedSkills, feed.recommendedBasedOn.detectedSkills);
   assert.equal(feed.telemetry.freshness, 'fresh');
 });
+
+test('discovery worker and prewarm absorb transient 503 settings unavailability without unhandled rejections', async (t) => {
+  const prevIngestion = process.env.NEWS_INGESTION_ENABLED;
+  const prevPrewarm = process.env.NEWS_DISCOVERY_PREWARM_ENABLED;
+  process.env.NEWS_INGESTION_ENABLED = 'true';
+  process.env.NEWS_DISCOVERY_PREWARM_ENABLED = 'true';
+  t.after(() => {
+    if (prevIngestion === undefined) delete process.env.NEWS_INGESTION_ENABLED;
+    else process.env.NEWS_INGESTION_ENABLED = prevIngestion;
+    if (prevPrewarm === undefined) delete process.env.NEWS_DISCOVERY_PREWARM_ENABLED;
+    else process.env.NEWS_DISCOVERY_PREWARM_ENABLED = prevPrewarm;
+  });
+
+  const rejections = [];
+  const onRejection = (reason) => rejections.push(reason);
+  process.on('unhandledRejection', onRejection);
+  t.after(() => process.off('unhandledRejection', onRejection));
+
+  let available = false;
+  let heartbeatWrites = 0;
+  const discovery = create({
+    './redisCacheService': {
+      getRedisCacheClient: () => ({
+        set: async () => {
+          heartbeatWrites += 1;
+          return 'OK';
+        },
+        get: async () => null,
+        eval: async (_script, options) => options.arguments[2]
+      })
+    },
+    './newsDiscoveryProviders': fakeProviders({
+      enabled: () => {
+        if (!available) {
+          throw Object.assign(new Error('Platform settings are temporarily unavailable.'), {
+            status: 503
+          });
+        }
+        return true;
+      }
+    })
+  });
+  t.after(() => discovery.stopWorker());
+
+  await discovery.prewarm();
+  discovery.startWorker();
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.equal(heartbeatWrites, 0);
+  assert.equal(rejections.length, 0);
+
+  available = true;
+  await new Promise((resolve) => setTimeout(resolve, 5150));
+  assert.ok(heartbeatWrites >= 1);
+  assert.equal(rejections.length, 0);
+});

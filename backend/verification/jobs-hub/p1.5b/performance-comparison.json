@@ -1,0 +1,2765 @@
+{
+  "status": "mixed-workload target met; 1000-record six-read burst has two bounded 503 responses",
+  "queryBudgetMs": 5000,
+  "identityCapacity": 10000,
+  "protocol": "Fresh disposable Mongo/process per case; identical deterministic application tuples/consent/shortlist data and schema indexes verified by SHA-256; 3 controlled rounds of 5 sequential reads, 6 simultaneous reads, 4 reads + 4 distinct status writes. One warmup excluded. No other build/database suite overlapped final measurements.",
+  "latencyMeaning": "Complete authenticated HTTP response latency. Mongo command timings are client-observed round trips, not server CPU execution time; retries, guard delays, aborts and commit round trips are recorded separately.",
+  "memoryMeaning": "RSS/heap at request completion including fixtures, driver and retained instrumentation; not isolated request allocations or a continuous peak.",
+  "localOnly": true,
+  "fixtures": [
+    {
+      "count": 261,
+      "fixtureIdentity": "b8935787ac8d310f434a345dc6ffb4e40a1663a503fe6350df8a495ded39544c",
+      "runtime": {
+        "node": "24.19.0",
+        "mongoose": "9.2.4",
+        "mongooseDriver": "7.0.0",
+        "server": "8.2.2"
+      },
+      "before": {
+        "sequential": {
+          "requests": 15,
+          "p50Ms": 719.5775999999896,
+          "p95Ms": 1911.683200000014,
+          "maxMs": 1911.683200000014,
+          "httpResults": {
+            "200": 15
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 5260,
+          "writeCommandRoundTripMs": 1059,
+          "commitRoundTripMs": 456,
+          "abortRoundTripMs": 0,
+          "retryBackoffAndClientOverheadMs": 13.63520000000426,
+          "commitOutcomes": {
+            "acknowledged": 15,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 15,
+          "retries": 0,
+          "queryMs": 6775,
+          "maxIndividualCommandMs": 371,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "2",
+              "ms": 6,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "3",
+              "ms": 24,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "4",
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "5",
+              "ms": 29,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "6",
+              "ms": 120,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "47",
+              "ms": 75,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "48",
+              "ms": 27,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "49",
+              "ms": 23,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "50",
+              "ms": 30,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "51",
+              "ms": 41,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "95",
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "96",
+              "ms": 5,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "97",
+              "ms": 39,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "98",
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "99",
+              "ms": 3,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 250093568,
+          "peakSampleHeap": 117950296
+        },
+        "six-reads": {
+          "requests": 18,
+          "p50Ms": 2270.444300000003,
+          "p95Ms": 4180.209499999997,
+          "maxMs": 4180.209499999997,
+          "httpResults": {
+            "200": 18
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 19350,
+          "writeCommandRoundTripMs": 7758,
+          "commitRoundTripMs": 640,
+          "abortRoundTripMs": 8293,
+          "retryBackoffAndClientOverheadMs": 240.00609999998414,
+          "commitOutcomes": {
+            "acknowledged": 18,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 212,
+          "retries": 194,
+          "queryMs": 36041,
+          "maxIndividualCommandMs": 302,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "22",
+              "ms": 6,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "23",
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "17",
+              "ms": 25,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "4",
+              "ms": 41,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "1",
+              "ms": 19,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "8",
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "73",
+              "ms": 168,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "31",
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "34",
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "63",
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "30",
+              "ms": 86,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "17",
+              "ms": 79,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "107",
+              "ms": 11,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "50",
+              "ms": 30,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "87",
+              "ms": 40,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "57",
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "41",
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "56",
+              "ms": 24,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 251711488,
+          "peakSampleHeap": 118233592
+        },
+        "mixed-read": {
+          "requests": 12,
+          "p50Ms": 3660.1570999999967,
+          "p95Ms": 5333.911900000006,
+          "maxMs": 5333.911900000006,
+          "httpResults": {
+            "200": 12
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 20723,
+          "writeCommandRoundTripMs": 7471,
+          "commitRoundTripMs": 456,
+          "abortRoundTripMs": 9722,
+          "retryBackoffAndClientOverheadMs": 320.4118000000308,
+          "commitOutcomes": {
+            "acknowledged": 12,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 197,
+          "retries": 185,
+          "queryMs": 38372,
+          "maxIndividualCommandMs": 302,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "46",
+              "ms": 41,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "30",
+              "ms": 33,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "36",
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "21",
+              "ms": 57,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "94",
+              "ms": 55,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "86",
+              "ms": 25,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "47",
+              "ms": 40,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "44",
+              "ms": 19,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "55",
+              "ms": 48,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "73",
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "78",
+              "ms": 17,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "114",
+              "ms": 105,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 254382080,
+          "peakSampleHeap": 124824984
+        },
+        "mixed-write": {
+          "requests": 12,
+          "p50Ms": 1545.8276000000042,
+          "p95Ms": 2624.327000000005,
+          "maxMs": 2624.327000000005,
+          "httpResults": {
+            "200": 12
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 3489,
+          "writeCommandRoundTripMs": 5071,
+          "commitRoundTripMs": 524,
+          "abortRoundTripMs": 3596,
+          "retryBackoffAndClientOverheadMs": 90.72490000003017,
+          "commitOutcomes": {
+            "acknowledged": 12,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 86,
+          "retries": 74,
+          "queryMs": 12680,
+          "maxIndividualCommandMs": 245,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "9",
+              "maxTimeMS": 4439,
+              "ms": 19,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 3733,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "6",
+              "maxTimeMS": 3994,
+              "ms": 127,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "15",
+              "maxTimeMS": 3600,
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "38",
+              "maxTimeMS": 3447,
+              "ms": 140,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "18",
+              "maxTimeMS": 4770,
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "9",
+              "maxTimeMS": 4241,
+              "ms": 30,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "20",
+              "maxTimeMS": 3173,
+              "ms": 92,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "51",
+              "maxTimeMS": 4762,
+              "ms": 17,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "97",
+              "maxTimeMS": 4202,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "18",
+              "maxTimeMS": 3493,
+              "ms": 39,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "25",
+              "maxTimeMS": 4484,
+              "ms": 9,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 252788736,
+          "peakSampleHeap": 95905736
+        },
+        "mixed": {
+          "requests": 24,
+          "p50Ms": 2404.6484000000055,
+          "p95Ms": 4382.738700000002,
+          "maxMs": 5333.911900000006,
+          "httpResults": {
+            "200": 24
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 24212,
+          "writeCommandRoundTripMs": 12542,
+          "commitRoundTripMs": 980,
+          "abortRoundTripMs": 13318,
+          "retryBackoffAndClientOverheadMs": 411.13670000006096,
+          "commitOutcomes": {
+            "acknowledged": 24,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 283,
+          "retries": 259,
+          "queryMs": 51052,
+          "maxIndividualCommandMs": 302,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "46",
+              "ms": 41,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "30",
+              "ms": 33,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "36",
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "9",
+              "maxTimeMS": 4439,
+              "ms": 19,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "21",
+              "ms": 57,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 3733,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "6",
+              "maxTimeMS": 3994,
+              "ms": 127,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "15",
+              "maxTimeMS": 3600,
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "94",
+              "ms": 55,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "86",
+              "ms": 25,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "47",
+              "ms": 40,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "38",
+              "maxTimeMS": 3447,
+              "ms": 140,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "44",
+              "ms": 19,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "18",
+              "maxTimeMS": 4770,
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "9",
+              "maxTimeMS": 4241,
+              "ms": 30,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "20",
+              "maxTimeMS": 3173,
+              "ms": 92,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "55",
+              "ms": 48,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "73",
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "78",
+              "ms": 17,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "114",
+              "ms": 105,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "51",
+              "maxTimeMS": 4762,
+              "ms": 17,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "97",
+              "maxTimeMS": 4202,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "18",
+              "maxTimeMS": 3493,
+              "ms": 39,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "25",
+              "maxTimeMS": 4484,
+              "ms": 9,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 254382080,
+          "peakSampleHeap": 124824984
+        }
+      },
+      "after": {
+        "sequential": {
+          "requests": 15,
+          "p50Ms": 366.6649000000034,
+          "p95Ms": 1151.9110999999975,
+          "maxMs": 1151.9110999999975,
+          "httpResults": {
+            "200": 15
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0.17760000000998843,
+          "readCommandRoundTripMs": 3080,
+          "writeCommandRoundTripMs": 843,
+          "commitRoundTripMs": 383,
+          "abortRoundTripMs": 0,
+          "retryBackoffAndClientOverheadMs": 12.2705000000351,
+          "commitOutcomes": {
+            "acknowledged": 15,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 15,
+          "retries": 0,
+          "queryMs": 4306,
+          "maxIndividualCommandMs": 205,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "2",
+              "maxTimeMS": 3892,
+              "ms": 28,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "3",
+              "maxTimeMS": 4379,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "4",
+              "maxTimeMS": 4688,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "5",
+              "maxTimeMS": 4656,
+              "ms": 27,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "6",
+              "maxTimeMS": 4222,
+              "ms": 29,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "13",
+              "maxTimeMS": 4780,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "14",
+              "maxTimeMS": 4641,
+              "ms": 38,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "15",
+              "maxTimeMS": 4692,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 4423,
+              "ms": 6,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "17",
+              "maxTimeMS": 4430,
+              "ms": 48,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "41",
+              "maxTimeMS": 4787,
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "42",
+              "maxTimeMS": 4807,
+              "ms": 95,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "43",
+              "maxTimeMS": 4818,
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "44",
+              "maxTimeMS": 4641,
+              "ms": 5,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "45",
+              "maxTimeMS": 4835,
+              "ms": 9,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 227430400,
+          "peakSampleHeap": 104205568
+        },
+        "six-reads": {
+          "requests": 18,
+          "p50Ms": 1459.9303000000073,
+          "p95Ms": 2971.041799999992,
+          "maxMs": 2971.041799999992,
+          "httpResults": {
+            "200": 18
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 7551.270000000004,
+          "readCommandRoundTripMs": 7009,
+          "writeCommandRoundTripMs": 5739,
+          "commitRoundTripMs": 349,
+          "abortRoundTripMs": 4591,
+          "retryBackoffAndClientOverheadMs": 247.34130000002187,
+          "commitOutcomes": {
+            "acknowledged": 18,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 163,
+          "retries": 145,
+          "queryMs": 17688,
+          "maxIndividualCommandMs": 249,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "7",
+              "maxTimeMS": 4513,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "13",
+              "maxTimeMS": 3145,
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "14",
+              "maxTimeMS": 2902,
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "17",
+              "maxTimeMS": 2635,
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "5",
+              "maxTimeMS": 4074,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "9",
+              "maxTimeMS": 3467,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "34",
+              "maxTimeMS": 2146,
+              "ms": 33,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "23",
+              "maxTimeMS": 4569,
+              "ms": 10,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "23",
+              "maxTimeMS": 3733,
+              "ms": 25,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "35",
+              "maxTimeMS": 2956,
+              "ms": 82,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "20",
+              "maxTimeMS": 3983,
+              "ms": 3,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "18",
+              "maxTimeMS": 4227,
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "56",
+              "maxTimeMS": 3372,
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "38",
+              "maxTimeMS": 4574,
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "42",
+              "maxTimeMS": 3971,
+              "ms": 36,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "42",
+              "maxTimeMS": 3668,
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "66",
+              "maxTimeMS": 2971,
+              "ms": 12,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "34",
+              "maxTimeMS": 4478,
+              "ms": 11,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 228503552,
+          "peakSampleHeap": 106297368
+        },
+        "mixed-read": {
+          "requests": 12,
+          "p50Ms": 1272.431399999994,
+          "p95Ms": 2395.55260000001,
+          "maxMs": 2395.55260000001,
+          "httpResults": {
+            "200": 12
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 4234.771700000012,
+          "readCommandRoundTripMs": 3485,
+          "writeCommandRoundTripMs": 2739,
+          "commitRoundTripMs": 341,
+          "abortRoundTripMs": 3088,
+          "retryBackoffAndClientOverheadMs": 119.42239999999583,
+          "commitOutcomes": {
+            "acknowledged": 12,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 102,
+          "retries": 90,
+          "queryMs": 9653,
+          "maxIndividualCommandMs": 187,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "18",
+              "maxTimeMS": 4492,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "24",
+              "maxTimeMS": 3916,
+              "ms": 10,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "17",
+              "maxTimeMS": 4319,
+              "ms": 5,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "22",
+              "maxTimeMS": 3631,
+              "ms": 99,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "47",
+              "maxTimeMS": 3254,
+              "ms": 12,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "36",
+              "maxTimeMS": 4653,
+              "ms": 6,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "30",
+              "maxTimeMS": 3629,
+              "ms": 43,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "37",
+              "maxTimeMS": 2767,
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "77",
+              "maxTimeMS": 3455,
+              "ms": 24,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "63",
+              "maxTimeMS": 4131,
+              "ms": 81,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "43",
+              "maxTimeMS": 4784,
+              "ms": 12,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "59",
+              "maxTimeMS": 3108,
+              "ms": 14,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 229015552,
+          "peakSampleHeap": 103585400
+        },
+        "mixed-write": {
+          "requests": 12,
+          "p50Ms": 1293.3614000000089,
+          "p95Ms": 2559.3515000000043,
+          "maxMs": 2559.3515000000043,
+          "httpResults": {
+            "200": 12
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 6172.031599999958,
+          "readCommandRoundTripMs": 1450,
+          "writeCommandRoundTripMs": 3840,
+          "commitRoundTripMs": 267,
+          "abortRoundTripMs": 4051,
+          "retryBackoffAndClientOverheadMs": 69.12409999994998,
+          "commitOutcomes": {
+            "acknowledged": 12,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 127,
+          "retries": 115,
+          "queryMs": 9608,
+          "maxIndividualCommandMs": 184,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "13",
+              "maxTimeMS": 4075,
+              "ms": 34,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "14",
+              "maxTimeMS": 4157,
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "12",
+              "maxTimeMS": 3412,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "13",
+              "maxTimeMS": 3878,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "34",
+              "maxTimeMS": 3118,
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "40",
+              "maxTimeMS": 2637,
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "31",
+              "maxTimeMS": 3213,
+              "ms": 45,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "23",
+              "maxTimeMS": 4557,
+              "ms": 38,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "43",
+              "maxTimeMS": 3913,
+              "ms": 38,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "51",
+              "maxTimeMS": 3284,
+              "ms": 10,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "32",
+              "maxTimeMS": 3795,
+              "ms": 5,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "40",
+              "maxTimeMS": 4466,
+              "ms": 57,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 229109760,
+          "peakSampleHeap": 101963944
+        },
+        "mixed": {
+          "requests": 24,
+          "p50Ms": 1293.3614000000089,
+          "p95Ms": 2395.55260000001,
+          "maxMs": 2559.3515000000043,
+          "httpResults": {
+            "200": 24
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 10406.80329999997,
+          "readCommandRoundTripMs": 4935,
+          "writeCommandRoundTripMs": 6579,
+          "commitRoundTripMs": 608,
+          "abortRoundTripMs": 7139,
+          "retryBackoffAndClientOverheadMs": 188.5464999999458,
+          "commitOutcomes": {
+            "acknowledged": 24,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 229,
+          "retries": 205,
+          "queryMs": 19261,
+          "maxIndividualCommandMs": 187,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "18",
+              "maxTimeMS": 4492,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "24",
+              "maxTimeMS": 3916,
+              "ms": 10,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "17",
+              "maxTimeMS": 4319,
+              "ms": 5,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "22",
+              "maxTimeMS": 3631,
+              "ms": 99,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "13",
+              "maxTimeMS": 4075,
+              "ms": 34,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "14",
+              "maxTimeMS": 4157,
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "12",
+              "maxTimeMS": 3412,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "13",
+              "maxTimeMS": 3878,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "47",
+              "maxTimeMS": 3254,
+              "ms": 12,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "36",
+              "maxTimeMS": 4653,
+              "ms": 6,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "30",
+              "maxTimeMS": 3629,
+              "ms": 43,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "37",
+              "maxTimeMS": 2767,
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "34",
+              "maxTimeMS": 3118,
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "40",
+              "maxTimeMS": 2637,
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "31",
+              "maxTimeMS": 3213,
+              "ms": 45,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "23",
+              "maxTimeMS": 4557,
+              "ms": 38,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "77",
+              "maxTimeMS": 3455,
+              "ms": 24,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "63",
+              "maxTimeMS": 4131,
+              "ms": 81,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "43",
+              "maxTimeMS": 4784,
+              "ms": 12,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "59",
+              "maxTimeMS": 3108,
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "43",
+              "maxTimeMS": 3913,
+              "ms": 38,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "51",
+              "maxTimeMS": 3284,
+              "ms": 10,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "32",
+              "maxTimeMS": 3795,
+              "ms": 5,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "40",
+              "maxTimeMS": 4466,
+              "ms": 57,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 229109760,
+          "peakSampleHeap": 103585400
+        }
+      },
+      "individualTraces": [
+        "backend/verification/jobs-hub/p1.5b/before-261.json",
+        "backend/verification/jobs-hub/p1.5b/after-261.json"
+      ],
+      "invalidGetMoreCommands": 0,
+      "mixedP95ReductionPercent": 45.341194992984434,
+      "deadlineResponses": []
+    },
+    {
+      "count": 1000,
+      "fixtureIdentity": "6d796f7783996d4f7f09d648fb5142a8dc401a06dcb152571b9732a0920ff185",
+      "runtime": {
+        "node": "24.19.0",
+        "mongoose": "9.2.4",
+        "mongooseDriver": "7.0.0",
+        "server": "8.2.2"
+      },
+      "before": {
+        "sequential": {
+          "requests": 15,
+          "p50Ms": 596.7131000000081,
+          "p95Ms": 1622.3485999999975,
+          "maxMs": 1622.3485999999975,
+          "httpResults": {
+            "200": 15
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 4944,
+          "writeCommandRoundTripMs": 791,
+          "commitRoundTripMs": 468,
+          "abortRoundTripMs": 0,
+          "retryBackoffAndClientOverheadMs": 53.738300000026356,
+          "commitOutcomes": {
+            "acknowledged": 15,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 15,
+          "retries": 0,
+          "queryMs": 6203,
+          "maxIndividualCommandMs": 380,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "2",
+              "ms": 120,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "3",
+              "ms": 19,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "4",
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "5",
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "6",
+              "ms": 56,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "53",
+              "ms": 11,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "54",
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "55",
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "56",
+              "ms": 31,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "57",
+              "ms": 23,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "70",
+              "ms": 92,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "71",
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "72",
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "73",
+              "ms": 41,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "74",
+              "ms": 5,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 297328640,
+          "peakSampleHeap": 137518088
+        },
+        "six-reads": {
+          "requests": 18,
+          "p50Ms": 2285.821299999996,
+          "p95Ms": 6273.066599999991,
+          "maxMs": 6273.066599999991,
+          "httpResults": {
+            "200": 18
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 21865,
+          "writeCommandRoundTripMs": 7116,
+          "commitRoundTripMs": 406,
+          "abortRoundTripMs": 9104,
+          "retryBackoffAndClientOverheadMs": 290.73229999998875,
+          "commitOutcomes": {
+            "acknowledged": 18,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 249,
+          "retries": 231,
+          "queryMs": 38491,
+          "maxIndividualCommandMs": 746,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "7",
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "12",
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "26",
+              "ms": 32,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "17",
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "24",
+              "ms": 10,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "7",
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "67",
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "37",
+              "ms": 25,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "30",
+              "ms": 99,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "47",
+              "ms": 16,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "40",
+              "ms": 19,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "48",
+              "ms": 11,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "93",
+              "ms": 11,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "76",
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "59",
+              "ms": 11,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "70",
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "21",
+              "ms": 51,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "98",
+              "ms": 22,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 306552832,
+          "peakSampleHeap": 146895016
+        },
+        "mixed-read": {
+          "requests": 12,
+          "p50Ms": 3214.7494000000006,
+          "p95Ms": 5833.949800000002,
+          "maxMs": 5833.949800000002,
+          "httpResults": {
+            "200": 12
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 19659,
+          "writeCommandRoundTripMs": 6614,
+          "commitRoundTripMs": 262,
+          "abortRoundTripMs": 9282,
+          "retryBackoffAndClientOverheadMs": 282.202000000063,
+          "commitOutcomes": {
+            "acknowledged": 12,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 221,
+          "retries": 209,
+          "queryMs": 35817,
+          "maxIndividualCommandMs": 547,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "52",
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "29",
+              "ms": 32,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "36",
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "25",
+              "ms": 52,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "69",
+              "ms": 16,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "58",
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "59",
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "60",
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "119",
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "110",
+              "ms": 38,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "88",
+              "ms": 42,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "87",
+              "ms": 14,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 317095936,
+          "peakSampleHeap": 156216984
+        },
+        "mixed-write": {
+          "requests": 12,
+          "p50Ms": 1195.239300000001,
+          "p95Ms": 3353.258700000006,
+          "maxMs": 3353.258700000006,
+          "httpResults": {
+            "200": 12
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 3505,
+          "writeCommandRoundTripMs": 5747,
+          "commitRoundTripMs": 445,
+          "abortRoundTripMs": 3543,
+          "retryBackoffAndClientOverheadMs": 136.9216000000888,
+          "commitOutcomes": {
+            "acknowledged": 12,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 94,
+          "retries": 82,
+          "queryMs": 13240,
+          "maxIndividualCommandMs": 243,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "30",
+              "maxTimeMS": 3809,
+              "ms": 36,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "19",
+              "maxTimeMS": 3260,
+              "ms": 127,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 2565,
+              "ms": 39,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "1",
+              "maxTimeMS": 4065,
+              "ms": 6,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "75",
+              "maxTimeMS": 3839,
+              "ms": 92,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "35",
+              "maxTimeMS": 4589,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "31",
+              "maxTimeMS": 4795,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 3649,
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "22",
+              "maxTimeMS": 4821,
+              "ms": 51,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "64",
+              "maxTimeMS": 4564,
+              "ms": 23,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "50",
+              "maxTimeMS": 4218,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "40",
+              "maxTimeMS": 4372,
+              "ms": 18,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 307920896,
+          "peakSampleHeap": 137256432
+        },
+        "mixed": {
+          "requests": 24,
+          "p50Ms": 2189.4094999999943,
+          "p95Ms": 5586.542000000001,
+          "maxMs": 5833.949800000002,
+          "httpResults": {
+            "200": 24
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0,
+          "readCommandRoundTripMs": 23164,
+          "writeCommandRoundTripMs": 12361,
+          "commitRoundTripMs": 707,
+          "abortRoundTripMs": 12825,
+          "retryBackoffAndClientOverheadMs": 419.1236000001518,
+          "commitOutcomes": {
+            "acknowledged": 24,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 315,
+          "retries": 291,
+          "queryMs": 49057,
+          "maxIndividualCommandMs": 547,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "52",
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "30",
+              "maxTimeMS": 3809,
+              "ms": 36,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "29",
+              "ms": 32,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "36",
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "25",
+              "ms": 52,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "19",
+              "maxTimeMS": 3260,
+              "ms": 127,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 2565,
+              "ms": 39,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "1",
+              "maxTimeMS": 4065,
+              "ms": 6,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "69",
+              "ms": 16,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "58",
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "59",
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "75",
+              "maxTimeMS": 3839,
+              "ms": 92,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "35",
+              "maxTimeMS": 4589,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "60",
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "31",
+              "maxTimeMS": 4795,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 3649,
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "119",
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "110",
+              "ms": 38,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "88",
+              "ms": 42,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "87",
+              "ms": 14,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "22",
+              "maxTimeMS": 4821,
+              "ms": 51,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "64",
+              "maxTimeMS": 4564,
+              "ms": 23,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "50",
+              "maxTimeMS": 4218,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "40",
+              "maxTimeMS": 4372,
+              "ms": 18,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 317095936,
+          "peakSampleHeap": 156216984
+        }
+      },
+      "after": {
+        "sequential": {
+          "requests": 15,
+          "p50Ms": 905.5574000000051,
+          "p95Ms": 1809.4244000000035,
+          "maxMs": 1809.4244000000035,
+          "httpResults": {
+            "200": 15
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 0.15220000001136214,
+          "readCommandRoundTripMs": 7161,
+          "writeCommandRoundTripMs": 1219,
+          "commitRoundTripMs": 421,
+          "abortRoundTripMs": 0,
+          "retryBackoffAndClientOverheadMs": 10.020699999993667,
+          "commitOutcomes": {
+            "acknowledged": 15,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 15,
+          "retries": 0,
+          "queryMs": 8801,
+          "maxIndividualCommandMs": 332,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "2",
+              "maxTimeMS": 3358,
+              "ms": 17,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "3",
+              "maxTimeMS": 4467,
+              "ms": 9,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "4",
+              "maxTimeMS": 4195,
+              "ms": 24,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "5",
+              "maxTimeMS": 3983,
+              "ms": 37,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "6",
+              "maxTimeMS": 4315,
+              "ms": 11,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "42",
+              "maxTimeMS": 4231,
+              "ms": 53,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "43",
+              "maxTimeMS": 3961,
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "44",
+              "maxTimeMS": 4547,
+              "ms": 18,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "45",
+              "maxTimeMS": 4368,
+              "ms": 48,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "46",
+              "maxTimeMS": 4103,
+              "ms": 64,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "56",
+              "maxTimeMS": 4165,
+              "ms": 24,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "57",
+              "maxTimeMS": 4177,
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "58",
+              "maxTimeMS": 4128,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "59",
+              "maxTimeMS": 4100,
+              "ms": 67,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "60",
+              "maxTimeMS": 4430,
+              "ms": 15,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 214274048,
+          "peakSampleHeap": 99348616
+        },
+        "six-reads": {
+          "requests": 18,
+          "p50Ms": 3136.617200000008,
+          "p95Ms": 5236.974499999997,
+          "maxMs": 5236.974499999997,
+          "httpResults": {
+            "200": 16,
+            "503": 2
+          },
+          "timeoutRate": 0.1111111111111111,
+          "scopedRetryGuardMs": 18579.376599999945,
+          "readCommandRoundTripMs": 8978,
+          "writeCommandRoundTripMs": 10233,
+          "commitRoundTripMs": 555,
+          "abortRoundTripMs": 11217,
+          "retryBackoffAndClientOverheadMs": 413.3043999999354,
+          "commitOutcomes": {
+            "acknowledged": 16,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 261,
+          "retries": 243,
+          "queryMs": 30983,
+          "maxIndividualCommandMs": 473,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "15",
+              "maxTimeMS": 1281,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "1",
+              "maxTimeMS": 3418,
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "6",
+              "maxTimeMS": 2680,
+              "ms": 22,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 297,
+              "ms": 52,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "70",
+              "maxTimeMS": 605,
+              "ms": 25,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "32",
+              "maxTimeMS": 3575,
+              "ms": 50,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "26",
+              "maxTimeMS": 3114,
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "35",
+              "maxTimeMS": 1605,
+              "ms": 6,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "12",
+              "maxTimeMS": 4428,
+              "ms": 51,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "41",
+              "maxTimeMS": 2028,
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "74",
+              "maxTimeMS": 2944,
+              "ms": 30,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "52",
+              "maxTimeMS": 4368,
+              "ms": 24,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "75",
+              "maxTimeMS": 61,
+              "ms": 8,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "105",
+              "maxTimeMS": 693,
+              "ms": 49,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "40",
+              "maxTimeMS": 3487,
+              "ms": 30,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "53",
+              "maxTimeMS": 2098,
+              "ms": 144,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 218456064,
+          "peakSampleHeap": 100941920
+        },
+        "mixed-read": {
+          "requests": 12,
+          "p50Ms": 2363.1639999999898,
+          "p95Ms": 5009.677499999991,
+          "maxMs": 5009.677499999991,
+          "httpResults": {
+            "200": 12
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 7220.1640999999945,
+          "readCommandRoundTripMs": 8178,
+          "writeCommandRoundTripMs": 4876,
+          "commitRoundTripMs": 416,
+          "abortRoundTripMs": 5530,
+          "retryBackoffAndClientOverheadMs": 136.40200000008917,
+          "commitOutcomes": {
+            "acknowledged": 12,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 120,
+          "retries": 108,
+          "queryMs": 19000,
+          "maxIndividualCommandMs": 398,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "23",
+              "maxTimeMS": 4300,
+              "ms": 70,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "28",
+              "maxTimeMS": 3625,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "27",
+              "maxTimeMS": 1269,
+              "ms": 55,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "11",
+              "maxTimeMS": 2373,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "79",
+              "maxTimeMS": 2635,
+              "ms": 143,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "51",
+              "maxTimeMS": 1111,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "44",
+              "maxTimeMS": 3956,
+              "ms": 23,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "55",
+              "maxTimeMS": 377,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "76",
+              "maxTimeMS": 4559,
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "117",
+              "maxTimeMS": 3056,
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "78",
+              "maxTimeMS": 3845,
+              "ms": 32,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "55",
+              "maxTimeMS": 2561,
+              "ms": 16,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 254091264,
+          "peakSampleHeap": 130778768
+        },
+        "mixed-write": {
+          "requests": 12,
+          "p50Ms": 1944.1821999999956,
+          "p95Ms": 4537.58159999999,
+          "maxMs": 4537.58159999999,
+          "httpResults": {
+            "200": 12
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 8231.844099999973,
+          "readCommandRoundTripMs": 3410,
+          "writeCommandRoundTripMs": 5801,
+          "commitRoundTripMs": 464,
+          "abortRoundTripMs": 5814,
+          "retryBackoffAndClientOverheadMs": 142.63780000001134,
+          "commitOutcomes": {
+            "acknowledged": 12,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 140,
+          "retries": 128,
+          "queryMs": 15489,
+          "maxIndividualCommandMs": 350,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "41",
+              "maxTimeMS": 1117,
+              "ms": 16,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "24",
+              "maxTimeMS": 3475,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 2122,
+              "ms": 42,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "11",
+              "maxTimeMS": 3188,
+              "ms": 44,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "33",
+              "maxTimeMS": 4042,
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "13",
+              "maxTimeMS": 4606,
+              "ms": 25,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "43",
+              "maxTimeMS": 2313,
+              "ms": 84,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "31",
+              "maxTimeMS": 3731,
+              "ms": 154,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "73",
+              "maxTimeMS": 2425,
+              "ms": 11,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "60",
+              "maxTimeMS": 3736,
+              "ms": 34,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "53",
+              "maxTimeMS": 3511,
+              "ms": 10,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "24",
+              "maxTimeMS": 3481,
+              "ms": 17,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 255127552,
+          "peakSampleHeap": 132438768
+        },
+        "mixed": {
+          "requests": 24,
+          "p50Ms": 2141.4467000000004,
+          "p95Ms": 4537.58159999999,
+          "maxMs": 5009.677499999991,
+          "httpResults": {
+            "200": 24
+          },
+          "timeoutRate": 0,
+          "scopedRetryGuardMs": 15452.008199999967,
+          "readCommandRoundTripMs": 11588,
+          "writeCommandRoundTripMs": 10677,
+          "commitRoundTripMs": 880,
+          "abortRoundTripMs": 11344,
+          "retryBackoffAndClientOverheadMs": 279.0398000001005,
+          "commitOutcomes": {
+            "acknowledged": 24,
+            "failedOrUncertain": 0
+          },
+          "transactionAttempts": 260,
+          "retries": 236,
+          "queryMs": 34489,
+          "maxIndividualCommandMs": 398,
+          "commitResults": [
+            {
+              "name": "commitTransaction",
+              "transaction": "23",
+              "maxTimeMS": 4300,
+              "ms": 70,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "28",
+              "maxTimeMS": 3625,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "41",
+              "maxTimeMS": 1117,
+              "ms": 16,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "24",
+              "maxTimeMS": 3475,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "27",
+              "maxTimeMS": 1269,
+              "ms": 55,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "11",
+              "maxTimeMS": 2373,
+              "ms": 21,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "16",
+              "maxTimeMS": 2122,
+              "ms": 42,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "11",
+              "maxTimeMS": 3188,
+              "ms": 44,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "79",
+              "maxTimeMS": 2635,
+              "ms": 143,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "51",
+              "maxTimeMS": 1111,
+              "ms": 20,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "44",
+              "maxTimeMS": 3956,
+              "ms": 23,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "33",
+              "maxTimeMS": 4042,
+              "ms": 7,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "55",
+              "maxTimeMS": 377,
+              "ms": 4,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "13",
+              "maxTimeMS": 4606,
+              "ms": 25,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "43",
+              "maxTimeMS": 2313,
+              "ms": 84,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "31",
+              "maxTimeMS": 3731,
+              "ms": 154,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "76",
+              "maxTimeMS": 4559,
+              "ms": 13,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "117",
+              "maxTimeMS": 3056,
+              "ms": 15,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "73",
+              "maxTimeMS": 2425,
+              "ms": 11,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "78",
+              "maxTimeMS": 3845,
+              "ms": 32,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "55",
+              "maxTimeMS": 2561,
+              "ms": 16,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "60",
+              "maxTimeMS": 3736,
+              "ms": 34,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "53",
+              "maxTimeMS": 3511,
+              "ms": 10,
+              "failed": false
+            },
+            {
+              "name": "commitTransaction",
+              "transaction": "24",
+              "maxTimeMS": 3481,
+              "ms": 17,
+              "failed": false
+            }
+          ],
+          "peakSampleRss": 255127552,
+          "peakSampleHeap": 132438768
+        }
+      },
+      "individualTraces": [
+        "backend/verification/jobs-hub/p1.5b/before-1000.json",
+        "backend/verification/jobs-hub/p1.5b/after-1000.json"
+      ],
+      "invalidGetMoreCommands": 0,
+      "mixedP95ReductionPercent": 18.776559811060412,
+      "deadlineResponses": [
+        {
+          "group": "six-reads",
+          "message": "Application request exceeded its deadline. Refresh before retrying.",
+          "httpMs": 5236.693499999994
+        },
+        {
+          "group": "six-reads",
+          "message": "Application evaluations exceeded their query budget. Please retry.",
+          "httpMs": 5236.974499999997
+        }
+      ]
+    }
+  ]
+}

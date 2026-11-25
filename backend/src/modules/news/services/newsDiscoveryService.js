@@ -778,8 +778,9 @@ function workerTick() {
   return activeWorkerRun;
 }
 async function performWorkerTick() {
-  if (!workerTimer || !providers.enabled()) return;
+  if (!workerTimer) return;
   try {
+    if (!providers.enabled()) return;
     const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
     if (!redis) return;
     await redis.set(HEARTBEAT, String(Date.now()), { PX: 20000 });
@@ -800,13 +801,13 @@ function wakeWorker() {
   wakePending = true;
   setImmediate(() => {
     wakePending = false;
-    void workerTick();
+    void workerTick().catch(() => {});
   });
 }
 function startWorker() {
   if (workerTimer || process.env.NEWS_INGESTION_ENABLED === 'false') return;
   workerTimer = setInterval(() => {
-    void workerTick();
+    void workerTick().catch(() => {});
   }, 5000);
   workerTimer.unref?.();
   wakeWorker();
@@ -819,8 +820,15 @@ function stopWorker() {
 
 let prewarmUntil = 0;
 async function prewarm() {
+  let discoveryEnabled = false;
+  try {
+    discoveryEnabled = providers.enabled();
+  } catch (error) {
+    if (error?.status === 503) return;
+    throw error;
+  }
   if (
-    !providers.enabled() ||
+    !discoveryEnabled ||
     process.env.NEWS_DISCOVERY_PREWARM_ENABLED !== 'true' ||
     prewarmUntil > Date.now()
   )

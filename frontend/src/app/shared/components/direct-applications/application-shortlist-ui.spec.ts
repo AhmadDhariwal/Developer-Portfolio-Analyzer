@@ -207,6 +207,52 @@ describe('Owner-only application shortlist workflow', () => {
     application: { ...row.application, permittedStatuses: ['reviewing', 'rejected'] },
     access: { ...row.access, manageApplicationStatus: true },
   });
+  it('refreshes an unconfirmed application update without replaying it or claiming failure or success', async () => {
+    const entry = actionableRow();
+    const message =
+      'Application update outcome is unconfirmed. Refresh its status before trying again.';
+    const api = {
+      getShortlists: vi.fn().mockReturnValue(of({ shortlists: [] })),
+      getApplicationShortlists: vi.fn().mockReturnValue(of({ shortlists: [entry] })),
+      applications: {
+        status: vi.fn().mockReturnValue(throwError(() => ({ status: 503, error: { message } }))),
+      },
+    };
+    const fixture = await shortlists(api);
+    fixture.componentInstance.setSource('applications');
+    api.getApplicationShortlists.mockReturnValue(
+      of({
+        shortlists: [{ ...entry, application: { ...entry.application, status: 'reviewing' } }],
+      }),
+    );
+    fixture.componentInstance.changeApplicationStatus({ item: entry, status: 'reviewing' });
+    fixture.detectChanges();
+    expect(api.applications.status).toHaveBeenCalledTimes(1);
+    expect(api.getApplicationShortlists).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.shortlists[0].application.status).toBe('reviewing');
+    expect(fixture.componentInstance.error).toBe(message);
+    expect(fixture.componentInstance.notice).toBe('');
+  });
+
+  it('refreshes Job Applicants after an unconfirmed status update without resubmitting', async () => {
+    const message =
+      'Application update outcome is unconfirmed. Refresh its status before trying again.';
+    const api = {
+      applicants: vi
+        .fn()
+        .mockReturnValueOnce(of({ applications: [application] }))
+        .mockReturnValue(of({ applications: [{ ...application, status: 'reviewing' }] })),
+      status: vi.fn().mockReturnValue(throwError(() => ({ status: 503, error: { message } }))),
+    };
+    const fixture = await applicants(api);
+    fixture.componentInstance.status(fixture.componentInstance.applications[0], 'reviewing');
+    fixture.detectChanges();
+    expect(api.status).toHaveBeenCalledTimes(1);
+    expect(api.applicants).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.applications[0].status).toBe('reviewing');
+    expect(fixture.componentInstance.actionError).toBe(message);
+    expect(fixture.componentInstance.notice).toBe('');
+  });
   it('confirms application rejection separately, sends observed status and refreshes canonical state', async () => {
     const entry = actionableRow();
     const api = {

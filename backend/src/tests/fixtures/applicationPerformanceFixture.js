@@ -18,7 +18,7 @@ const settings = require('../../modules/super-admin/services/platformSettingsSer
 const { sign } = require('../../modules/auth/utils/authSessionToken');
 const hub = require('../../modules/recruiter/routes/hub/recruiterHubRoutes');
 
-async function startApplicationFixture({ count = 261, configure } = {}) {
+async function startApplicationFixture({ count = 261, configure, seed } = {}) {
   const temporaryRoot = path.resolve(__dirname, '../../../verification/jobs-hub/p1.5a-runtime');
   fs.mkdirSync(temporaryRoot, { recursive: true });
   const runtime = await startMongo({
@@ -52,7 +52,14 @@ async function startApplicationFixture({ count = 261, configure } = {}) {
       })
     );
     await settings.startSettingsSynchronization();
-    const oid = () => new mongoose.Types.ObjectId();
+    let sequence = 0;
+    const oid = () =>
+      new mongoose.Types.ObjectId(
+        seed === undefined
+          ? undefined
+          : createHash('sha256').update(`${seed}:${++sequence}`).digest('hex').slice(0, 24)
+      );
+    const submittedAt = seed === undefined ? new Date() : new Date('2026-11-24T00:00:00Z');
     const owner = oid(),
       peer = oid(),
       organizationId = oid();
@@ -75,6 +82,7 @@ async function startApplicationFixture({ count = 261, configure } = {}) {
       createdBy: owner
     });
     const job = await Job.create({
+      _id: oid(),
       recruiterId: owner,
       organizationId,
       title: 'Fixture engineer',
@@ -94,11 +102,11 @@ async function startApplicationFixture({ count = 261, configure } = {}) {
         resume: { fileName: 'submitted.pdf', sha256: 'b'.repeat(64) },
         resumeBytes: Buffer.from('%PDF-frozen'),
         portfolio: null,
-        consent: { version: 'direct-apply-v1', submittedAt: new Date(), sharePortfolio: false },
+        consent: { version: 'direct-apply-v1', submittedAt, sharePortfolio: false },
         status: 'submitted',
-        history: [{ from: '', to: 'submitted', actorId: applicantId, at: new Date() }],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        history: [{ from: '', to: 'submitted', actorId: applicantId, at: submittedAt }],
+        createdAt: submittedAt,
+        updatedAt: submittedAt,
         __v: 0
       };
     });

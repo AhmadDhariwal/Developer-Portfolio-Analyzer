@@ -4,6 +4,7 @@ const Job = require('../../models/Job');
 const Application = require('../../../jobs/models/jobApplication');
 const { canonicalApplicationId } = require('../../../jobs/services/jobApplicationService');
 const { denied } = require('./recruiterJobAccess');
+const { cursorOptions } = require('./applicationWorkflowBudget');
 
 const QUERY_BUDGET_MS = 5000;
 const MAX_IDENTITY_ROWS = 10000;
@@ -20,7 +21,7 @@ function remainingBudget(deadline) {
 // Request-local only, inside the existing authorization snapshot transaction.
 // This is an integrity allowlist, never a cached permission or persisted marker.
 async function verifyApplicationIdentities(ctx, { maxRows = MAX_IDENTITY_ROWS } = {}) {
-  const deadline = performance.now() + QUERY_BUDGET_MS;
+  const deadline = Math.min(performance.now() + QUERY_BUDGET_MS, ctx.deadline ?? Infinity);
   const cursor = Shortlist.find({
     recruiterId: ctx.recruiterId,
     organizationId: ctx.organizationId,
@@ -36,10 +37,10 @@ async function verifyApplicationIdentities(ctx, { maxRows = MAX_IDENTITY_ROWS } 
   })
     .select('_id applicationId jobId candidateId recruiterId organizationId')
     .limit(maxRows + 1)
-    .maxTimeMS(QUERY_BUDGET_MS)
+    .maxTimeMS(remainingBudget(deadline))
     .session(ctx.session)
     .lean()
-    .cursor({ batchSize: 256 });
+    .cursor({ batchSize: 256, ...cursorOptions(ctx.session) });
   const rows = [];
   let scanned = 0;
   try {
@@ -61,6 +62,7 @@ async function verifyApplicationIdentities(ctx, { maxRows = MAX_IDENTITY_ROWS } 
     .select('_id recruiterId organizationId')
     .session(ctx.session)
     .maxTimeMS(remainingBudget(deadline))
+    .setOptions(cursorOptions(ctx.session))
     .lean();
   const applications = await Application.find({
     _id: { $in: rows.map((row) => row.applicationId) },
@@ -85,6 +87,7 @@ async function verifyApplicationIdentities(ctx, { maxRows = MAX_IDENTITY_ROWS } 
     )
     .session(ctx.session)
     .maxTimeMS(remainingBudget(deadline))
+    .setOptions(cursorOptions(ctx.session))
     .lean();
   const jobMap = new Map(jobs.map((job) => [id(job._id), job]));
   const appMap = new Map(applications.map((application) => [application._id, application]));

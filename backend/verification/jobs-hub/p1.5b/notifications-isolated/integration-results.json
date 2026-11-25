@@ -1,0 +1,14 @@
+{
+  "baseline": "2254f090c6f1c8563ad2d7149ab081eeec09fc4c",
+  "checks": [
+    "rollback PASS",
+    "concurrent dedupe and tombstone PASS",
+    "preferences security scope metadata PASS"
+  ],
+  "productionDataUsed": false,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 123,
+    "productionDataUsed": false
+  }
+}

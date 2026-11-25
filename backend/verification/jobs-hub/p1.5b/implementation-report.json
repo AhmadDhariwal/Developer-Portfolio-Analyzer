@@ -1,0 +1,555 @@
+{
+  "phase": "DPA P1.5B",
+  "branch": "fix/P1-project",
+  "testedHead": "5b18f4d1e3802b52dfaebcd060f2b42a3df5c5e8",
+  "target": "not applicable",
+  "recommendation": "CONDITIONAL HOLD: mixed workload met the five-second p95 target in both controlled fixtures, but two of 18 concurrent reads at 1,000 rows returned bounded 503. Complete notification integration and passing deployment-equivalent capacity evidence remain prerequisites.",
+  "rootCause": "Private-list transactions read the owner and organization before writing an authorization fence. Same-owner status writes incremented the same User document, causing snapshot conflicts and repeated identity validation. The path had no single end-to-end deadline, so per-command limits did not bound cumulative retry latency.",
+  "selectedFix": {
+    "summary": "The private application workflow now starts one monotonic 5,000 ms budget at the controller, makes the existing owner fence the first transaction operation, retains organization/settings/job/application fences, and uses a 64-attempt cap with bounded jitter before callback retries.",
+    "driver": "Cursor reads share the transaction timeout context so multibatch reads use the same deadline and getMore does not receive an invalid maxTimeMS.",
+    "security": "Canonical SHA-256 identity verification, consent, exact totals, 10,000-row capacity, batch size, live owner/organization/membership/session checks, snapshot reads and lifecycle CAS are retained.",
+    "uncertainCommit": "The driver retries unknown commit results. The application callback is not replayed for an uncertain commit; mutation timeout/unknown commit returns explicit HTTP 503 unconfirmed outcome and requires status refresh.",
+    "scope": "Workflow-specific. Other workflows and notification transaction defaults retain existing behavior."
+  },
+  "sourceInventory": {
+    "backend": [
+      "backend/scripts/smoke-application-shortlists.cjs",
+      "backend/scripts/benchmark-recruiter-contention.cjs",
+      "backend/scripts/verify-recruiter-p15b.cjs",
+      "backend/src/modules/jobs/jobApplicationController.js",
+      "backend/src/modules/jobs/services/jobApplicationService.js",
+      "backend/src/modules/notifications/services/notificationTransactionService.js",
+      "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+      "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+      "backend/src/modules/recruiter/utils/hub/applicationIdentityValidation.js",
+      "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+      "backend/src/modules/recruiter/utils/hub/applicationWorkflowBudget.js",
+      "backend/src/tests/fixtures/applicationPerformanceFixture.js",
+      "backend/src/tests/fixtures/disposableAngular.js",
+      "backend/src/tests/fixtures/recruiterAngularProxy.cjs",
+      "backend/src/tests/recruiter/applicationConcurrency.integration.test.js"
+    ],
+    "frontend": [
+      "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html",
+      "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts",
+      "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+      "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+      "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+      "frontend/src/app/shared/services/api.service.ts"
+    ],
+    "removedApiServiceMethods": [
+      "getRecruiterDashboard",
+      "getRecruiterCandidates",
+      "getRecruiterCandidateById",
+      "getRecruiterJobs",
+      "createRecruiterJob",
+      "updateRecruiterJob",
+      "deleteRecruiterJob",
+      "matchRecruiterCandidates",
+      "aiRankCandidates"
+    ],
+    "movedSourceFiles": [],
+    "deletedSourceFiles": []
+  },
+  "compatibility": {
+    "successDtosChanged": false,
+    "dependenciesOrSchemasChanged": false,
+    "wrappers": "Nine unreferenced private frontend ApiService methods removed after repository reference audit; no published client contract found. See legacy-audit.json.",
+    "legacyRoutes": "Mounted /api/recruiter/* routes, Candidate, Recruiter and stats models, historical collections, Admin/Tenant and account-deletion behavior remain. External consumers are unverified; future retirement requires consumer inventory, parity and a deprecation window.",
+    "uiLabels": {
+      "from": [
+        "AI usage trends",
+        "AI Actions"
+      ],
+      "to": [
+        "assessment activity trends",
+        "Assessment & Match Actions"
+      ],
+      "reason": "The charts describe deterministic assessment and match activity, not AI usage."
+    },
+    "retryUi": "On 503, reread canonical status; never replay the status mutation or claim success."
+  },
+  "benchmark": {
+    "protocol": "Fresh disposable Mongo/process per case; identical deterministic application tuples/consent/shortlist data and schema indexes verified by SHA-256; 3 controlled rounds of 5 sequential reads, 6 simultaneous reads, 4 reads + 4 distinct status writes. One warmup excluded. No other build/database suite overlapped final measurements.",
+    "queryBudgetMs": 5000,
+    "identityCapacity": 10000,
+    "runtimeAndFixtures": [
+      {
+        "rows": 261,
+        "versions": {
+          "node": "24.19.0",
+          "mongoose": "9.2.4",
+          "mongooseDriver": "7.0.0",
+          "server": "8.2.2"
+        },
+        "fixtureSha256": "b8935787ac8d310f434a345dc6ffb4e40a1663a503fe6350df8a495ded39544c"
+      },
+      {
+        "rows": 1000,
+        "versions": {
+          "node": "24.19.0",
+          "mongoose": "9.2.4",
+          "mongooseDriver": "7.0.0",
+          "server": "8.2.2"
+        },
+        "fixtureSha256": "6d796f7783996d4f7f09d648fb5142a8dc401a06dcb152571b9732a0920ff185"
+      }
+    ],
+    "scenarios": [
+      {
+        "rows": 261,
+        "phase": "before",
+        "workload": "sequential",
+        "requests": 15,
+        "p50Ms": 719.58,
+        "p95Ms": 1911.68,
+        "maxMs": 1911.68,
+        "http": {
+          "200": 15
+        },
+        "transactionAttempts": 15,
+        "retries": 0,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 15,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 250093568,
+        "samplePeakHeapBytes": 117950296
+      },
+      {
+        "rows": 261,
+        "phase": "before",
+        "workload": "six-reads",
+        "requests": 18,
+        "p50Ms": 2270.44,
+        "p95Ms": 4180.21,
+        "maxMs": 4180.21,
+        "http": {
+          "200": 18
+        },
+        "transactionAttempts": 212,
+        "retries": 194,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 18,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 251711488,
+        "samplePeakHeapBytes": 118233592
+      },
+      {
+        "rows": 261,
+        "phase": "before",
+        "workload": "mixed",
+        "requests": 24,
+        "p50Ms": 2404.65,
+        "p95Ms": 4382.74,
+        "maxMs": 5333.91,
+        "http": {
+          "200": 24
+        },
+        "transactionAttempts": 283,
+        "retries": 259,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 24,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 254382080,
+        "samplePeakHeapBytes": 124824984
+      },
+      {
+        "rows": 261,
+        "phase": "after",
+        "workload": "sequential",
+        "requests": 15,
+        "p50Ms": 366.66,
+        "p95Ms": 1151.91,
+        "maxMs": 1151.91,
+        "http": {
+          "200": 15
+        },
+        "transactionAttempts": 15,
+        "retries": 0,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 15,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 227430400,
+        "samplePeakHeapBytes": 104205568
+      },
+      {
+        "rows": 261,
+        "phase": "after",
+        "workload": "six-reads",
+        "requests": 18,
+        "p50Ms": 1459.93,
+        "p95Ms": 2971.04,
+        "maxMs": 2971.04,
+        "http": {
+          "200": 18
+        },
+        "transactionAttempts": 163,
+        "retries": 145,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 18,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 228503552,
+        "samplePeakHeapBytes": 106297368
+      },
+      {
+        "rows": 261,
+        "phase": "after",
+        "workload": "mixed",
+        "requests": 24,
+        "p50Ms": 1293.36,
+        "p95Ms": 2395.55,
+        "maxMs": 2559.35,
+        "http": {
+          "200": 24
+        },
+        "transactionAttempts": 229,
+        "retries": 205,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 24,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 229109760,
+        "samplePeakHeapBytes": 103585400
+      },
+      {
+        "rows": 1000,
+        "phase": "before",
+        "workload": "sequential",
+        "requests": 15,
+        "p50Ms": 596.71,
+        "p95Ms": 1622.35,
+        "maxMs": 1622.35,
+        "http": {
+          "200": 15
+        },
+        "transactionAttempts": 15,
+        "retries": 0,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 15,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 297328640,
+        "samplePeakHeapBytes": 137518088
+      },
+      {
+        "rows": 1000,
+        "phase": "before",
+        "workload": "six-reads",
+        "requests": 18,
+        "p50Ms": 2285.82,
+        "p95Ms": 6273.07,
+        "maxMs": 6273.07,
+        "http": {
+          "200": 18
+        },
+        "transactionAttempts": 249,
+        "retries": 231,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 18,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 306552832,
+        "samplePeakHeapBytes": 146895016
+      },
+      {
+        "rows": 1000,
+        "phase": "before",
+        "workload": "mixed",
+        "requests": 24,
+        "p50Ms": 2189.41,
+        "p95Ms": 5586.54,
+        "maxMs": 5833.95,
+        "http": {
+          "200": 24
+        },
+        "transactionAttempts": 315,
+        "retries": 291,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 24,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 317095936,
+        "samplePeakHeapBytes": 156216984
+      },
+      {
+        "rows": 1000,
+        "phase": "after",
+        "workload": "sequential",
+        "requests": 15,
+        "p50Ms": 905.56,
+        "p95Ms": 1809.42,
+        "maxMs": 1809.42,
+        "http": {
+          "200": 15
+        },
+        "transactionAttempts": 15,
+        "retries": 0,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 15,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 214274048,
+        "samplePeakHeapBytes": 99348616
+      },
+      {
+        "rows": 1000,
+        "phase": "after",
+        "workload": "six-reads",
+        "requests": 18,
+        "p50Ms": 3136.62,
+        "p95Ms": 5236.97,
+        "maxMs": 5236.97,
+        "http": {
+          "200": 16,
+          "503": 2
+        },
+        "transactionAttempts": 261,
+        "retries": 243,
+        "timeoutRate": 0.1111,
+        "commitOutcomes": {
+          "acknowledged": 16,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 218456064,
+        "samplePeakHeapBytes": 100941920
+      },
+      {
+        "rows": 1000,
+        "phase": "after",
+        "workload": "mixed",
+        "requests": 24,
+        "p50Ms": 2141.45,
+        "p95Ms": 4537.58,
+        "maxMs": 5009.68,
+        "http": {
+          "200": 24
+        },
+        "transactionAttempts": 260,
+        "retries": 236,
+        "timeoutRate": 0,
+        "commitOutcomes": {
+          "acknowledged": 24,
+          "failedOrUncertain": 0
+        },
+        "samplePeakRssBytes": 255127552,
+        "samplePeakHeapBytes": 132438768
+      }
+    ],
+    "headline": {
+      "mixed261": {
+        "beforeP95Ms": 4382.74,
+        "afterP95Ms": 2395.55,
+        "reductionPercent": 45.34
+      },
+      "mixed1000": {
+        "beforeP95Ms": 5586.54,
+        "afterP95Ms": 4537.58,
+        "reductionPercent": 18.78
+      },
+      "concurrent1000After": {
+        "success": 16,
+        "bounded503": 2,
+        "timeoutRate": 0.1111
+      },
+      "mixed1000After": {
+        "success": 24,
+        "bounded503": 0,
+        "maxMs": 5009.68
+      }
+    },
+    "limitations": "Disposable local fixtures only; user-supplied independent P1.5A results came from another environment. No production capacity claim. Memory is sampled RSS/heap including fixture, driver and instrumentation; command timings are client-observed round trips.",
+    "evidence": "backend\\verification\\jobs-hub\\p1.5b\\performance-comparison.json"
+  },
+  "verification": {
+    "backend": {
+      "earlierCapAndLegacyRun": {
+        "status": "passed",
+        "passed": 12,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "evidence": "backend\\verification\\jobs-hub\\p1.5b\\concurrency-tests.json"
+      },
+      "finalRerun": {
+        "status": "incomplete",
+        "detail": "Sequential rerun was stopped after about 105 seconds without progress output; earlier recorded cap and legacy run passed 12/12 and remains in concurrency-tests.json."
+      },
+      "focusedBatch": {
+        "passed": 67,
+        "failed": 4,
+        "cancelled": 2,
+        "evidence": "backend\\verification\\jobs-hub\\p1.5b\\backend-tests.json",
+        "detail": "Notification parent reached its existing 120-second worker-readiness deadline; remaining notification children cancelled or not started."
+      },
+      "notificationsAlone": {
+        "passed": 3,
+        "cancelled": 1,
+        "status": "unverified",
+        "evidence": "backend\\verification\\jobs-hub\\p1.5b\\notifications-isolated\\integration-results.json",
+        "detail": "Parent reached the unchanged 120-second deadline before worker setup completed."
+      }
+    },
+    "frontend": {
+      "targetedAngularTests": {
+        "distinctPassed": 80,
+        "failed": 0,
+        "detail": "78 tests across 11 focused files plus two new unconfirmed-outcome tests."
+      },
+      "fullSuite": {
+        "status": "incomplete",
+        "command": "npm test -- --watch=false",
+        "detail": "Stopped during cold Angular test compilation after about one minute at the user's request to finish promptly; targeted 80-test recruiter suite had passed earlier."
+      },
+      "rootTypeScript": "passed: node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+      "productionBuild": {
+        "status": "passed",
+        "initialBundleMb": 4.13,
+        "warnings": [
+          "Initial bundle exceeds the 4 MB warning threshold by 128.63 kB and remains below the unchanged 5 MB error threshold.",
+          "Existing public-portfolio and developer/jobs component style warnings remain."
+        ]
+      },
+      "browser": {
+        "builtAngularOverDisposableExpress": "passed with no API mocks: 38 API requests, no browser errors, application review/reject/cancel/confirm flow, evidence navigation, two notifications, stale 409, owner isolation, and Light/Dark/System layouts. Disposable Mongo and browser cleaned.",
+        "builtEvidence": "frontend/verification/recruiter/p1.5b/built-angular-express-smoke.json",
+        "angularDevServer": "failed at authorized-shortlist render wait after Angular compiled and the shortlist GET returned 200; no console/runtime errors were captured and no assertions passed.",
+        "angularDevServerEvidence": "frontend/verification/recruiter/p1.5b/real-stack.json",
+        "screenshots": [
+          "frontend/verification/recruiter/p1.5b/light-desktop.png",
+          "frontend/verification/recruiter/p1.5b/dark-mobile.png",
+          "frontend/verification/recruiter/p1.5b/system-tablet.png"
+        ]
+      }
+    }
+  },
+  "finalization": {
+    "formatterWriteAndCheck": "passed for all 21 changed source files using explicit file paths",
+    "backendSyntax": "passed for all 15 changed backend JavaScript files",
+    "gitDiffCheck": "passed",
+    "gitCachedDiffCheck": "passed",
+    "stagedUserFilesPreserved": [
+      "backend/index.js",
+      "backend/src/core/observability/logger.js",
+      "backend/src/tests/core/logger.test.js"
+    ],
+    "stagedIndexBlobsVerified": true,
+    "priorP15aReportRestored": "verified against HEAD blob 658777c47e42b1fde1572577448bdce34db71de4",
+    "sourceHashes": [
+      {
+        "path": "backend/scripts/smoke-application-shortlists.cjs",
+        "sha256": "faf4ce0bb833de33b251e360c19f12687b4e586310efd01ae293ca23c35a9beb"
+      },
+      {
+        "path": "backend/scripts/benchmark-recruiter-contention.cjs",
+        "sha256": "e5ba172600e3d7ef2d2a3f9c597dcc25cb1535ebde3b8ec655f28a9ff0fdc4d0"
+      },
+      {
+        "path": "backend/scripts/verify-recruiter-p15b.cjs",
+        "sha256": "f72122423878a4cc577884989e4936c40d340daa5f3f7506843d17b80579bf5f"
+      },
+      {
+        "path": "backend/src/modules/jobs/jobApplicationController.js",
+        "sha256": "fa1272948819f689d6ba0a1d917463baa77bfdc34e8c520c205828202357a0ee"
+      },
+      {
+        "path": "backend/src/modules/jobs/services/jobApplicationService.js",
+        "sha256": "652fee668b361c03d268331a7e77a202d6bdecaf46558e318b67b01440b1c9b6"
+      },
+      {
+        "path": "backend/src/modules/notifications/services/notificationTransactionService.js",
+        "sha256": "295835903013feecc88a2b0ca01c0d349f4e446864068b9b4b7f5373ed1c1589"
+      },
+      {
+        "path": "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+        "sha256": "0323fc16ff31ac43e4a12598640aab40493aa79bc89af7914af3c79586bdbc61"
+      },
+      {
+        "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+        "sha256": "5c8edb2b89170bfe024a3e75eec3f8f5e85ba2d01e552b77a2cf7bdb457d6ab2"
+      },
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/applicationIdentityValidation.js",
+        "sha256": "68d1eafd7172d64064f4b16e217aba81b8c05e43e168ec93f2d30e0d45450809"
+      },
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+        "sha256": "6edb32d9feeba06287be0a1ee7fa1eb92cc9168fadfd9cf0e9214f2efe843808"
+      },
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/applicationWorkflowBudget.js",
+        "sha256": "cd67007768b304743a04584898dc12dd451374111d945d2bed64df3692171dc4"
+      },
+      {
+        "path": "backend/src/tests/fixtures/applicationPerformanceFixture.js",
+        "sha256": "17c5c69ec8c0fefb63eebe1fb14d29330e38d1b91b07f2daf6ab646b12e51d37"
+      },
+      {
+        "path": "backend/src/tests/fixtures/disposableAngular.js",
+        "sha256": "d9db3ae017ceeceaebbee78eca6462815e964584f2922d0dc48fd7ddfb152e05"
+      },
+      {
+        "path": "backend/src/tests/fixtures/recruiterAngularProxy.cjs",
+        "sha256": "51bbf5b628ad791151c5a38651add337e995fa8d022f5d2d645b20c173a588a5"
+      },
+      {
+        "path": "backend/src/tests/recruiter/applicationConcurrency.integration.test.js",
+        "sha256": "1e2fa2ebde68fdf31d2af568cdf4f7c8dfb48377be6c18e147f6b947c9afbda6"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html",
+        "sha256": "b8bb6a53834f5b58f31eb117125d429304fef872c21aafd420587e7dcbcbd8e2"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts",
+        "sha256": "10f84c80cb2be8b089a7dfb008e032a3425cdbf9dae3b4201480ef14d5561999"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+        "sha256": "6f3da6dfe84ffef40e4978c465c365d7306e51f23ab348b5dc3a4d7055d65316"
+      },
+      {
+        "path": "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+        "sha256": "cdcc11cbfa4384a0dbbbd10c1e1d536c922f98bb82b1c9e413bda97cf57198e7"
+      },
+      {
+        "path": "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+        "sha256": "1120b58770217e27d9f21d0669e876534cffe94bbb2b5b562d511e2f5e46b605"
+      },
+      {
+        "path": "frontend/src/app/shared/services/api.service.ts",
+        "sha256": "3fb7cfe4341bc7417815376eef7d9c2ddd15ec2ea231ccf6a43a2d99c0597ac2"
+      }
+    ],
+    "readOnlyGitStat": "The pre-existing P1.5A report worktree bytes, index blob and HEAD blob match exactly. Git still reports a cached stat change; refreshing it requires writing .git metadata, which is read-only in this workspace."
+  },
+  "operationalPrerequisites": [
+    "Pass the complete notification multiworker integration suite under its unchanged timeout policy.",
+    "Repeat sustained 1,000-row six-read verification on deployment-equivalent hardware; current run returned two bounded 503 responses out of 18.",
+    "Verify timeoutContext behavior when upgrading the installed Mongoose/MongoDB driver stack.",
+    "Inventory external clients before any future retirement of mounted recruiter compatibility routes."
+  ],
+  "noProductionMutationsOrDeployments": true,
+  "noCommitOrPush": true,
+  "adminOrSuperAdminWorkStarted": false,
+  "workflowCoverage": {
+    "targetedAngular": "Recruiter pages, service/domain behavior, navbar and notification navigation, candidates/matches/comparison, Analytics labels, public/application shortlists, Direct Applications status actions and 503 refresh behavior.",
+    "backend": "Application lifecycle and HTTP compatibility, ownership/session/membership revocation, transfer during active reads, shared recruiter jobs, team evaluations, AI compatibility paths and notification integration.",
+    "realBrowser": "Built Angular app exercised through disposable Express/Mongo with no mocks; terminal rejection and notification behavior, stale request and owner isolation passed."
+  }
+}

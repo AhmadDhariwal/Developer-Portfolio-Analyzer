@@ -48,6 +48,9 @@ describe('Recruiter Analytics population accuracy', () => {
     expect(analyzed.getAttribute('hint')).toBe('Profile fit summaries');
     expect(fixture.nativeElement.querySelector('[title="Assessment Activity"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('[title="AI Ranking Usage"]')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('assessment activity trends');
+    expect(fixture.nativeElement.textContent).toContain('Assessment & Match Actions');
+    expect(fixture.nativeElement.textContent).not.toMatch(/AI usage trends|AI Actions/);
   });
 
   it('accepts old payloads without claiming exactness', async () => {

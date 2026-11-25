@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const User = require('../../auth/models/user');
 const State = require('../models/notificationState');
 const metrics = require('./notificationMetrics');
+const { performance } = require('node:perf_hooks');
 
 const settledModelInits = new WeakSet();
 
@@ -45,16 +46,23 @@ async function ensureModelsReadyForTransaction() {
   if (pendingBackground.length) await Promise.all(pendingBackground);
 }
 
-async function transaction(work) {
+async function transaction(work, { deadline } = {}) {
   const stop = metrics.duration.startTimer({ operation: 'transaction' });
   try {
     if (mongoose.connection.readyState !== 1) throw Error('Database unavailable');
     await ensureModelsReadyForTransaction();
+    const timeoutMS =
+      deadline === undefined ? 5000 : Math.min(5000, Math.floor(deadline - performance.now()));
+    if (timeoutMS < 1)
+      throw Object.assign(
+        Error('Application request exceeded its deadline. Refresh before retrying.'),
+        { statusCode: 503 }
+      );
     return await mongoose.connection.transaction(work, {
       readConcern: { level: 'snapshot' },
       writeConcern: { w: 'majority' },
       maxCommitTimeMS: 2000,
-      timeoutMS: 5000
+      timeoutMS
     });
   } finally {
     stop();

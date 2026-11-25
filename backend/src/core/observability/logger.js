@@ -12,11 +12,17 @@ const resolveLevelWeight = (level) => {
 
 const ACTIVE_LEVEL = process.env.LOG_LEVEL || 'info';
 const ACTIVE_WEIGHT = resolveLevelWeight(ACTIVE_LEVEL);
+let useStructuredLogging = true;
 
 const write = (level, message, meta = {}) => {
   if (resolveLevelWeight(level) < ACTIVE_WEIGHT) return;
-  const analytics = getAnalyticsSettingsSync();
-  const useStructuredLogging = analytics.enableStructuredLogging !== false;
+  try {
+    const analytics = getAnalyticsSettingsSync();
+    useStructuredLogging = analytics.enableStructuredLogging !== false;
+  } catch {
+    // Logging must remain available while settings refresh or storage is unavailable.
+    // Retain only the last logging format; policy consumers still reject stale settings.
+  }
 
   const line = useStructuredLogging
     ? JSON.stringify({

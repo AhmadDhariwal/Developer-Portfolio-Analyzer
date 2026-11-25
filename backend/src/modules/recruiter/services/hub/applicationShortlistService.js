@@ -14,6 +14,7 @@ const {
   canonicalRow
 } = require('../../utils/hub/applicationIdentityValidation');
 const { requireObjectId, invalidInput } = require('../../utils/recruiterValidation');
+const workflowBudget = require('../../utils/hub/applicationWorkflowBudget');
 
 const ACTIVE = new Set(['submitted', 'reviewing']);
 const STAGES = new Set(Shortlist.schema.path('status').enumValues);
@@ -25,19 +26,26 @@ function applicationId(value) {
     throw invalidInput('Invalid application identifier.');
   return value;
 }
-async function withPrivateAccess(scope, work) {
+async function withPrivateAccess(scope, work, mutation = false) {
+  const deadline = scope.deadline ?? workflowBudget.deadline();
   await Promise.all([Shortlist, Application, Settings, Candidate].map((model) => model.init()));
-  return access.withAccess(scope, async (ctx) => {
-    const settings = await Settings.findOne({ scope: 'global' })
-      .select('recruiter.enableRecruiterAccess')
-      .session(ctx.session)
-      .lean();
-    if (!settings) throw access.denied('Platform settings unavailable.', 503);
-    if (settings.recruiter?.enableRecruiterAccess === false)
-      throw access.denied('Recruiter access is disabled.');
-    await access.fence(Settings, settings, {}, ctx.session);
-    return work(ctx);
-  });
+  try {
+    return await access.withAccess(
+      scope,
+      async (ctx) => {
+        const settings = await access.readWithFence(Settings, { scope: 'global' }, ctx.session, {
+          'recruiter.enableRecruiterAccess': 1
+        });
+        if (!settings) throw access.denied('Platform settings unavailable.', 503);
+        if (settings.recruiter?.enableRecruiterAccess === false)
+          throw access.denied('Recruiter access is disabled.');
+        return work(ctx);
+      },
+      { deadline }
+    );
+  } catch (error) {
+    throw workflowBudget.failure(error, mutation);
+  }
 }
 async function ownerApplication(ctx, jobId, value) {
   const job = await Job.findOne({
@@ -120,62 +128,71 @@ async function linkApplication({ jobId, applicationId: value, payload = {}, ...s
     !ACTIVE.has(payload.expectedStatus)
   )
     throw invalidInput('An active expectedStatus is required.');
-  return withPrivateAccess(scope, async (ctx) => {
-    const { application, job } = await ownerApplication(ctx, jobId, value);
-    if (!ACTIVE.has(application.status) || application.status !== payload.expectedStatus)
-      throw access.denied('Application changed or is terminal. Refresh before trying again.', 409);
-    const applicant = await User.findOne({
-      _id: application.applicantId,
-      role: { $in: ['developer', 'user', 'guest'] },
-      isActive: { $ne: false }
-    })
-      .session(ctx.session)
-      .select('_id')
-      .lean();
-    if (!applicant)
-      throw access.denied('Applicant account is unavailable for new evaluation.', 409);
-    await access.fence(
-      User,
-      applicant,
-      { isActive: { $ne: false }, role: { $in: ['developer', 'user', 'guest'] } },
-      ctx.session
-    );
-    const aliases = await Candidate.find({ userId: application.applicantId })
-      .select('_id')
-      .session(ctx.session)
-      .lean();
-    const existing = await Shortlist.find({
-      recruiterId: ctx.recruiterId,
-      jobId: job._id,
-      candidateId: { $in: [application.applicantId, ...aliases.map((alias) => alias._id)] }
-    })
-      .session(ctx.session)
-      .lean();
-    if (existing.length) {
-      if (existing.length === 1 && canonicalRow(existing[0], application, job))
-        return { shortlist: view(existing[0], application, job), created: false };
-      throw access.denied(
-        'An existing evaluation conflicts with this link. Its notes and stage were preserved.',
-        409
+  return withPrivateAccess(
+    scope,
+    async (ctx) => {
+      const { application, job } = await ownerApplication(ctx, jobId, value);
+      if (!ACTIVE.has(application.status) || application.status !== payload.expectedStatus)
+        throw access.denied(
+          'Application changed or is terminal. Refresh before trying again.',
+          409
+        );
+      const applicant = await User.findOne({
+        _id: application.applicantId,
+        role: { $in: ['developer', 'user', 'guest'] },
+        isActive: { $ne: false }
+      })
+        .session(ctx.session)
+        .select('_id')
+        .lean();
+      if (!applicant)
+        throw access.denied('Applicant account is unavailable for new evaluation.', 409);
+      await access.fence(
+        User,
+        applicant,
+        { isActive: { $ne: false }, role: { $in: ['developer', 'user', 'guest'] } },
+        ctx.session
       );
-    }
-    const [row] = await Shortlist.create(
-      [
-        {
-          recruiterId: ctx.recruiterId,
-          organizationId: ctx.organizationId,
-          teamId: null,
-          candidateId: application.applicantId,
-          jobId: job._id,
-          applicationId: application._id,
-          notes: '',
-          status: 'shortlisted'
-        }
-      ],
-      { session: ctx.session }
-    );
-    return { shortlist: view(row.toObject(), application, job), created: true };
-  });
+      const aliases = await Candidate.find({ userId: application.applicantId })
+        .select('_id')
+        .session(ctx.session)
+        .setOptions(workflowBudget.cursorOptions(ctx.session))
+        .lean();
+      const existing = await Shortlist.find({
+        recruiterId: ctx.recruiterId,
+        jobId: job._id,
+        candidateId: { $in: [application.applicantId, ...aliases.map((alias) => alias._id)] }
+      })
+        .session(ctx.session)
+        .setOptions(workflowBudget.cursorOptions(ctx.session))
+        .lean();
+      if (existing.length) {
+        if (existing.length === 1 && canonicalRow(existing[0], application, job))
+          return { shortlist: view(existing[0], application, job), created: false };
+        throw access.denied(
+          'An existing evaluation conflicts with this link. Its notes and stage were preserved.',
+          409
+        );
+      }
+      const [row] = await Shortlist.create(
+        [
+          {
+            recruiterId: ctx.recruiterId,
+            organizationId: ctx.organizationId,
+            teamId: null,
+            candidateId: application.applicantId,
+            jobId: job._id,
+            applicationId: application._id,
+            notes: '',
+            status: 'shortlisted'
+          }
+        ],
+        { session: ctx.session }
+      );
+      return { shortlist: view(row.toObject(), application, job), created: true };
+    },
+    true
+  );
 }
 
 async function listApplicationShortlists({ query, ...scope }) {
@@ -195,6 +212,7 @@ async function listApplicationShortlists({ query, ...scope }) {
     })
       .select('_id title')
       .session(ctx.session)
+      .setOptions(workflowBudget.cursorOptions(ctx.session))
       .maxTimeMS(remainingBudget(identities.deadline))
       .lean();
     const applications = await Application.find({
@@ -204,6 +222,7 @@ async function listApplicationShortlists({ query, ...scope }) {
     })
       .select('_id applicantId applicantName status jobTitle createdAt')
       .session(ctx.session)
+      .setOptions(workflowBudget.cursorOptions(ctx.session))
       .maxTimeMS(remainingBudget(identities.deadline))
       .lean();
     const jobMap = new Map(jobs.map((job) => [id(job._id), job]));
@@ -269,45 +288,50 @@ async function updateApplicationShortlist({ shortlistId, payload = {}, ...scope 
     throw invalidInput('Notes must be at most 5000 characters.');
   if (payload.status !== undefined && !STAGES.has(payload.status))
     throw invalidInput('Shortlist stage is invalid.');
-  return withPrivateAccess(scope, async (ctx) => {
-    const row = await Shortlist.findOne({
-      _id: requireObjectId(shortlistId, 'shortlistId'),
-      recruiterId: ctx.recruiterId,
-      organizationId: ctx.organizationId,
-      applicationId: { $ne: null }
-    })
-      .session(ctx.session)
-      .lean();
-    if (!row) throw unavailable();
-    const { application, job } = await ownerApplication(ctx, row.jobId, row.applicationId);
-    if (!canonicalRow(row, application, job)) throw unavailable();
-    access.version(row, payload.expectedVersion);
-    if (
-      payload.status !== undefined &&
-      payload.status !== row.status &&
-      !ACTIVE.has(application.status)
-    )
-      throw access.denied(
-        'Application is terminal. Its internal stage is retained; notes may still be updated.',
-        409
-      );
-    const patch = {};
-    if (payload.notes !== undefined) patch.notes = payload.notes.trim();
-    if (payload.status !== undefined) patch.status = payload.status;
-    const updated = await Shortlist.findOneAndUpdate(
-      {
-        _id: row._id,
+  return withPrivateAccess(
+    scope,
+    async (ctx) => {
+      const row = await Shortlist.findOne({
+        _id: requireObjectId(shortlistId, 'shortlistId'),
         recruiterId: ctx.recruiterId,
         organizationId: ctx.organizationId,
-        applicationId: application._id,
-        __v: payload.expectedVersion
-      },
-      { $set: patch, $inc: { __v: 1 } },
-      { session: ctx.session, returnDocument: 'after', runValidators: true }
-    ).lean();
-    if (!updated) throw access.denied('Evaluation changed. Refresh before retrying.', 409);
-    return view(updated, application, job);
-  });
+        applicationId: { $ne: null }
+      })
+        .session(ctx.session)
+        .setOptions(workflowBudget.cursorOptions(ctx.session))
+        .lean();
+      if (!row) throw unavailable();
+      const { application, job } = await ownerApplication(ctx, row.jobId, row.applicationId);
+      if (!canonicalRow(row, application, job)) throw unavailable();
+      access.version(row, payload.expectedVersion);
+      if (
+        payload.status !== undefined &&
+        payload.status !== row.status &&
+        !ACTIVE.has(application.status)
+      )
+        throw access.denied(
+          'Application is terminal. Its internal stage is retained; notes may still be updated.',
+          409
+        );
+      const patch = {};
+      if (payload.notes !== undefined) patch.notes = payload.notes.trim();
+      if (payload.status !== undefined) patch.status = payload.status;
+      const updated = await Shortlist.findOneAndUpdate(
+        {
+          _id: row._id,
+          recruiterId: ctx.recruiterId,
+          organizationId: ctx.organizationId,
+          applicationId: application._id,
+          __v: payload.expectedVersion
+        },
+        { $set: patch, $inc: { __v: 1 } },
+        { session: ctx.session, returnDocument: 'after', runValidators: true }
+      ).lean();
+      if (!updated) throw access.denied('Evaluation changed. Refresh before retrying.', 409);
+      return view(updated, application, job);
+    },
+    true
+  );
 }
 
 async function applicationDetails({ jobId, applicationId: value, ...scope }) {

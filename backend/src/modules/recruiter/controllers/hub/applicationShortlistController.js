@@ -1,10 +1,12 @@
 const service = require('../../services/hub/applicationShortlistService');
 const { getRecruiterScope } = require('../../utils/hub/recruiterAccess');
+const workflowBudget = require('../../utils/hub/applicationWorkflowBudget');
 
 const handle = (work) => async (req, res) => {
   res.set('Cache-Control', 'private, no-store');
   try {
-    await work(req, res, await getRecruiterScope(req));
+    const deadline = workflowBudget.deadline();
+    await work(req, res, { ...(await getRecruiterScope(req)), deadline });
   } catch (error) {
     res.status(error.statusCode || 503).json({
       message: error.statusCode

@@ -1,0 +1,208 @@
+{
+  "status": "passed",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "requests": [
+    {
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations/6b06017660190a7246c1cd78/teams",
+      "status": 403
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/jobs/6b06017660190a7246c1cd7c/applications/70179d5157c0bef149b2bc07c50955bf34df0bc57a39fc2cf62470af909ca618",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/jobs/6b06017660190a7246c1cd7c/applications/70179d5157c0bef149b2bc07c50955bf34df0bc57a39fc2cf62470af909ca618",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/jobs/6b06017660190a7246c1cd7c",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/matches",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/jobs/6b06017660190a7246c1cd7c/applications/70179d5157c0bef149b2bc07c50955bf34df0bc57a39fc2cf62470af909ca618",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations/6b06017660190a7246c1cd78/teams",
+      "status": 403
+    },
+    {
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations/6b06017660190a7246c1cd78/teams",
+      "status": 403
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations/6b06017660190a7246c1cd78/teams",
+      "status": 403
+    },
+    {
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations/6b06017660190a7246c1cd78/teams",
+      "status": 403
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations/6b06017660190a7246c1cd78/teams",
+      "status": 403
+    },
+    {
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "checks": [
+    "page 2 -> explicit reviewing -> reject cancel/confirm -> terminal -> exact submitted-evidence navigation; two notifications; stale 409",
+    "Light/Dark/System responsive screenshots and peer owner-only exclusion"
+  ],
+  "angularDevServer": false,
+  "appearance": [
+    {
+      "name": "light-desktop",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "observedTheme": "light"
+    },
+    {
+      "name": "dark-mobile",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "observedTheme": "dark"
+    },
+    {
+      "name": "system-tablet",
+      "theme": "system",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "observedTheme": "dark"
+    }
+  ],
+  "sessionClearing": {
+    "destination": "/auth/login",
+    "ng0100": false,
+    "organization503": 0
+  },
+  "browserCleanup": {
+    "browserStopped": true,
+    "temporaryFilesRemoved": 1952
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 338,
+    "productionDataUsed": false
+  }
+}
