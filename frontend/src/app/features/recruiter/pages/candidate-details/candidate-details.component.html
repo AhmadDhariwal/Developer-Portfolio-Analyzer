@@ -1,0 +1,348 @@
+<section class="hub-page">
+  <div class="top-nav">
+    <app-recruiter-back-button
+      fallbackRoute="/app/recruiter/candidates"
+      label="Back to Candidates"
+    />
+  </div>
+
+  <app-recruiter-loader *ngIf="loading" label="Loading candidate dossier..." variant="detail" />
+
+  <app-ui-error-state
+    *ngIf="error && !candidate && !loading"
+    title="Unable to load candidate dossier"
+    [message]="error"
+    (retry)="loadCandidate()"
+  />
+
+  <div class="banner banner--error" *ngIf="error && candidate">{{ error }}</div>
+  <div class="banner banner--success" *ngIf="notice">{{ notice }}</div>
+
+  <ng-container *ngIf="!loading && candidate">
+    <header class="dossier-header">
+      <div class="dossier-identity">
+        <div class="dossier-avatar">{{ initial }}</div>
+        <div class="dossier-copy">
+          <span class="page-header__eyebrow">Recruiter Hub · Candidate Evidence</span>
+          <h1>{{ candidate.name || candidate.fullName || 'Candidate' }}</h1>
+          <p class="dossier-headline">
+            {{ candidate.headline || candidate.profileSummary || 'Developer portfolio profile' }}
+          </p>
+          <div class="meta-chips">
+            <app-ui-badge variant="primary" size="sm">
+              {{ candidate.stack || 'Full Stack' }}
+            </app-ui-badge>
+            <app-ui-badge variant="neutral" size="sm">
+              {{ candidate.yearsOfExperience ?? 0 }} yrs experience
+            </app-ui-badge>
+            <app-ui-badge *ngIf="candidate.experienceLevel" variant="info" size="sm">
+              {{ candidate.experienceLevel }}
+            </app-ui-badge>
+            <app-ui-badge variant="neutral" size="sm">
+              {{ candidate.location || 'Location unavailable' }}
+            </app-ui-badge>
+            <app-ui-badge variant="success" size="sm">
+              {{ candidate.availability || 'Availability unknown' }}
+            </app-ui-badge>
+            <a
+              *ngIf="candidate.githubUsername"
+              class="github-pill"
+              [href]="'https://github.com/' + candidate.githubUsername"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              github.com/{{ candidate.githubUsername }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-header__actions">
+        <button type="button" class="btn-secondary" (click)="openComparison()">Compare</button>
+        <button
+          type="button"
+          class="btn-secondary"
+          [disabled]="analyzing"
+          (click)="analyzeCandidate()"
+        >
+          {{ analyzing ? 'Assessing...' : 'Run Evidence Assessment' }}
+        </button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="shortlisting"
+          (click)="addToShortlist()"
+        >
+          {{ shortlisting ? 'Saving...' : 'Add to Shortlist' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="telemetry-grid">
+      <section class="surface-card score-hero">
+        <div class="section-head">
+          <div>
+            <h2>Readiness & Recorded Signals</h2>
+            <p>
+              Available scores describe recorded evidence, not verified ability or job suitability.
+            </p>
+          </div>
+        </div>
+
+        <div class="score-hero__body">
+          <div class="score-hero__meter">
+            <app-score-meter
+              *ngIf="readinessScore !== null; else noReadiness"
+              [score]="readinessScore"
+              size="md"
+            />
+            <ng-template #noReadiness
+              ><strong class="is-unavailable">Unavailable</strong></ng-template
+            >
+            <span class="meter-caption">Readiness Index</span>
+          </div>
+
+          <div class="pillar-stats">
+            <div class="pillar-item">
+              <span>GitHub Evidence</span>
+              <strong [class.is-unavailable]="!hasGithubScore">
+                {{ formatScore(candidate.githubScore) }}
+              </strong>
+            </div>
+            <div class="pillar-item">
+              <span>Resume Signal</span>
+              <strong
+                [class.is-unavailable]="
+                  candidate.resumeScore === null || candidate.resumeScore === undefined
+                "
+              >
+                {{ formatScore(candidate.resumeScore) }}
+              </strong>
+            </div>
+            <div class="pillar-item">
+              <span>Consistency</span>
+              <strong
+                [class.is-unavailable]="
+                  candidate.consistencyScore === null || candidate.consistencyScore === undefined
+                "
+              >
+                {{ formatScore(candidate.consistencyScore) }}
+              </strong>
+            </div>
+            <div class="pillar-item">
+              <span>Growth Potential</span>
+              <strong
+                [class.is-unavailable]="
+                  candidate.growthPotentialScore === null ||
+                  candidate.growthPotentialScore === undefined
+                "
+              >
+                {{ formatScore(candidate.growthPotentialScore) }}
+              </strong>
+            </div>
+            <div class="pillar-item">
+              <span>Completeness</span>
+              <strong
+                [class.is-unavailable]="
+                  candidate.profileCompleteness === null ||
+                  candidate.profileCompleteness === undefined
+                "
+              >
+                {{ formatScore(candidate.profileCompleteness) }}
+              </strong>
+            </div>
+            <div class="pillar-item">
+              <span>Projects Recorded</span>
+              <strong>{{ candidate.projects?.length || 0 }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="block" *ngFor="let evidence of evidenceItems">
+          <h3>{{ evidence.label }}: {{ formatScore(evidence.score) }}</h3>
+          <p class="muted-note">{{ evidence.explanation }}</p>
+          <p class="muted-note">
+            Source recorded:
+            {{
+              evidence.recordedAt ? (evidence.recordedAt | date: 'medium') : 'Timestamp unavailable'
+            }}
+          </p>
+        </div>
+      </section>
+
+      <app-recruiter-performance-chart
+        title="Available Signal Breakdown"
+        subtitle="Non-null evaluation pillars on a 0-100 scale"
+        mode="bars"
+        tone="indigo"
+        valueSuffix="%"
+        [height]="230"
+        [items]="breakdownChartItems"
+        emptyMessage="No pillar scores recorded for this candidate yet."
+      />
+    </div>
+
+    <section class="surface-card analysis-panel" *ngIf="analysis">
+      <div class="section-head">
+        <div>
+          <h2>Deterministic Candidate Assessment</h2>
+          <p>
+            {{
+              analysis?.scoreExplanation ||
+                'Assessment uses available recorded scores. No AI confidence is calculated.'
+            }}
+          </p>
+        </div>
+
+        <div class="analysis-badges">
+          <app-ui-badge *ngIf="analysis?.recommendation" variant="primary" size="md">
+            {{ analysis.recommendation }}
+          </app-ui-badge>
+          <span class="confidence-pill" [class.is-unavailable]="!hasAvailableSignalScore">
+            Available-signal average:
+            <strong>
+              {{ hasAvailableSignalScore ? analysis.availableSignalScore + '%' : 'Unavailable' }}
+            </strong>
+          </span>
+        </div>
+      </div>
+
+      <p class="analysis-summary">
+        {{ analysis.summary }}
+      </p>
+
+      <div class="insight-columns" *ngIf="strengthsList.length || weaknessesList.length">
+        <div class="insight-box insight-box--strengths">
+          <h3>Recorded Scores</h3>
+          <ul *ngIf="strengthsList.length; else noStrengths">
+            <li *ngFor="let point of strengthsList">{{ point }}</li>
+          </ul>
+          <ng-template #noStrengths>
+            <p class="muted-note">No additional strengths returned.</p>
+          </ng-template>
+        </div>
+
+        <div class="insight-box insight-box--gaps">
+          <h3>Gaps & Review Notes</h3>
+          <ul *ngIf="weaknessesList.length; else noWeaknesses">
+            <li *ngFor="let point of weaknessesList">{{ point }}</li>
+          </ul>
+          <ng-template #noWeaknesses>
+            <p class="muted-note">
+              No review notes recorded. Missing evidence does not establish an absence of gaps.
+            </p>
+          </ng-template>
+        </div>
+      </div>
+    </section>
+
+    <div class="evidence-grid">
+      <section class="surface-card">
+        <div class="section-head">
+          <div>
+            <h2>Skills & GitHub Telemetry</h2>
+            <p>Recorded skills and repository activity; source claims may require review.</p>
+          </div>
+        </div>
+
+        <div class="github-metrics" *ngIf="hasGithubScore && candidate.githubStats">
+          <div class="gh-stat">
+            <span>Repositories</span>
+            <strong>{{ candidate.githubStats.repos ?? 0 }}</strong>
+          </div>
+          <div class="gh-stat">
+            <span>Stars</span>
+            <strong>{{ candidate.githubStats.stars ?? 0 }}</strong>
+          </div>
+          <div class="gh-stat">
+            <span>Forks</span>
+            <strong>{{ candidate.githubStats.forks ?? 0 }}</strong>
+          </div>
+          <div class="gh-stat">
+            <span>Followers</span>
+            <strong>{{ candidate.githubStats.followers ?? 0 }}</strong>
+          </div>
+        </div>
+
+        <div class="block" *ngIf="candidate.skills?.length">
+          <h3>Recorded Skills</h3>
+          <div class="chips">
+            <span class="chip chip--skill" *ngFor="let skill of candidate.skills">{{ skill }}</span>
+          </div>
+        </div>
+
+        <div class="block" *ngIf="skillScores.length">
+          <h3>Skill Depth Matrix</h3>
+          <div class="skill-bars">
+            <div class="skill-bar-row" *ngFor="let entry of skillScores">
+              <div class="skill-bar-row__meta">
+                <span>{{ entry.name }}</span>
+                <strong>{{ entry.score }}%</strong>
+              </div>
+              <div class="skill-bar-row__track">
+                <i [style.width.%]="entry.score"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="block" *ngIf="candidate.skillGaps?.length">
+          <h3>Identified Skill Gaps</h3>
+          <div class="chips">
+            <span class="chip chip--gap" *ngFor="let gap of candidate.skillGaps">{{ gap }}</span>
+          </div>
+        </div>
+
+        <p
+          class="muted-note"
+          *ngIf="
+            !candidate.skills?.length &&
+            !skillScores.length &&
+            (!hasGithubScore || !candidate.githubStats)
+          "
+        >
+          No skill or repository telemetry recorded yet.
+        </p>
+      </section>
+
+      <section class="surface-card">
+        <div class="section-head">
+          <div>
+            <h2>Portfolio Projects ({{ candidate.projects?.length || 0 }})</h2>
+            <p>Implementation evidence, technologies used, and impact scores.</p>
+          </div>
+        </div>
+
+        <div class="project-list" *ngIf="candidate.projects?.length; else emptyProjects">
+          <article class="project-item" *ngFor="let project of candidate.projects">
+            <div class="project-item__head">
+              <h3>{{ project.title || 'Project' }}</h3>
+              <div class="project-item__badges">
+                <app-ui-badge *ngIf="project.status" variant="neutral" size="sm">
+                  {{ project.status }}
+                </app-ui-badge>
+                <app-ui-badge
+                  *ngIf="project.impactScore !== undefined && project.impactScore !== null"
+                  variant="info"
+                  size="sm"
+                >
+                  Impact {{ project.impactScore }}
+                </app-ui-badge>
+              </div>
+            </div>
+
+            <p>{{ project.description || 'No project summary provided.' }}</p>
+
+            <div class="chips" *ngIf="project.technologies?.length">
+              <span class="chip" *ngFor="let tech of project.technologies">{{ tech }}</span>
+            </div>
+          </article>
+        </div>
+
+        <ng-template #emptyProjects>
+          <p class="muted-note">No public portfolio projects shared by this developer.</p>
+        </ng-template>
+      </section>
+    </div>
+  </ng-container>
+</section>

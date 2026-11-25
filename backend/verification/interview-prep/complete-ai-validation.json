@@ -1,0 +1,71 @@
+{
+  "backendBroad": {
+    "passed": 118,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "complete-ai-backend.tap",
+    "command": "node --test --test-concurrency=1 src/tests/interview*.test.js src/tests/aiProviderPlatform.test.js",
+    "database": "task-owned local MongoDB; deterministic providers"
+  },
+  "backendFinalIntegration": {
+    "passed": 11,
+    "failed": 0,
+    "evidence": "complete-ai-final-integration.tap"
+  },
+  "backendAfterCleanup": {
+    "passed": 30,
+    "failed": 0,
+    "evidence": "complete-ai-post-cleanup.tap"
+  },
+  "frontendFull": {
+    "filesPassed": 118,
+    "testsPassed": 697,
+    "failed": 0,
+    "command": "npm test -- --watch=false --runner-config=scripts/interview-verification.vitest.config.mjs"
+  },
+  "frontendFinalFocused": {
+    "filesPassed": 3,
+    "testsPassed": 39,
+    "failed": 0,
+    "postCleanup": true,
+    "evidence": "../../../frontend/verification/interview-prep/complete-ai/final-frontend-tests.txt"
+  },
+  "typescript": {
+    "passed": true,
+    "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json"
+  },
+  "productionBuild": {
+    "passed": true,
+    "entry": "main-J4E5W2S6.js",
+    "warnings": [
+      "Initial bundle 4.01 MB exceeds 4.00 MB budget by 14.71 kB",
+      "jobs.component.scss 54.35 kB exceeds 48.00 kB budget",
+      "public-portfolio.component.scss 49.97 kB exceeds 48.00 kB budget"
+    ],
+    "postCleanup": true,
+    "evidence": "../../../frontend/verification/interview-prep/complete-ai/final-build.txt"
+  },
+  "browser": {
+    "passed": true,
+    "synthetic": true,
+    "liveProviderTested": false,
+    "checks": 7,
+    "screenshots": 12,
+    "evidence": "../../../frontend/verification/interview-prep/complete-ai/results.json"
+  },
+  "finalChecks": {
+    "sourceFilesFormattedAndChecked": 30,
+    "javascriptSyntaxFilesPassed": 21,
+    "typescriptNoEmitPassed": true,
+    "gitDiffCheckPassed": true,
+    "gitCachedDiffCheckPassed": true,
+    "stagedChanges": false,
+    "branch": "fix/bug-01",
+    "movedSourceFiles": 0,
+    "deletedSourceFiles": 0,
+    "cleanupManifest": "complete-ai-cleanup.json",
+    "taskTemporaryFilesRemainingAtCleanup": 0,
+    "verifiedTemporaryFilesRemoved": 2412,
+    "temporaryFoldersEmptyAfterFinalTests": true
+  }
+}

@@ -10,12 +10,12 @@ async function main() {
     /^mongodb:\/\/127\.0\.0\.1:\d+\/integration_live_acceptance\?replicaSet=portfolio-final$/
   );
   await mongoose.connect(uri, { dbName: 'portfolio_final_query_fixture', autoIndex: false });
-  const Profile = require('../models/publicProfile');
-  const Visit = require('../models/publicPortfolioVisit');
-  const Legacy = require('../models/publicProfileView');
-  const Cache = require('../models/publicProfileCache');
-  const User = require('../models/user');
-  const redis = require('../services/redisCacheService');
+  const Profile = require('../modules/public-portfolio/models/publicProfile');
+  const Visit = require('../modules/public-portfolio/models/publicPortfolioVisit');
+  const Legacy = require('../modules/public-portfolio/models/publicProfileView');
+  const Cache = require('../modules/public-portfolio/models/publicProfileCache');
+  const User = require('../modules/auth/models/user');
+  const redis = require('../core/cache/redisCacheService');
   try {
     for (const model of [Profile, Visit, Legacy, Cache]) await model.createIndexes();
     const id = new mongoose.Types.ObjectId();
@@ -45,7 +45,7 @@ async function main() {
       viewedAt: { $gte: new Date(now.getTime() - 6 * 86400000) }
     };
     const report = { fixtureOnly: true, queries: {}, cache: {} };
-    const notifications = require('../services/notificationPersistenceService');
+    const notifications = require('../modules/notifications/services/notificationPersistenceService');
     let attemptedWrite = false;
     await assert.rejects(
       notifications.commit(
@@ -59,7 +59,7 @@ async function main() {
       { status: 401 }
     );
     assert.equal(attemptedWrite, false);
-    const assets = require('../services/storedAssetService');
+    const assets = require('../core/storage/storedAssetService');
     const document = await Profile.findById(id);
     document.headline = 'Revoked write';
     await assert.rejects(assets.commitPortfolio(document, new Set(), null, 0), { status: 401 });
@@ -69,7 +69,7 @@ async function main() {
       assetCommitRejected: true,
       persistedWrite: false
     };
-    const analytics = require('../services/publicPortfolioAnalyticsPersistence');
+    const analytics = require('../modules/public-portfolio/services/publicPortfolioAnalyticsPersistence');
     const receipt = {
       profileId: id,
       viewerHash: 'atomic-test',
@@ -127,7 +127,7 @@ async function main() {
       )
     );
     await redis.initRedisCache({ silent: true, probeOnly: true });
-    const { createPortfolioCache } = require('../services/publicPortfolioCacheService');
+    const { createPortfolioCache } = require('../modules/public-portfolio/services/publicPortfolioCacheService');
     const profile = { _id: id, isPublic: true, slug: 'query-fixture' };
     let loads = 0;
     const loader = async () => {

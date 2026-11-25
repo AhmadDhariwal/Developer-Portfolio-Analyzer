@@ -11,6 +11,7 @@ describe('Interview Prep request lifecycle', () => {
     getInterviewPrepQuestions: vi.fn(),
     askInterviewPrepQuestion: vi.fn(),
     getInterviewPrepHistory: vi.fn(),
+    generateInterviewPrepQuestions: vi.fn(),
   };
   beforeEach(() => {
     vi.resetAllMocks();
@@ -58,12 +59,14 @@ describe('Interview Prep request lifecycle', () => {
       .subscribe(observer);
     expect(observer).toHaveBeenCalledWith({ answer: 'Owner-b answer' });
   });
-  it('does not cache provider failures and bounds custom requests to 20 seconds', async () => {
+  it('does not cache provider failures and bounds custom requests to 40 seconds', async () => {
     vi.useFakeTimers();
     api.askInterviewPrepQuestion.mockReturnValue(new Subject());
     const error = vi.fn();
     service.askQuestion({ question: 'A valid custom question' }).subscribe({ error });
     await vi.advanceTimersByTimeAsync(20001);
+    expect(error).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(20000);
     expect(error.mock.calls[0][0].name).toBe('TimeoutError');
     api.askInterviewPrepQuestion.mockReturnValue(
       throwError(() => new Error('provider unavailable')),
@@ -76,5 +79,24 @@ describe('Interview Prep request lifecycle', () => {
     const error = vi.fn();
     service.getSessions().subscribe({ error });
     expect(error).toHaveBeenCalledOnce();
+  });
+  it('serializes default generation as explicit all sources and preserves exact difficulty/count', () => {
+    api.generateInterviewPrepQuestions.mockReturnValue(of({ questions: [] }));
+    service
+      .generateQuestions({ skill: 'mern', difficulty: 'easy', source: '', target: 5, limit: 5 })
+      .subscribe();
+    expect(api.generateInterviewPrepQuestions).toHaveBeenCalledWith(
+      expect.objectContaining({ source: 'database', difficulty: 'easy', target: 5, limit: 5 }),
+    );
+  });
+  it('lets generation use its bounded provider fallback deadline beyond 20 seconds', async () => {
+    vi.useFakeTimers();
+    api.generateInterviewPrepQuestions.mockReturnValue(new Subject());
+    const error = vi.fn();
+    service.generateQuestions({ skill: 'mern', difficulty: 'easy', limit: 5 }).subscribe({ error });
+    await vi.advanceTimersByTimeAsync(20001);
+    expect(error).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(error.mock.calls[0][0].name).toBe('TimeoutError');
   });
 });

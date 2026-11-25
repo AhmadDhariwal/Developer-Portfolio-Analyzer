@@ -1,0 +1,55 @@
+<section class="timeline" [class.timeline--empty]="!items.length">
+  <p class="timeline__empty" *ngIf="!items.length">No recent recruiter activity yet.</p>
+
+  <div class="timeline__rail" *ngIf="items.length">
+    <article
+      class="timeline__item"
+      *ngFor="let item of items; trackBy: trackByItem"
+      [class]="'timeline__item timeline__item--' + toneFor(item?.action)"
+    >
+      <div class="timeline__marker" aria-hidden="true">
+        <span class="timeline__dot"></span>
+      </div>
+
+      <div class="timeline__card">
+        <div class="timeline__head">
+          <div class="timeline__title-row">
+            <strong>{{ labelFor(item.action) }}</strong>
+            <span class="http-badge" *ngIf="item?.method || item?.statusCode">
+              {{ item?.method || 'EVENT' }}<ng-container *ngIf="item?.statusCode"> · {{ item.statusCode }}</ng-container>
+            </span>
+          </div>
+          <time *ngIf="item?.timestamp">{{ item.timestamp | date: 'medium' }}</time>
+        </div>
+
+        <div class="timeline__links">
+          <a
+            *ngIf="item?.candidate && candidateId(item); else candidateText"
+            class="entity-pill"
+            [routerLink]="['/app/recruiter/candidates', candidateId(item)]"
+          >
+            Candidate: {{ item.candidate.name || item.candidate.fullName }}
+          </a>
+          <ng-template #candidateText>
+            <span class="entity-text" *ngIf="item?.candidate?.name">{{ item.candidate.name }}</span>
+          </ng-template>
+
+          <a
+            *ngIf="item?.job && jobId(item); else jobText"
+            class="entity-pill"
+            [routerLink]="['/app/recruiter/jobs', jobId(item)]"
+          >
+            Job: {{ item.job.title }}
+          </a>
+          <ng-template #jobText>
+            <span class="entity-text" *ngIf="item?.job?.title">{{ item.job.title }}</span>
+          </ng-template>
+
+          <span class="route-text" *ngIf="!item?.candidate?.name && !item?.job?.title">
+            {{ item?.route || 'Recruiter workspace event' }}
+          </span>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

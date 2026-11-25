@@ -6,12 +6,12 @@ const { createHash } = require('node:crypto');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
-const cache = require('../services/redisCacheService');
-const governance = require('../services/newsGovernanceService');
-const catalog = require('../services/newsCatalogService');
-const Article = require('../models/newsArticle');
-const User = require('../models/user');
-const { matchesTopic } = require('../utils/newsTopics');
+const cache = require('../core/cache/redisCacheService');
+const governance = require('../modules/news/services/newsGovernanceService');
+const catalog = require('../modules/news/services/newsCatalogService');
+const Article = require('../modules/news/models/newsArticle');
+const User = require('../modules/auth/models/user');
+const { matchesTopic } = require('../modules/news/utils/newsTopics');
 const phase = process.argv.includes('--before') ? 'before' : 'after';
 const digest = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 

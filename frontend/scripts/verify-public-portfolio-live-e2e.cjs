@@ -26,7 +26,7 @@ mongoose.set('autoIndex', false);
 const { load, response } = require(
   path.join(backendDir, 'src/tests/fixtures/publicPortfolioFixture'),
 );
-const redisService = require(path.join(backendDir, 'src/services/redisCacheService'));
+const redisService = require(path.join(backendDir, 'src/core/cache/redisCacheService'));
 
 async function runE2E() {
   const startTime = Date.now();
@@ -110,15 +110,25 @@ async function runE2E() {
     const cacheAccess = { getRedisCacheClient: () => scopedRedis };
 
     // 3. Load Models and build indexes
-    const User = require(path.join(backendDir, 'src/models/user'));
-    const Profile = require(path.join(backendDir, 'src/models/publicProfile'));
-    const Cache = require(path.join(backendDir, 'src/models/publicProfileCache'));
-    const Visit = require(path.join(backendDir, 'src/models/publicPortfolioVisit'));
-    const LegacyVisit = require(path.join(backendDir, 'src/models/publicProfileView'));
-    const Resume = require(path.join(backendDir, 'src/models/resumeFile'));
-    const Graph = require(path.join(backendDir, 'src/models/skillGraph'));
-    const Report = require(path.join(backendDir, 'src/models/weeklyReport'));
-    const Settings = require(path.join(backendDir, 'src/models/platformSettings'));
+    const User = require(path.join(backendDir, 'src/modules/auth/models/user'));
+    const Profile = require(
+      path.join(backendDir, 'src/modules/public-portfolio/models/publicProfile'),
+    );
+    const Cache = require(
+      path.join(backendDir, 'src/modules/public-portfolio/models/publicProfileCache'),
+    );
+    const Visit = require(
+      path.join(backendDir, 'src/modules/public-portfolio/models/publicPortfolioVisit'),
+    );
+    const LegacyVisit = require(
+      path.join(backendDir, 'src/modules/public-portfolio/models/publicProfileView'),
+    );
+    const Resume = require(path.join(backendDir, 'src/modules/resume/models/resumeFile'));
+    const Graph = require(path.join(backendDir, 'src/modules/skill-gap/models/skillGraph'));
+    const Report = require(path.join(backendDir, 'src/modules/weekly-reports/models/weeklyReport'));
+    const Settings = require(
+      path.join(backendDir, 'src/modules/super-admin/models/platformSettings'),
+    );
 
     for (const Model of [
       User,
@@ -221,7 +231,7 @@ async function runE2E() {
 
     // 5. Create multi-worker Express environment
     const { createPortfolioCache } = require(
-      path.join(backendDir, 'src/services/publicPortfolioCacheService'),
+      path.join(backendDir, 'src/modules/public-portfolio/services/publicPortfolioCacheService'),
     );
 
     let capturedMail = null;
@@ -234,22 +244,25 @@ async function runE2E() {
 
     function createWorker(workerName) {
       const isolatedCache = createPortfolioCache({ redis: cacheAccess });
-      const service = load('services/publicProfileService.js', {
+      const service = load('modules/public-portfolio/services/publicProfileService.js', {
         './publicPortfolioCacheService': { portfolioCache: isolatedCache },
         './platformSettingsService': { getDeveloperSettingsSync: () => ({}) },
       });
-      const contactService = load('services/publicPortfolioContactService.js', {
-        './emailService': mockMailService,
-      });
-      const controller = load('controllers/publicProfileController.js', {
+      const contactService = load(
+        'modules/public-portfolio/services/publicPortfolioContactService.js',
+        {
+          './emailService': mockMailService,
+        },
+      );
+      const controller = load('modules/public-portfolio/publicProfileController.js', {
         '../services/publicProfileService': service,
         '../services/publicPortfolioContactService': contactService,
         '../services/notificationService': { createNotification: async () => {} },
       });
-      const controls = load('middleware/publicPortfolioRateLimit.js', {
+      const controls = load('modules/public-portfolio/middleware/publicPortfolioRateLimit.js', {
         '../services/redisCacheService': cacheAccess,
       });
-      const router = load('routes/publicProfile.routes.js', {
+      const router = load('modules/public-portfolio/publicProfile.routes.js', {
         '../controllers/publicProfileController': controller,
         '../middleware/publicPortfolioRateLimit': controls,
       });
@@ -258,7 +271,7 @@ async function runE2E() {
       app.use(express.json({ limit: '128kb' }));
       app.use(
         '/uploads',
-        require(path.join(backendDir, 'src/middleware/publicUploadAccess')),
+        require(path.join(backendDir, 'src/core/middleware/publicUploadAccess')),
         express.static(path.join(backendDir, 'uploads')),
       );
       app.use('/api/public-profiles', router);
@@ -519,7 +532,7 @@ async function runE2E() {
     );
 
     // 2.6 Account privacy revocation immediately unpublishes across workers
-    const profileController = load('controllers/profilecontroller.js', {
+    const profileController = load('modules/profile/profilecontroller.js', {
       '../services/notificationService': { createNotification: async () => {} },
       '../services/platformSettingsService': { getDeveloperSettingsSync: () => ({}) },
       '../services/newsService': { invalidateNewsSignalCache: () => {} },

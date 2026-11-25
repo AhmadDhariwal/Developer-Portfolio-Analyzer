@@ -1,0 +1,719 @@
+{
+  "synthetic": true,
+  "authenticatedAccount": false,
+  "checks": [
+    "Easy selection clears previously loaded Medium library drill",
+    "Actual Easy HTTP payload with deliberately Medium fixture response is rejected",
+    "Easy response retains actual Easy difficulty and Verified library metadata",
+    "Saved Medium session is explicitly labeled and cleared before Easy generation",
+    "Empty Easy response shows explicit insufficient-results state without restoring the saved Medium drill"
+  ],
+  "network": [
+    {
+      "url": "http://127.0.0.1:4316/api/interview-prep/generate",
+      "method": "POST",
+      "payload": {
+        "skill": "mern",
+        "query": "",
+        "difficulty": "medium",
+        "category": "",
+        "source": "",
+        "tags": "",
+        "target": 5,
+        "limit": 5
+      },
+      "response": {
+        "questions": [
+          {
+            "question": "Explain React state at medium level?",
+            "answer": "State tracks component data. Updates schedule a render, and React applies the resulting changes to the DOM.",
+            "difficulty": "medium",
+            "topicKey": "mern",
+            "sourceType": "verified_seed",
+            "verificationStatus": "verified",
+            "tags": [
+              "react"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://127.0.0.1:4316/api/interview-prep/generate",
+      "method": "POST",
+      "payload": {
+        "skill": "mern",
+        "query": "",
+        "difficulty": "easy",
+        "category": "",
+        "source": "",
+        "tags": "",
+        "target": 5,
+        "limit": 5
+      },
+      "response": {
+        "questions": [
+          {
+            "question": "Explain React state at medium level?",
+            "answer": "State tracks component data. Updates schedule a render, and React applies the resulting changes to the DOM.",
+            "difficulty": "medium",
+            "topicKey": "mern",
+            "sourceType": "verified_seed",
+            "verificationStatus": "verified",
+            "tags": [
+              "react"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://127.0.0.1:4316/api/interview-prep/generate",
+      "method": "POST",
+      "payload": {
+        "skill": "mern",
+        "query": "",
+        "difficulty": "easy",
+        "category": "",
+        "source": "",
+        "tags": "",
+        "target": 5,
+        "limit": 5
+      },
+      "response": {
+        "questions": [
+          {
+            "question": "Explain React state at easy level?",
+            "answer": "State tracks component data. Updates schedule a render, and React applies the resulting changes to the DOM.",
+            "difficulty": "easy",
+            "topicKey": "mern",
+            "sourceType": "verified_seed",
+            "verificationStatus": "verified",
+            "tags": [
+              "react"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://127.0.0.1:4316/api/interview-prep",
+      "method": "POST",
+      "payload": {
+        "skill": "mern",
+        "skillGaps": [],
+        "idempotencyKey": "24454e79-c065-44fb-9df4-188dd8ff3ccf",
+        "query": "",
+        "difficulty": "medium",
+        "category": "",
+        "source": "",
+        "tags": "",
+        "limit": 5
+      },
+      "response": {
+        "questions": [
+          {
+            "seedId": "mern-001",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "skill": "mern",
+            "question": "How does data flow through a typical MERN application?",
+            "answer": "Short answer: A MERN app usually moves data from a React UI through an Express and Node API into MongoDB and back as JSON. Key points: - A MERN app usually moves data from a React UI through an Express and Node API into MongoDB and back as JSON. - MERN uses data-flow as part of its concrete runtime or design behavior. - The concept is applied in full-stack JavaScript products with shared language and rapid iteration. Explanation: A MERN app usually moves data from a React UI through an Express and Node API into MongoDB and back as JSON. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition. Example: React submits a form to an Express route, Node validates it, and MongoDB persists the document. Pitfalls: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Follow-ups: - How would you validate data-flow in a production MERN codebase? - What simpler alternative would you compare against data-flow, and why? Real-world use case: This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior. Common mistakes: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Interview tip: Describe how data flows end-to-end across the stack, not just each tool in isolation.",
+            "answerSections": {
+              "shortAnswer": "A MERN app usually moves data from a React UI through an Express and Node API into MongoDB and back as JSON.",
+              "summary": "A MERN app usually moves data from a React UI through an Express and Node API into MongoDB and back as JSON.",
+              "keyPoints": [
+                "A MERN app usually moves data from a React UI through an Express and Node API into MongoDB and back as JSON.",
+                "MERN uses data-flow as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "bulletPoints": [
+                "A MERN app usually moves data from a React UI through an Express and Node API into MongoDB and back as JSON.",
+                "MERN uses data-flow as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "explanation": "A MERN app usually moves data from a React UI through an Express and Node API into MongoDB and back as JSON. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition.",
+              "example": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "codeExample": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "pitfalls": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "followUps": [
+                "How would you validate data-flow in a production MERN codebase?",
+                "What simpler alternative would you compare against data-flow, and why?"
+              ],
+              "realWorldUseCase": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "realWorldContext": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "commonMistakes": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "interviewTip": "Describe how data flows end-to-end across the stack, not just each tool in isolation."
+            },
+            "normalizedQuestion": "how does data flow through a typical mern application",
+            "normalizedAnswer": "short answer a mern app usually moves data from a react ui through an express and node api into mongodb and back as json key points a mern app usually moves data from a react ui through an express and node api into mongodb and back as json mern uses dataflow as part of its concrete runtime or design behavior the concept is applied in fullstack javascript products with shared language and rapid iteration explanation a mern app usually moves data from a react ui through an express and node api into mongodb and back as json in mern this matters because interviewers want to know how the concept changes implementation decisions debugging and production behavior a strong answer should connect the idea to real tradeoffs instead of repeating a definition example react submits a form to an express route node validates it and mongodb persists the document pitfalls confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use followups how would you validate dataflow in a production mern codebase what simpler alternative would you compare against dataflow and why realworld use case this comes up in fullstack javascript products with shared language and rapid iteration where teams need reliable mern behavior common mistakes confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use interview tip describe how data flows endtoend across the stack not just each tool in isolation",
+            "difficulty": "medium",
+            "tags": [
+              "mern",
+              "stack",
+              "core-concepts",
+              "medium",
+              "verified_seed",
+              "v6-ranked-verified-bank",
+              "data-flow"
+            ],
+            "source": "verified_seed",
+            "sourceType": "verified_seed",
+            "sourceMeta": {
+              "seedId": "mern-001",
+              "seedVersion": "v6-ranked-verified-bank",
+              "rank": 1,
+              "rankScore": 94.4,
+              "isTopQuestion": true,
+              "expectedSignals": [
+                "mern",
+                "core-concepts",
+                "a mern app usually moves data from a react ui through an express and node api into mongodb and back as json.",
+                "mern uses data-flow as part of its concrete runtime or design behavior.",
+                "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+              ],
+              "badAnswerSignals": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ]
+            },
+            "confidenceScore": 1,
+            "relevanceScore": 1,
+            "category": "core-concepts",
+            "qualityScore": 100,
+            "rank": 1,
+            "rankScore": 94.4,
+            "isTopQuestion": true,
+            "expectedSignals": [
+              "mern",
+              "core-concepts",
+              "a mern app usually moves data from a react ui through an express and node api into mongodb and back as json.",
+              "mern uses data-flow as part of its concrete runtime or design behavior.",
+              "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+            ],
+            "badAnswerSignals": [
+              "Confusing the concept with a different MERN mechanism.",
+              "Ignoring the primary tradeoff or failure mode in production use."
+            ],
+            "reviewStatus": "approved",
+            "version": "v6-ranked-verified-bank",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 199,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T05:55:20.425Z",
+            "_id": "fixture-mern-0",
+            "verificationStatus": "verified"
+          },
+          {
+            "seedId": "mern-002",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "skill": "mern",
+            "question": "Why is MERN attractive for full-stack teams?",
+            "answer": "Short answer: MERN lets teams use JavaScript across the client and server, which can speed onboarding, reuse, and cross-layer debugging. Key points: - MERN lets teams use JavaScript across the client and server, which can speed onboarding, reuse, and cross-layer debugging. - MERN uses full-stack as part of its concrete runtime or design behavior. - The concept is applied in full-stack JavaScript products with shared language and rapid iteration. Explanation: MERN lets teams use JavaScript across the client and server, which can speed onboarding, reuse, and cross-layer debugging. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition. Example: React submits a form to an Express route, Node validates it, and MongoDB persists the document. Pitfalls: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Follow-ups: - How would you validate full-stack in a production MERN codebase? - What simpler alternative would you compare against full-stack, and why? Real-world use case: This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior. Common mistakes: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Interview tip: Describe how data flows end-to-end across the stack, not just each tool in isolation.",
+            "answerSections": {
+              "shortAnswer": "MERN lets teams use JavaScript across the client and server, which can speed onboarding, reuse, and cross-layer debugging.",
+              "summary": "MERN lets teams use JavaScript across the client and server, which can speed onboarding, reuse, and cross-layer debugging.",
+              "keyPoints": [
+                "MERN lets teams use JavaScript across the client and server, which can speed onboarding, reuse, and cross-layer debugging.",
+                "MERN uses full-stack as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "bulletPoints": [
+                "MERN lets teams use JavaScript across the client and server, which can speed onboarding, reuse, and cross-layer debugging.",
+                "MERN uses full-stack as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "explanation": "MERN lets teams use JavaScript across the client and server, which can speed onboarding, reuse, and cross-layer debugging. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition.",
+              "example": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "codeExample": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "pitfalls": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "followUps": [
+                "How would you validate full-stack in a production MERN codebase?",
+                "What simpler alternative would you compare against full-stack, and why?"
+              ],
+              "realWorldUseCase": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "realWorldContext": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "commonMistakes": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "interviewTip": "Describe how data flows end-to-end across the stack, not just each tool in isolation."
+            },
+            "normalizedQuestion": "why is mern attractive for fullstack teams",
+            "normalizedAnswer": "short answer mern lets teams use javascript across the client and server which can speed onboarding reuse and crosslayer debugging key points mern lets teams use javascript across the client and server which can speed onboarding reuse and crosslayer debugging mern uses fullstack as part of its concrete runtime or design behavior the concept is applied in fullstack javascript products with shared language and rapid iteration explanation mern lets teams use javascript across the client and server which can speed onboarding reuse and crosslayer debugging in mern this matters because interviewers want to know how the concept changes implementation decisions debugging and production behavior a strong answer should connect the idea to real tradeoffs instead of repeating a definition example react submits a form to an express route node validates it and mongodb persists the document pitfalls confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use followups how would you validate fullstack in a production mern codebase what simpler alternative would you compare against fullstack and why realworld use case this comes up in fullstack javascript products with shared language and rapid iteration where teams need reliable mern behavior common mistakes confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use interview tip describe how data flows endtoend across the stack not just each tool in isolation",
+            "difficulty": "medium",
+            "tags": [
+              "mern",
+              "stack",
+              "core-concepts",
+              "medium",
+              "verified_seed",
+              "v6-ranked-verified-bank",
+              "full-stack"
+            ],
+            "source": "verified_seed",
+            "sourceType": "verified_seed",
+            "sourceMeta": {
+              "seedId": "mern-002",
+              "seedVersion": "v6-ranked-verified-bank",
+              "rank": 2,
+              "rankScore": 94.05,
+              "isTopQuestion": true,
+              "expectedSignals": [
+                "mern",
+                "core-concepts",
+                "mern lets teams use javascript across the client and server, which can speed onboarding, reuse, and cross-layer debugging.",
+                "mern uses full-stack as part of its concrete runtime or design behavior.",
+                "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+              ],
+              "badAnswerSignals": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ]
+            },
+            "confidenceScore": 1,
+            "relevanceScore": 1,
+            "category": "core-concepts",
+            "qualityScore": 100,
+            "rank": 2,
+            "rankScore": 94.05,
+            "isTopQuestion": true,
+            "expectedSignals": [
+              "mern",
+              "core-concepts",
+              "mern lets teams use javascript across the client and server, which can speed onboarding, reuse, and cross-layer debugging.",
+              "mern uses full-stack as part of its concrete runtime or design behavior.",
+              "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+            ],
+            "badAnswerSignals": [
+              "Confusing the concept with a different MERN mechanism.",
+              "Ignoring the primary tradeoff or failure mode in production use."
+            ],
+            "reviewStatus": "approved",
+            "version": "v6-ranked-verified-bank",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 198,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T05:55:20.425Z",
+            "_id": "fixture-mern-1",
+            "verificationStatus": "verified"
+          },
+          {
+            "seedId": "mern-004",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "skill": "mern",
+            "question": "How do React and Express communicate in a MERN app?",
+            "answer": "Short answer: React typically calls HTTP endpoints or websockets exposed by Express, which translates requests into domain logic and database operations. Key points: - React typically calls HTTP endpoints or websockets exposed by Express, which translates requests into domain logic and database operations. - MERN uses react as part of its concrete runtime or design behavior. - The concept is applied in full-stack JavaScript products with shared language and rapid iteration. Explanation: React typically calls HTTP endpoints or websockets exposed by Express, which translates requests into domain logic and database operations. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition. Example: React submits a form to an Express route, Node validates it, and MongoDB persists the document. Pitfalls: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Follow-ups: - How would you validate react in a production MERN codebase? - What simpler alternative would you compare against react, and why? Real-world use case: This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior. Common mistakes: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Interview tip: Describe how data flows end-to-end across the stack, not just each tool in isolation.",
+            "answerSections": {
+              "shortAnswer": "React typically calls HTTP endpoints or websockets exposed by Express, which translates requests into domain logic and database operations.",
+              "summary": "React typically calls HTTP endpoints or websockets exposed by Express, which translates requests into domain logic and database operations.",
+              "keyPoints": [
+                "React typically calls HTTP endpoints or websockets exposed by Express, which translates requests into domain logic and database operations.",
+                "MERN uses react as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "bulletPoints": [
+                "React typically calls HTTP endpoints or websockets exposed by Express, which translates requests into domain logic and database operations.",
+                "MERN uses react as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "explanation": "React typically calls HTTP endpoints or websockets exposed by Express, which translates requests into domain logic and database operations. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition.",
+              "example": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "codeExample": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "pitfalls": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "followUps": [
+                "How would you validate react in a production MERN codebase?",
+                "What simpler alternative would you compare against react, and why?"
+              ],
+              "realWorldUseCase": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "realWorldContext": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "commonMistakes": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "interviewTip": "Describe how data flows end-to-end across the stack, not just each tool in isolation."
+            },
+            "normalizedQuestion": "how do react and express communicate in a mern app",
+            "normalizedAnswer": "short answer react typically calls http endpoints or websockets exposed by express which translates requests into domain logic and database operations key points react typically calls http endpoints or websockets exposed by express which translates requests into domain logic and database operations mern uses react as part of its concrete runtime or design behavior the concept is applied in fullstack javascript products with shared language and rapid iteration explanation react typically calls http endpoints or websockets exposed by express which translates requests into domain logic and database operations in mern this matters because interviewers want to know how the concept changes implementation decisions debugging and production behavior a strong answer should connect the idea to real tradeoffs instead of repeating a definition example react submits a form to an express route node validates it and mongodb persists the document pitfalls confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use followups how would you validate react in a production mern codebase what simpler alternative would you compare against react and why realworld use case this comes up in fullstack javascript products with shared language and rapid iteration where teams need reliable mern behavior common mistakes confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use interview tip describe how data flows endtoend across the stack not just each tool in isolation",
+            "difficulty": "medium",
+            "tags": [
+              "mern",
+              "stack",
+              "core-concepts",
+              "medium",
+              "verified_seed",
+              "v6-ranked-verified-bank",
+              "react",
+              "express",
+              "api"
+            ],
+            "source": "verified_seed",
+            "sourceType": "verified_seed",
+            "sourceMeta": {
+              "seedId": "mern-004",
+              "seedVersion": "v6-ranked-verified-bank",
+              "rank": 4,
+              "rankScore": 93.25,
+              "isTopQuestion": true,
+              "expectedSignals": [
+                "mern",
+                "core-concepts",
+                "react typically calls http endpoints or websockets exposed by express, which translates requests into domain logic and database operations.",
+                "mern uses react as part of its concrete runtime or design behavior.",
+                "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+              ],
+              "badAnswerSignals": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ]
+            },
+            "confidenceScore": 0.99,
+            "relevanceScore": 0.99,
+            "category": "core-concepts",
+            "qualityScore": 99,
+            "rank": 4,
+            "rankScore": 93.25,
+            "isTopQuestion": true,
+            "expectedSignals": [
+              "mern",
+              "core-concepts",
+              "react typically calls http endpoints or websockets exposed by express, which translates requests into domain logic and database operations.",
+              "mern uses react as part of its concrete runtime or design behavior.",
+              "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+            ],
+            "badAnswerSignals": [
+              "Confusing the concept with a different MERN mechanism.",
+              "Ignoring the primary tradeoff or failure mode in production use."
+            ],
+            "reviewStatus": "approved",
+            "version": "v6-ranked-verified-bank",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 196,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T05:55:20.426Z",
+            "_id": "fixture-mern-3",
+            "verificationStatus": "verified"
+          },
+          {
+            "seedId": "mern-005",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "skill": "mern",
+            "question": "How do you handle authentication in a MERN stack?",
+            "answer": "Short answer: Authentication usually combines secure credential handling, token or session management, and client-side route or request guards. Key points: - Authentication usually combines secure credential handling, token or session management, and client-side route or request guards. - MERN uses authentication as part of its concrete runtime or design behavior. - The concept is applied in full-stack JavaScript products with shared language and rapid iteration. Explanation: Authentication usually combines secure credential handling, token or session management, and client-side route or request guards. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition. Example: React submits a form to an Express route, Node validates it, and MongoDB persists the document. Pitfalls: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Follow-ups: - How would you validate authentication in a production MERN codebase? - What simpler alternative would you compare against authentication, and why? Real-world use case: This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior. Common mistakes: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Interview tip: Describe how data flows end-to-end across the stack, not just each tool in isolation.",
+            "answerSections": {
+              "shortAnswer": "Authentication usually combines secure credential handling, token or session management, and client-side route or request guards.",
+              "summary": "Authentication usually combines secure credential handling, token or session management, and client-side route or request guards.",
+              "keyPoints": [
+                "Authentication usually combines secure credential handling, token or session management, and client-side route or request guards.",
+                "MERN uses authentication as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "bulletPoints": [
+                "Authentication usually combines secure credential handling, token or session management, and client-side route or request guards.",
+                "MERN uses authentication as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "explanation": "Authentication usually combines secure credential handling, token or session management, and client-side route or request guards. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition.",
+              "example": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "codeExample": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "pitfalls": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "followUps": [
+                "How would you validate authentication in a production MERN codebase?",
+                "What simpler alternative would you compare against authentication, and why?"
+              ],
+              "realWorldUseCase": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "realWorldContext": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "commonMistakes": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "interviewTip": "Describe how data flows end-to-end across the stack, not just each tool in isolation."
+            },
+            "normalizedQuestion": "how do you handle authentication in a mern stack",
+            "normalizedAnswer": "short answer authentication usually combines secure credential handling token or session management and clientside route or request guards key points authentication usually combines secure credential handling token or session management and clientside route or request guards mern uses authentication as part of its concrete runtime or design behavior the concept is applied in fullstack javascript products with shared language and rapid iteration explanation authentication usually combines secure credential handling token or session management and clientside route or request guards in mern this matters because interviewers want to know how the concept changes implementation decisions debugging and production behavior a strong answer should connect the idea to real tradeoffs instead of repeating a definition example react submits a form to an express route node validates it and mongodb persists the document pitfalls confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use followups how would you validate authentication in a production mern codebase what simpler alternative would you compare against authentication and why realworld use case this comes up in fullstack javascript products with shared language and rapid iteration where teams need reliable mern behavior common mistakes confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use interview tip describe how data flows endtoend across the stack not just each tool in isolation",
+            "difficulty": "medium",
+            "tags": [
+              "mern",
+              "stack",
+              "core-concepts",
+              "medium",
+              "verified_seed",
+              "v6-ranked-verified-bank",
+              "authentication",
+              "security"
+            ],
+            "source": "verified_seed",
+            "sourceType": "verified_seed",
+            "sourceMeta": {
+              "seedId": "mern-005",
+              "seedVersion": "v6-ranked-verified-bank",
+              "rank": 5,
+              "rankScore": 92.9,
+              "isTopQuestion": true,
+              "expectedSignals": [
+                "mern",
+                "core-concepts",
+                "authentication usually combines secure credential handling, token or session management, and client-side route or request guards.",
+                "mern uses authentication as part of its concrete runtime or design behavior.",
+                "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+              ],
+              "badAnswerSignals": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ]
+            },
+            "confidenceScore": 0.99,
+            "relevanceScore": 0.99,
+            "category": "core-concepts",
+            "qualityScore": 99,
+            "rank": 5,
+            "rankScore": 92.9,
+            "isTopQuestion": true,
+            "expectedSignals": [
+              "mern",
+              "core-concepts",
+              "authentication usually combines secure credential handling, token or session management, and client-side route or request guards.",
+              "mern uses authentication as part of its concrete runtime or design behavior.",
+              "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+            ],
+            "badAnswerSignals": [
+              "Confusing the concept with a different MERN mechanism.",
+              "Ignoring the primary tradeoff or failure mode in production use."
+            ],
+            "reviewStatus": "approved",
+            "version": "v6-ranked-verified-bank",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 195,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T05:55:20.426Z",
+            "_id": "fixture-mern-4",
+            "verificationStatus": "verified"
+          },
+          {
+            "seedId": "mern-007",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "skill": "mern",
+            "question": "How do you manage environment configuration in MERN apps?",
+            "answer": "Short answer: Keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit. Key points: - Keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit. - MERN uses configuration as part of its concrete runtime or design behavior. - The concept is applied in full-stack JavaScript products with shared language and rapid iteration. Explanation: Keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition. Example: React submits a form to an Express route, Node validates it, and MongoDB persists the document. Pitfalls: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Follow-ups: - How would you validate configuration in a production MERN codebase? - What simpler alternative would you compare against configuration, and why? Real-world use case: This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior. Common mistakes: - Confusing the concept with a different MERN mechanism. - Ignoring the primary tradeoff or failure mode in production use. Interview tip: Describe how data flows end-to-end across the stack, not just each tool in isolation.",
+            "answerSections": {
+              "shortAnswer": "Keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit.",
+              "summary": "Keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit.",
+              "keyPoints": [
+                "Keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit.",
+                "MERN uses configuration as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "bulletPoints": [
+                "Keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit.",
+                "MERN uses configuration as part of its concrete runtime or design behavior.",
+                "The concept is applied in full-stack JavaScript products with shared language and rapid iteration."
+              ],
+              "explanation": "Keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit. In MERN, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition.",
+              "example": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "codeExample": "React submits a form to an Express route, Node validates it, and MongoDB persists the document.",
+              "pitfalls": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "followUps": [
+                "How would you validate configuration in a production MERN codebase?",
+                "What simpler alternative would you compare against configuration, and why?"
+              ],
+              "realWorldUseCase": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "realWorldContext": "This comes up in full-stack JavaScript products with shared language and rapid iteration where teams need reliable MERN behavior.",
+              "commonMistakes": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ],
+              "interviewTip": "Describe how data flows end-to-end across the stack, not just each tool in isolation."
+            },
+            "normalizedQuestion": "how do you manage environment configuration in mern apps",
+            "normalizedAnswer": "short answer keep frontendsafe variables separate from backend secrets and make each deployment environment explicit rather than implicit key points keep frontendsafe variables separate from backend secrets and make each deployment environment explicit rather than implicit mern uses configuration as part of its concrete runtime or design behavior the concept is applied in fullstack javascript products with shared language and rapid iteration explanation keep frontendsafe variables separate from backend secrets and make each deployment environment explicit rather than implicit in mern this matters because interviewers want to know how the concept changes implementation decisions debugging and production behavior a strong answer should connect the idea to real tradeoffs instead of repeating a definition example react submits a form to an express route node validates it and mongodb persists the document pitfalls confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use followups how would you validate configuration in a production mern codebase what simpler alternative would you compare against configuration and why realworld use case this comes up in fullstack javascript products with shared language and rapid iteration where teams need reliable mern behavior common mistakes confusing the concept with a different mern mechanism ignoring the primary tradeoff or failure mode in production use interview tip describe how data flows endtoend across the stack not just each tool in isolation",
+            "difficulty": "medium",
+            "tags": [
+              "mern",
+              "stack",
+              "core-concepts",
+              "medium",
+              "verified_seed",
+              "v6-ranked-verified-bank",
+              "configuration",
+              "deployment"
+            ],
+            "source": "verified_seed",
+            "sourceType": "verified_seed",
+            "sourceMeta": {
+              "seedId": "mern-007",
+              "seedVersion": "v6-ranked-verified-bank",
+              "rank": 7,
+              "rankScore": 92.1,
+              "isTopQuestion": true,
+              "expectedSignals": [
+                "mern",
+                "core-concepts",
+                "keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit.",
+                "mern uses configuration as part of its concrete runtime or design behavior.",
+                "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+              ],
+              "badAnswerSignals": [
+                "Confusing the concept with a different MERN mechanism.",
+                "Ignoring the primary tradeoff or failure mode in production use."
+              ]
+            },
+            "confidenceScore": 0.98,
+            "relevanceScore": 0.98,
+            "category": "core-concepts",
+            "qualityScore": 98,
+            "rank": 7,
+            "rankScore": 92.1,
+            "isTopQuestion": true,
+            "expectedSignals": [
+              "mern",
+              "core-concepts",
+              "keep frontend-safe variables separate from backend secrets and make each deployment environment explicit rather than implicit.",
+              "mern uses configuration as part of its concrete runtime or design behavior.",
+              "the concept is applied in full-stack javascript products with shared language and rapid iteration."
+            ],
+            "badAnswerSignals": [
+              "Confusing the concept with a different MERN mechanism.",
+              "Ignoring the primary tradeoff or failure mode in production use."
+            ],
+            "reviewStatus": "approved",
+            "version": "v6-ranked-verified-bank",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 193,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T05:55:20.426Z",
+            "_id": "fixture-mern-6",
+            "verificationStatus": "verified"
+          }
+        ],
+        "page": 1,
+        "total": 5,
+        "totalPages": 1,
+        "limit": 5,
+        "source": "db",
+        "aiGeneratedCount": 0,
+        "sessionId": "fixture-session-1",
+        "personalization": {
+          "status": "career-context-only",
+          "limitation": "Fixture preview: missing evidence does not establish inability."
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:4316/api/interview-prep/generate",
+      "method": "POST",
+      "payload": {
+        "skill": "mern",
+        "query": "",
+        "difficulty": "easy",
+        "category": "",
+        "source": "",
+        "tags": "",
+        "target": 5,
+        "limit": 5
+      },
+      "response": {
+        "questions": []
+      }
+    }
+  ],
+  "screenshots": [
+    "before-medium-drill.png",
+    "easy-selection-cleared.png",
+    "easy-medium-response-rejected.png",
+    "easy-result-390.png",
+    "easy-result-1440.png"
+  ],
+  "status": "PASS"
+}

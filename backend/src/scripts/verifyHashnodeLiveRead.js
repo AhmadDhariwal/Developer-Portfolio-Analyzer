@@ -5,9 +5,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 const axios = require('axios');
-const cache = require('../services/redisCacheService');
-const governance = require('../services/integrationGovernanceService');
-const hashnode = require('../services/integrations/hashnodePublication');
+const cache = require('../core/cache/redisCacheService');
+const governance = require('../modules/integrations/services/integrationGovernanceService');
+const hashnode = require('../modules/integrations/services/adapters/hashnodePublication');
 
 async function main() {
   const name = process.argv.find((value) => value.startsWith('--output='))?.slice(9);

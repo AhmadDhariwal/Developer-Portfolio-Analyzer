@@ -1,0 +1,123 @@
+{
+  "recordedAt": "2026-11-15T11:24:45.136599+00:00",
+  "backendRelevant": {
+    "passed": 140,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "backend-tests-final.txt",
+    "realIsolatedMongo": true
+  },
+  "postCleanupBackend": {
+    "passed": 44,
+    "failed": 0,
+    "evidence": "post-cleanup-backend-tests.txt"
+  },
+  "frontend": {
+    "passed": 702,
+    "files": 118,
+    "failed": 0,
+    "evidence": "frontend-tests-final.txt",
+    "command": "npm test -- --watch=false --runner-config=scripts/interview-verification.vitest.config.mjs"
+  },
+  "typescript": {
+    "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+    "exitCode": 0,
+    "stdout": "empty on success"
+  },
+  "formatting": {
+    "formattingWriteCompleted": true,
+    "formattingCheckPassed": true,
+    "syntaxChecks": [
+      {
+        "path": "backend/src/controllers/interviewPrepController.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/repositories/interviewQuestionRepository.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/scripts/auditInterviewCoverage.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/scripts/fillInterviewQuestionCoverage.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/aiProviderManager.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/aiservice.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/interviewCoordinationService.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/interviewCoverageService.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/interviewPrepService.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/interviewQuestionFilters.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/providers/interviewAIProvider.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/tests/interviewQuestionFilters.test.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/interviewCoverageAudit.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/services/interviewGenerationFlight.js",
+        "exitCode": 0
+      },
+      {
+        "path": "backend/src/tests/interviewCoverageCorrection.test.js",
+        "exitCode": 0
+      },
+      {
+        "path": "frontend/scripts/verify-interview-live-coverage.cjs",
+        "exitCode": 0
+      }
+    ]
+  },
+  "backendFullInitial": {
+    "tests": 1042,
+    "passed": 998,
+    "failed": 21,
+    "skipped": 23,
+    "evidence": "backend-tests-full.txt",
+    "note": "Interview failure resolved in later relevant suite; unrelated failures remain recorded."
+  },
+  "productionBuild": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "evidence": "production-build-final.txt",
+    "warnings": [
+      "Initial bundle 4.02 MB / 4 MB warning budget",
+      "Jobs SCSS 54.35 kB / 48 kB",
+      "Public Portfolio SCSS 49.97 kB / 48 kB"
+    ]
+  },
+  "originalPort5000RestartAcceptance": {
+    "passed": true,
+    "questions": 5,
+    "difficulty": "easy",
+    "refreshNewGenerationCount": 0,
+    "backendLeftRunning": true,
+    "evidence": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\port5000-finalization.json"
+  }
+}

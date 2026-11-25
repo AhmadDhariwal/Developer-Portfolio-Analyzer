@@ -1,0 +1,8 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+.back-btn {
+  @include recruiter.btn-secondary;
+  min-height: 36px;
+  padding: 0 12px;
+  width: fit-content;
+}

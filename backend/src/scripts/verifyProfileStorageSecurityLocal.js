@@ -40,7 +40,7 @@ async function main() {
         "--test",
         "--test-concurrency=1",
         "--test-reporter=spec",
-        "src/tests/storageSecurityFinal.test.js",
+        "src/tests/core/storageSecurityFinal.test.js",
       ],
       {
         cwd: require("node:path").resolve(__dirname, "../.."),

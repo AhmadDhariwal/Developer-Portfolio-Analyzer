@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const assert = require('node:assert/strict');
-const engine = require('../../backend/src/services/scoring/resumeOverallScore');
+const engine = require('../../backend/src/core/scoring/resumeOverallScore');
 const baseFixture = require('./resume-browser-fixture.cjs');
 const values = {
   atsScore: 71,

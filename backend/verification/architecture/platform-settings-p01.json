@@ -1,0 +1,97 @@
+{
+  "scope": "DPA P0.1",
+  "branch": "fix/recruiter",
+  "integrationTarget": "not applicable",
+  "initialWorkingTree": "clean",
+  "changedFiles": [
+    "backend/index.js",
+    "backend/src/modules/super-admin/services/platformSettingsService.js",
+    "backend/src/tests/core/platformSettingsWorkers.test.js",
+    "backend/src/tests/fixtures/platformSettingsWorker.js",
+    "backend/verification/architecture/platform-settings-p01.json"
+  ],
+  "movedFiles": [],
+  "deletedFiles": [],
+  "rootCause": "Synchronous snapshots ignored expiration. Local writes updated only the writer cache. API-only startup returned before settings warmup. Maintenance errors fell through to normal handling.",
+  "beforeFlow": "MongoDB -> process-local cache -> synchronous policy consumers, with no cross-worker invalidation and no expiration check on synchronous reads.",
+  "afterFlow": "MongoDB compare-and-swap write -> writer cache and opaque Redis revision token -> jittered worker revision checks -> fresh MongoDB read -> local policy snapshot. API readiness awaits Mongo warmup. Request middleware revalidates before security gates.",
+  "consistency": {
+    "authority": "MongoDB primary",
+    "redisContents": "Opaque invalidation token only, scoped by database name",
+    "redisCheckIntervalMs": [1500, 2000],
+    "mongoRefreshStartsBeforeExpiryMs": 5000,
+    "snapshotHardTtlMs": 30000,
+    "mongoOperationTimeoutMs": 5000,
+    "singleFlightReads": true,
+    "writes": "Fresh authoritative read, monotonic updatedAt compare-and-swap and up to four conflict retries. Local generation prevents overlapping reads from replacing a completed write. A timestamp guard prevents out-of-order write responses from replacing newer local snapshots.",
+    "staleEvents": "Tokens carry no settings payload. Every token change re-reads MongoDB. Older tokens cannot install older settings.",
+    "outage": "Periodic MongoDB revalidation continues independently of Redis. Failed revalidation cannot extend snapshot expiry. Expired synchronous reads throw and API requests return 503 if fresh settings cannot be loaded.",
+    "coldStart": "Pre-start configuration consumers retain defaults. Both API startup modes await authoritative warmup before listening.",
+    "shutdown": "Settings timer is cleared and no new settings tick is scheduled after stop. Existing Redis lifecycle remains responsible for its shared client.",
+    "implementationChoice": "Revision polling uses the existing bounded Redis command client, avoiding an additional subscription connection. No new dependency or schema field."
+  },
+  "multiWorkerEvidence": {
+    "infrastructure": "Independent forked Node.js processes, disposable MongoDB replica set and actual Redis 7.0.15 in WSL on loopback port 27391",
+    "before": {
+      "passed": false,
+      "observationDeadlineMs": 60000,
+      "reason": "Worker B retained the previous recruiter setting"
+    },
+    "after": {
+      "passed": true,
+      "testDurationMs": 83467,
+      "redisPropagationMs": 1789,
+      "missedNotificationRecoveryMs": 25189
+    },
+    "initialMongoOnlyRecoveryMs": 25570,
+    "verified": [
+      "Recruiter access enforcement in worker B after worker A updates settings",
+      "Rapid consecutive settings updates, concurrent patches from separate workers and twenty concurrent snapshot requests",
+      "Redis client disconnect, missed revision and reconnect",
+      "Cold worker startup and worker restart",
+      "Actual backend/index.js --api-only cold startup with stored maintenance enabled",
+      "Unauthenticated Super Admin and recruiter requests remain 401",
+      "New JWT lifetime, password policy and newly created OTP expiry use propagated settings",
+      "Expired synchronous snapshot rejects after MongoDB disconnection",
+      "Worker settings shutdown and disposable MongoDB cleanup"
+    ]
+  },
+  "securityImpact": "Existing role and sessionRevision authorization remains in place. JWT expiry changes apply to newly issued tokens. OTP expiry remains stored at creation and attempt limits remain evaluated at validation. Settings storage failure blocks policy-dependent API handling. Maintenance exemptions retain their existing path contracts when settings are available.",
+  "regressions": {
+    "broadRun": {
+      "tests": 1097,
+      "passed": 1053,
+      "failed": 13,
+      "skippedByExistingPrerequisiteGates": 31,
+      "durationMs": 904498
+    },
+    "resolvedOnTargetedReruns": [
+      "careerSprintFinalization.test.js, careerSprintHardening.test.js and aiProviderPlatform.test.js initialization failures resolved by preserving pre-start settings defaults. Combined targeted run had 44 passes, zero failures and one existing prerequisite skip.",
+      "careerSprintLegacy.integration.test.js and sprintAiAdmission.integration.test.js passed all nine checks with explicit disposable MongoDB configuration."
+    ],
+    "focusedResults": [
+      "Profile account security, recruiter HTTP tenant boundaries, recruiter production acceptance and Redis outage recovery passed.",
+      "Recruiter analytics independent-process Redis test passed with its required disposable-instance acknowledgement.",
+      "profileSettingsProduction.test.js passed all eight checks with disposable MongoDB, including its optional integration check."
+    ],
+    "remainingFailures": [
+      "coursesMongo.integration.test.js line 373 expects zero courses but receives 145. Reproduced against the original HEAD PlatformSettings service without changing repository files.",
+      "Five resumeProduction.test.js cases and resumeProductionMongo.test.js cannot read missing fixtures under backend/src/tests/fixtures/resume, including standard.pdf and empty.pdf."
+    ],
+    "testsWeakenedOrNewSkips": false,
+    "frontendValidation": "Not applicable to backend-only changes"
+  },
+  "finalization": {
+    "postCleanupAcceptance": "Nine tests passed, zero failures and zero skips, covering the final multi-worker implementation and profile account security.",
+    "formatting": "Explicit-path Prettier write and check passed for all changed source files and this report, using per-file conventions.",
+    "syntax": "node --check passed for all four changed JavaScript files.",
+    "whitespace": "git diff --check and git diff --cached --check passed.",
+    "historicalArtifacts": "Test-overwritten historical JSON and PDF evidence was restored to original checkout content. No repository files were moved or deleted.",
+    "commitsPushesDeployments": false
+  },
+  "limitations": [
+    "Pre-start configuration defaults remain available to direct service consumers. New API entry points must await settings initialization and revalidate before policy-dependent handling.",
+    "Staleness deadlines assume a responsive Node.js event loop and available MongoDB. MongoDB outage after snapshot expiry reduces availability with 503 responses.",
+    "Full backend regression run includes existing environment-gated integration tests requiring separate provider and database prerequisites. Results are reported separately from settings acceptance."
+  ]
+}

@@ -1,0 +1,62 @@
+<div class="filter-bar">
+  <div class="filter-field filter-field--search">
+    <label for="candidate-search">Search</label>
+    <input
+      id="candidate-search"
+      [(ngModel)]="draft.search"
+      placeholder="Name, job title, or GitHub"
+      (keyup.enter)="submit()"
+    />
+  </div>
+  <div class="filter-field">
+    <label>Stack</label>
+    <app-searchable-select
+      [options]="stackOptions"
+      [value]="draft.stack"
+      [emptyOptionLabel]="'All stacks'"
+      (valueChange)="draft.stack = $event"
+    />
+  </div>
+  <div class="filter-field">
+    <label>Location</label>
+    <app-searchable-select
+      [options]="locationOptions"
+      [value]="draft.location"
+      [emptyOptionLabel]="'All locations'"
+      (valueChange)="draft.location = $event"
+    />
+  </div>
+  <div class="filter-field">
+    <label for="candidate-skills">Skills</label>
+    <input
+      id="candidate-skills"
+      [(ngModel)]="draft.skills"
+      placeholder="React, Node.js, Python"
+      (keyup.enter)="submit()"
+    />
+  </div>
+  <div class="filter-field">
+    <label for="candidate-min-score">Min Score</label>
+    <input
+      id="candidate-min-score"
+      [(ngModel)]="draft.minReadiness"
+      type="number"
+      min="0"
+      max="100"
+      placeholder="70"
+    />
+  </div>
+  <div class="filter-field">
+    <label>Sort</label>
+    <app-searchable-select
+      [options]="sortOptions"
+      [value]="draft.sortBy"
+      [emptyOptionLabel]="'Highest score'"
+      (valueChange)="draft.sortBy = $event || 'score-desc'"
+    />
+  </div>
+  <div class="filter-actions">
+    <button type="button" class="filter-btn filter-btn--ghost" (click)="clear.emit()">Clear</button>
+    <button type="button" class="filter-btn" (click)="submit()">Apply Filters</button>
+  </div>
+</div>

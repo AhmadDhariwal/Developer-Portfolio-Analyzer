@@ -1,0 +1,147 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.timeline {
+  @include recruiter.card-surface(18px);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+
+  @media (max-width: 480px) {
+    padding: 14px;
+  }
+}
+
+.timeline__empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+.timeline__rail {
+  display: grid;
+  gap: 12px;
+  position: relative;
+}
+
+.timeline__item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+
+  &:not(:last-child) .timeline__marker::after {
+    content: '';
+    position: absolute;
+    top: 18px;
+    bottom: -14px;
+    left: 9px;
+    width: 2px;
+    background: var(--border-color);
+  }
+}
+
+.timeline__marker {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+.timeline__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--text-muted);
+  box-shadow: 0 0 0 3px var(--surface-card);
+  z-index: 1;
+}
+
+.timeline__item--ai .timeline__dot {
+  background: var(--color-primary);
+}
+
+.timeline__item--shortlist .timeline__dot {
+  background: var(--color-success);
+}
+
+.timeline__item--job .timeline__dot {
+  background: var(--color-info);
+}
+
+.timeline__card {
+  padding: 12px 14px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.timeline__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  time {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+}
+
+.timeline__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.http-badge {
+  @include recruiter.status-pill(neutral);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 7px;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.timeline__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+.entity-pill {
+  @include recruiter.status-pill(primary);
+  text-decoration: none;
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.entity-text,
+.route-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}

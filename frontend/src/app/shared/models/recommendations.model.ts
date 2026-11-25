@@ -138,6 +138,8 @@ export interface RecommendationCacheMetadata {
   temporary?: boolean;
   ttlHours?: number;
   cachedAt?: string | null;
+  aiRefreshRecommended?: boolean;
+  aiStatus?: string;
 }
 
 export interface RecommendationSignalsUsed {
@@ -229,6 +231,8 @@ export interface RecommendationsResult {
   source?: string;
   sourceMetadata?: Record<string, RecommendationSource>;
   aiUsed?: boolean;
+  aiRefreshRecommended?: boolean;
+  aiStatus?: string;
   aiSuggestions?: Array<{ suggestion: string; aiGenerated: boolean; kind: string }>;
   sourceScores?: Record<string, number | null>;
   scoreProvenance?: { reason?: string; legacyComposite?: string };

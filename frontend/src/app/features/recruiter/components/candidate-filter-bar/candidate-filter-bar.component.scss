@@ -1,0 +1,74 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.filter-bar {
+  @include recruiter.card-surface(16px);
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) repeat(4, minmax(130px, 1fr)) minmax(150px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+
+  @media (max-width: 1280px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+}
+
+.filter-field {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+
+  label {
+    @include recruiter.field-label;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  input {
+    @include recruiter.field-control;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+
+  @media (max-width: 1280px) {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 520px) {
+    justify-content: stretch;
+
+    .filter-btn {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+.filter-btn {
+  @include recruiter.btn-primary;
+
+  &--ghost {
+    @include recruiter.btn-secondary;
+  }
+}

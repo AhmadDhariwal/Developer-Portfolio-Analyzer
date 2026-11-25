@@ -1,0 +1,573 @@
+{
+  "phase": "P1.4A",
+  "date": "2026-11-23",
+  "status": "complete",
+  "objective": "Explicit owner-only JobApplication to RecruiterShortlist integration; stop before P1.4B.",
+  "preflight": {
+    "branch": "fix/P1-project",
+    "head": "f99f1d5ef94677fc6d1173f0fb0745cf885411eb",
+    "target": "not applicable; no integration requested",
+    "stagedBaseline": [
+      {
+        "file": "backend/src/modules/recruiter/services/hub/candidateAnalyticsService.js",
+        "index": "d2ee3798733437f4447e2d4c2f8bc29e612451d0",
+        "workingSha256": "7d2175e906249d63a3cc2573bb185056a15811349d4c5ca8d10e9dac27495563"
+      },
+      {
+        "file": "backend/src/modules/recruiter/services/hub/candidateDiscoveryService.js",
+        "index": "59baa5018cb1c2d42c3edd8f7d791e9557ef8c72",
+        "workingSha256": "4aa82838a6197a5a71d72d803d589c023e62391fc1a8393aaf443640f0933a28"
+      },
+      {
+        "file": "backend/src/modules/recruiter/services/hub/recruiterAnalyticsService.js",
+        "index": "c01a2911253131febb2e57e99c86f4a22747008f",
+        "workingSha256": "6d1f26fe3f133cc7eda4f7f2f0f999605ee0fd6a64b35135714f8fe0fbfc2603"
+      },
+      {
+        "file": "backend/src/modules/recruiter/utils/hub/candidateAnalyticsPipeline.js",
+        "index": "f6cade404936e715bd0aca4ef5b4884b0803d759",
+        "workingSha256": "a621a092d81a2d05996c7dd9fa72ee63ea286a0901e903ba5e1eb6de57a0ef79"
+      },
+      {
+        "file": "backend/src/modules/recruiter/utils/hub/candidateDiscoveryPipeline.js",
+        "index": "ee72adeb196eeb8a466f93ce6fa86e933231a7ef",
+        "workingSha256": "ea01a5796c564f71e82edf387930dee6344d8dd01a2cd52caf244abe066356be"
+      },
+      {
+        "file": "backend/src/tests/fixtures/recruiterAnalyticsFixture.js",
+        "index": "396a44c2ae219d31604899d90c957519bfae7a64",
+        "workingSha256": "3c87ed9d0dd3df915d14686ccc5493e16fad41a57eb949123cdea669c68d1fe3"
+      },
+      {
+        "file": "backend/src/tests/recruiter/candidateAnalytics.integration.test.js",
+        "index": "7a7aaf1519e271ec741bdfe1be16fd88d1b8999b",
+        "workingSha256": "b93ff5e68a33e174602ba729257413856bbdd7fef5bb957487745dcca140e7b2"
+      },
+      {
+        "file": "backend/verification/jobs-hub/p1.3b.1-analytics.json",
+        "index": "df51d235fd72c27a2cdedaf6c1bf090b81109564",
+        "workingSha256": "831dc0251c8ca85257ab1c815b98d8994b8a3c3f613841e5b7ad371f9398565d"
+      },
+      {
+        "file": "backend/verification/jobs-hub/p1.3b.1-cleanup.json",
+        "index": "c55ba6b4b67b1d4b9352480a03713e7eca2bbad6",
+        "workingSha256": "3a08530827592b1bbb3930bb4747331055ca36d1adc1d841140657a265d3446f"
+      },
+      {
+        "file": "backend/verification/jobs-hub/p1.3b.1-implementation.json",
+        "index": "da2046bd8935c7abd8065cb37b36f0bfa62ed87e",
+        "workingSha256": "3c379490311ab6b4ac16485fa065d807d2ebc3549dabbfa353b59219cb8ef7f0"
+      },
+      {
+        "file": "backend/verification/jobs-hub/p1.3b.1-query-plans.json",
+        "index": "d947acb88d10fe2d3aadb4c3b540ac60b41479a8",
+        "workingSha256": "cb7d786475b1bd03f6223c7e0dac2d7a58685ce7a55bb3727d4999108a928188"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html",
+        "index": "597a224ed426f79ad7936d6c27dd2864727d6a20",
+        "workingSha256": "828917716cd14409463c8f26423633b149543448bea3471ca33243d8a9163142"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts",
+        "index": "b0422e26f8db85904e94e86f39af26c1eae41811",
+        "workingSha256": "436ed2221464c625b5e923719282de24e8de834908b7b9dec10cae2b547ff4ac"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.ts",
+        "index": "c1f66dda7c1abe41aa3f30acc7746b67313190b1",
+        "workingSha256": "9e4da94818b844685fcfeacfc6c6afa64caf5ae3f2877e1f4e6922a0a117094b"
+      }
+    ],
+    "proof": "Index blob IDs for all 14 accepted files unchanged; working SHA256 unchanged except intentional recruiterAnalyticsService public-origin exclusion. AST equivalence after removing applicationId:null and redundant parentheses verified for both admin readers and analytics."
+  },
+  "planCompleted": [
+    "Inspect identity, consent, lifecycle, ownership and all shortlist consumers.",
+    "Implement explicit canonical linkage and isolated owner-only workflow.",
+    "Exercise real HTTP authorization, transactions, concurrency, terminal history and public disclosure regressions.",
+    "Format changed files, verify the build and compiler, inventory task artifacts, clean generated output and re-run focused checks."
+  ],
+  "canonicalDesign": {
+    "applicationKey": "Existing lowercase SHA256(jobId + ':' + applicant User ObjectId), checked against the immutable source tuple.",
+    "shortlistReference": "Nullable immutable applicationId on existing RecruiterShortlist; candidateId remains canonical User ObjectId, not Candidate document ObjectId.",
+    "identityRules": "Derive recruiterId, organizationId, jobId and applicantId from a genuine JobApplication and its current owned Job. Never derive identity from names, emails, scores or similarity.",
+    "legacyHandling": "Explicit Candidate.userId aliases are checked only to detect an existing historical evaluation. A conflict returns 409 without converting, replacing or overwriting any existing notes/stage/history.",
+    "indexes": "No index declarations added or changed. Existing unique recruiterId/candidateId/jobId index plus shared job/policy fences protect concurrent creates. No index scripts executed.",
+    "schemaAndDependencies": "One compatible nullable field, four additive routes and nullable existing applicant-list link metadata. No new collection, candidate/application duplication, dependencies, caches, providers, AI, workers, queues or source revision protocol."
+  },
+  "authorityAndAuthorization": [
+    {
+      "authority": "JobApplication",
+      "owns": "Genuine application, frozen applicant name/PDF/optional portfolio, consent, applicant-visible status and lifecycle history.",
+      "access": "Existing applicant and authorized owning Recruiter evidence policy; no new team grant."
+    },
+    {
+      "authority": "RecruiterShortlist",
+      "owns": "Explicit application reference, internal notes and stage only.",
+      "access": "Application-origin entries require live Recruiter authentication, active actor, live organization affiliation/membership, unsuspended organization, enabled Recruiter access, current job ownership and matching immutable source tuple. Teams, managers, organization admins and metadata/evaluation sharing do not grant application access."
+    },
+    {
+      "authority": "RecruiterMatch",
+      "owns": "Existing deterministic public-candidate matching and scores.",
+      "access": "Public candidate eligibility/consent remains authoritative; application evaluations do not seed or synchronize match status."
+    },
+    {
+      "authority": "Job",
+      "owns": "Current authorized Recruiter owner and organization.",
+      "access": "If ownership changes, neither old nor new owner acquires the immutable original application link through this workflow; mismatched source tuple fails closed."
+    }
+  ],
+  "apis": [
+    {
+      "method": "POST",
+      "route": "/api/recruiter-hub/jobs/:id/applications/:applicationId/shortlist",
+      "body": {
+        "expectedStatus": "submitted | reviewing"
+      },
+      "result": "201 when created; 200 when the identical active link already exists; 409 on source status change, terminal source or existing evaluation conflict. IDs/notes/stages/team grants cannot be supplied."
+    },
+    {
+      "method": "GET",
+      "route": "/api/recruiter-hub/shortlists/applications",
+      "result": "Owner-only latest 100 linked evaluations, with explicit limit/scope metadata, frozen submitted name, job title, canonical application status, separate internal stage, version and permission flags. No resume or portfolio payload."
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/recruiter-hub/shortlists/applications/:id",
+      "body": {
+        "expectedVersion": "required nonnegative integer",
+        "notes": "optional string up to 5000 characters",
+        "status": "optional existing shortlist enum"
+      },
+      "result": "Whitelisted compare-and-set mutation; 409 on stale evaluation; terminal application stage changes blocked while notes remain editable."
+    },
+    {
+      "method": "GET",
+      "route": "/api/recruiter-hub/jobs/:id/applications/:applicationId",
+      "result": "Exact authorized application context and frozen submitted evidence metadata, with optional portfolio gated by original sharePortfolio consent and nullable link metadata. No PDF bytes; existing authorized resume endpoint remains the download path."
+    }
+  ],
+  "existingApiCompatibility": "Existing owner applicant list retains its shape and latest-100 behavior, with one batched shortlist query adding nullable {id,status,version}. Public shortlist, matching, discovery, cursor, scoring, analytics and comparison APIs preserve their existing contracts and permissions; only private-origin exclusion is added where required.",
+  "ui": {
+    "jobApplicants": "Explicit Add to Shortlist (internal), Already Shortlisted state, immediate refresh, owner-only shortlist link, success/error/retry/loading/empty states and stale-response guards.",
+    "shortlists": "Separate Public candidates and Direct applications owner-only sources; existing card and page reused. Source changes and denied refresh clear private data, notices, pending confirmation and stale callbacks.",
+    "context": "Private card uses application details link rather than public candidate detail link. Exact application endpoint avoids losing older linked records behind the applicant-list cap.",
+    "status": "Canonical application status displayed beside explicitly labelled internal stage. Terminal stage controls and private removal hidden/disabled; notes retained and editable.",
+    "appearance": "Reuse existing themed recruiter segmented controls, responsive card/actions, CSS tokens, direct-application buttons and responsive styles. Native buttons/links, aria-pressed source controls, labelled selectors, and existing status/error semantics retained.",
+    "visualVerificationLimit": "Angular DOM behavior tested and existing Light/Dark/System/responsive styling reused; no live browser visual or screen-reader matrix was run."
+  },
+  "transactionsAndConflicts": {
+    "mechanism": "Existing replica-set snapshot transactions with majority write concern. Existing actor, organization, membership, settings and job access fences serialize with policy mutation; application __v writes with timestamps:false serialize with status/withdrawal without changing source lifecycle, timestamps, consent or evidence.",
+    "idempotency": "Eight concurrent HTTP retries yielded exactly one 201 and seven 200 responses, one canonical row, unchanged source lifecycle/evidence/timestamps and unchanged notification count.",
+    "mixedRace": "Concurrent public and private creation leaves exactly one evaluation; the losing action returns 404 or 409 and cannot convert or overwrite the winner.",
+    "cas": "Private note/stage updates require expectedVersion and increment shortlist __v. Link requires current active expectedStatus. Cross-job/cross-organization/forged tuple inputs fail.",
+    "rollback": "Injected Shortlist.create failure rolls back the application fence and leaves no evaluation. Concurrent link/withdraw leaves terminal canonical status, at most one historical link, and never reopens an application.",
+    "sideEffects": "No automatic JobApplication status synchronization, notifications, reapplication, reopening, public-profile opt-in or match-status updates."
+  },
+  "consentDecision": {
+    "source": "Existing Developer submission text: 'Submit my selected PDF resume and consented profile fields to this employer organization.'",
+    "interpretation": "Owner-only internal review/evaluation is within the existing explicit employer application disclosure. This implementation narrows access to the authorized original owner; it creates no public or team disclosure permission and does not change historical consent.",
+    "validation": "Require genuine direct-apply-v1 consent, a valid submittedAt and a boolean sharePortfolio. Reject unknown consent versions. New links require an active applicant account; retained submitted evidence follows existing historical retention policy.",
+    "independence": "User.isPublic and candidateVisibility control public discovery, not genuine private applications. Neither is flipped or treated as application disclosure consent. Private evaluation is allowed when public discovery is disabled, but not when Recruiter access itself is disabled.",
+    "exportsAndLogs": "New application/evaluation routes redact application/evaluation/job identifiers and query strings in shared request/audit representations; recruiter audit bodies remain null. No submitted evidence or notes are copied to team/admin export data."
+  },
+  "consumerAudit": [
+    {
+      "file": "backend/src/modules/recruiter/services/hub/shortlistService.js",
+      "decision": "Public create/list/select/update/delete require null/missing applicationId. Reject applicationId payloads and private tuple collisions; never synchronize a private row to a Match."
+    },
+    {
+      "file": "backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js",
+      "decision": "Shared evaluation ownsRecord rejects any application-linked row, including a publicly opted-in applicant."
+    },
+    {
+      "file": "backend/src/modules/recruiter/services/hub/matchService.js",
+      "decision": "Public match status seeding excludes all application-origin rows."
+    },
+    {
+      "file": "backend/src/modules/recruiter/services/hub/recruiterAnalyticsService.js",
+      "decision": "Public-only shortlist query prevents private entries affecting counts, follow-ups, activity scoring and result payloads; accepted P1.3B.1 complete-population analytics preserved."
+    },
+    {
+      "file": "backend/src/modules/admin/controllers/recruiterController.js",
+      "decision": "Administrative recruiter metrics/export source excludes application rows. Other semantics proven unchanged after ignoring formatter-only parentheses/whitespace."
+    },
+    {
+      "file": "backend/src/modules/admin/controllers/tenantcontroller.js",
+      "decision": "Team shortlist totals exclude application rows; existing metrics semantics otherwise unchanged."
+    },
+    {
+      "file": "backend/src/scripts/repairRecruiterLegacyRecords.js",
+      "decision": "Legacy repair skips private rows and hides a private conflicting evaluation identifier. Script inspected, not executed."
+    },
+    {
+      "file": "backend/src/scripts/ensureRecruiterIndexes.js",
+      "decision": "Existing query/index/explain utility inspected; not an applicant payload export, no new index, not executed."
+    },
+    {
+      "file": "backend/src/modules/recruiter/services/matching/jobLifecycleService.js",
+      "decision": "Existing explicit job-delete pipeline cleanup remains unchanged; terminal application transitions do not invoke this cleanup."
+    },
+    {
+      "file": "backend/src/modules/auth/services/accountDeletionService.js",
+      "decision": "Existing explicit account-deletion cascade remains unchanged; do not reinterpret terminal status as deletion. Historical application retention remains the source authority."
+    },
+    {
+      "file": "backend/src/modules/recruiter/services/hub/recruiterReportingService.js",
+      "decision": "Inspected; no raw shortlist consumer/export."
+    },
+    {
+      "file": "backend/src/modules/admin/services/adminConsoleService.js",
+      "decision": "Inspected; no raw shortlist consumer; existing shortlist-labelled aggregate aliases Match data."
+    },
+    {
+      "file": "backend/src/core/middleware/auditLogMiddleware.js",
+      "decision": "Private route/action redaction and null recruiter before/after payloads prevent note/name/reference disclosure through audit consumers."
+    },
+    {
+      "file": "backend/src/core/observability/requestLogPath.js",
+      "decision": "Redacts owner-only application details, PDF, status/link and evaluation feed/mutation paths; unrelated public routes retain representation."
+    },
+    {
+      "file": "backend/src/core/observability/logger.js",
+      "decision": "Uses the same private route redaction in structured request context."
+    }
+  ],
+  "terminalBehavior": "Rejected/withdrawn sources retain links, submitted evidence and internal stage as history. Source status remains canonical and terminal; notes may change, actual stage transitions and relinking are denied. Existing explicit job/account deletion pipeline cleanup is preserved, so this is not a new indefinite evaluation retention promise.",
+  "verification": {
+    "infrastructure": "Disposable local MongoDB replica sets and production HTTP/JWT/route/service code, with deterministic submitted PDF storage read fixture only. No production database or external provider used.",
+    "broadBackend": {
+      "passed": 79,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 268958.7868,
+      "files": [
+        "src/tests/recruiter/applicationShortlists.integration.test.js",
+        "src/tests/jobs/jobApplications.integration.test.js",
+        "src/tests/recruiter/teamEvaluations.integration.test.js",
+        "src/tests/recruiter/teamSharedJobs.integration.test.js",
+        "src/tests/recruiter/recruiterHttp.integration.test.js",
+        "src/tests/recruiter/candidateDiscovery.integration.test.js",
+        "src/tests/recruiter/candidateAnalytics.integration.test.js",
+        "src/tests/core/auditLogSerialization.test.js",
+        "src/tests/notifications/notificationsRequestLogging.test.js",
+        "src/tests/recruiter/candidateAssessment.test.js",
+        "src/tests/recruiter/recruiterRankingEngine.test.js",
+        "src/tests/recruiter/candidateDiscoveryQuery.test.js"
+      ],
+      "evidence": "backend/verification/jobs-hub/p1.4a-backend-tests.log",
+      "notes": "Accepted Analytics evidence environment flag was explicitly disabled; the accepted reports were not rewritten. Additional final cases were added afterward and rerun separately."
+    },
+    "finalBackend": {
+      "status": "passed after cleanup",
+      "evidence": "backend/verification/jobs-hub/p1.4a-final-backend-tests.log",
+      "files": [
+        "src/tests/recruiter/applicationShortlists.integration.test.js",
+        "src/tests/core/applicationEvaluationRequestLogging.test.js",
+        "src/tests/core/auditLogSerialization.test.js",
+        "src/tests/notifications/notificationsRequestLogging.test.js"
+      ],
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 27968.8361
+    },
+    "angular": {
+      "status": "passed after cleanup",
+      "command": "npm test -- --watch=false --include='src/app/shared/components/direct-applications/*.spec.ts' --include='src/app/features/recruiter/pages/recruiter-pages.spec.ts' --include='src/app/features/recruiter/components/recruiter-components.spec.ts' --include='src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts'",
+      "evidence": "frontend/verification/recruiter/p1.4a-final-angular-tests.log",
+      "previousFinalPass": 41,
+      "files": 6,
+      "passed": 41,
+      "failed": 0,
+      "durationSeconds": 24.7
+    },
+    "typescript": {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+      "status": "passed after cleanup"
+    },
+    "angularCompiler": {
+      "command": "node frontend/node_modules/@angular/compiler-cli/bundles/src/bin/ngc.js --noEmit -p frontend/tsconfig.app.json",
+      "status": "passed after cleanup"
+    },
+    "build": {
+      "status": "passed after cleanup",
+      "command": "npm run build -- --configuration development --output-path verification/recruiter/p1.4a-final-build-20261123 --delete-output-path=false",
+      "previousPassSeconds": 54.306,
+      "evidence": "frontend/verification/recruiter/p1.4a-build.log",
+      "configuration": "development; no production deployment or production budget claim",
+      "durationSeconds": 71.243
+    },
+    "formatting": {
+      "status": "passed",
+      "writeThenCheck": true,
+      "executable": "frontend/node_modules/prettier/bin/prettier.cjs",
+      "backendOptions": "--single-quote --trailing-comma none --print-width 100",
+      "frontendOptions": "--config frontend/.prettierrc",
+      "scope": "Only task-changed source/test files; no repository-wide formatting or accepted staged-only file formatting."
+    },
+    "syntax": "All changed backend JavaScript passed node --check.",
+    "whitespace": "Both git diff --check and git diff --cached --check passed.",
+    "warnings": "Existing Mongoose new:true deprecation and jsdom canvas-not-implemented messages do not fail focused suites. The fixture now drains pending audit writes before closing MongoDB.",
+    "scope": "No full project/provider suites, commits, pushes, deployments or production/index mutations.",
+    "specificAssertions": {
+      "phase": "P1.4A",
+      "status": "passed",
+      "checks": [
+        "canonical idempotency, concurrent create, unchanged lifecycle/evidence/notifications",
+        "owner-only context, retained submitted evidence, separate stages, version CAS",
+        "team/member/manager/foreign/role isolation and cross-job rejection",
+        "canonical and explicit legacy alias conflicts preserve records; stale/forged payloads rejected",
+        "public/analytics/shared/matching exclusion, including public applicants with private application links",
+        "terminal history/evidence retained, notes permitted, stage/relink blocked, no status sync",
+        "live actor and platform access are enforced",
+        "live canonical owner, membership/org policy, immutable consent version, independent public opt-in",
+        "transaction rollback, withdrawal race, redacted audit/log/export surface",
+        "concurrent public/private creates keep exactly one evaluation and preserve the winning origin, notes and stage"
+      ],
+      "cleanup": {
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 227,
+        "productionDataUsed": false
+      }
+    },
+    "untrackedWhitespace": "All 12 new source/test/evidence files also passed git diff --no-index --check.",
+    "finalInventory": "30 source/test files plus 7 retained evidence files; 25 modified and 12 added; source hashes and all 14 accepted index blobs verified.",
+    "runtimeReferencesToDeletedArtifacts": "No source/runtime references to either temporary P1.4A build root or the superseded Angular log."
+  },
+  "remainingRisksAndP14B": [
+    "Owner-only evaluation feed intentionally returns latest 100 rows; future pagination can be considered when usage requires it. Exact application context remains reachable by reference.",
+    "Read disclosure transactions use existing shared actor/organization/settings/job fences and increment source internal __v; write contention remains a workload consideration. No performance improvement or production load-test claim is made.",
+    "Existing unique index must already be healthy, and MongoDB transactions require the existing replica-set deployment contract. No production index repair was attempted.",
+    "Public/legacy evaluation conflicts require a future explicit user-reviewed conversion or reconciliation policy; P1.4A deliberately preserves records.",
+    "Job owner transfer and job/account deletion retention require explicit future privacy/product decisions if linked evaluations must survive or transfer differently. No automatic team disclosure or transfer is authorized here.",
+    "Future application-stage messaging or applicant-visible status integration would require a separately authorized ownership, consent and notification design. P1.4B is not started.",
+    "Live browser theme/viewport/accessibility matrix remains unexecuted; existing responsive and theme styles were reused and Angular DOM interactions were verified."
+  ],
+  "noActions": [
+    "No commits",
+    "No staging changes",
+    "No pushes",
+    "No deployments",
+    "No production data/index/migration operations",
+    "No P1.4B work"
+  ],
+  "cleanup": {
+    "status": "complete",
+    "manifest": "backend/verification/jobs-hub/p1.4a-cleanup.json",
+    "exactDeletedFiles": 463,
+    "sourceFilesMoved": [],
+    "sourceFilesDeleted": [],
+    "essentialEvidence": "Keep final backend, Angular and build logs plus linkage, implementation and cleanup JSON. Only superseded Angular log and verified generated build copies were removed.",
+    "method": "Inventory SHA256, confinement, symlinks and ownership checked before unlinking exact files; only verified empty directories removed nonrecursively. Original assets, licenses, accepted P0-P1.3B.1 reports and staged work retained."
+  },
+  "files": {
+    "workspace": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer",
+    "modified": [
+      "backend/src/core/middleware/auditLogMiddleware.js",
+      "backend/src/core/observability/logger.js",
+      "backend/src/core/observability/requestLogPath.js",
+      "backend/src/modules/admin/controllers/recruiterController.js",
+      "backend/src/modules/admin/controllers/tenantcontroller.js",
+      "backend/src/modules/jobs/services/jobApplicationService.js",
+      "backend/src/modules/recruiter/models/RecruiterShortlist.js",
+      "backend/src/modules/recruiter/routes/hub/recruiterJobRoutes.js",
+      "backend/src/modules/recruiter/routes/hub/shortlistRoutes.js",
+      "backend/src/modules/recruiter/services/hub/matchService.js",
+      "backend/src/modules/recruiter/services/hub/recruiterAnalyticsService.js",
+      "backend/src/modules/recruiter/services/hub/shortlistService.js",
+      "backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js",
+      "backend/src/scripts/repairRecruiterLegacyRecords.js",
+      "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+      "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.ts",
+      "frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+      "frontend/src/app/features/recruiter/pages/job-details/job-details.component.ts",
+      "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.html",
+      "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+      "frontend/src/app/features/recruiter/services/recruiter-match.service.ts",
+      "frontend/src/app/shared/components/direct-applications/job-applicants.component.html",
+      "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+      "frontend/src/app/shared/services/api.service.ts",
+      "frontend/src/app/shared/services/job-applications.service.ts"
+    ],
+    "added": [
+      "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+      "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+      "backend/src/tests/core/applicationEvaluationRequestLogging.test.js",
+      "backend/src/tests/recruiter/applicationShortlists.integration.test.js",
+      "backend/verification/jobs-hub/p1.4a-backend-tests.log",
+      "backend/verification/jobs-hub/p1.4a-cleanup.json",
+      "backend/verification/jobs-hub/p1.4a-final-backend-tests.log",
+      "backend/verification/jobs-hub/p1.4a-implementation.json",
+      "backend/verification/jobs-hub/p1.4a-linkage-tests.json",
+      "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+      "frontend/verification/recruiter/p1.4a-build.log",
+      "frontend/verification/recruiter/p1.4a-final-angular-tests.log"
+    ],
+    "sourceCount": 30,
+    "sourceInventory": [
+      {
+        "file": "backend/src/core/middleware/auditLogMiddleware.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\middleware\\auditLogMiddleware.js",
+        "sha256": "96faa8dfff71f798652b3764d8049a6be6bdbc20e0cad5518461215a373dc62c"
+      },
+      {
+        "file": "backend/src/core/observability/logger.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\observability\\logger.js",
+        "sha256": "4e7449fecb0688b7824c0e58161258e40341106e8f748978157b071022c8ea35"
+      },
+      {
+        "file": "backend/src/core/observability/requestLogPath.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\observability\\requestLogPath.js",
+        "sha256": "76baf2eaba53a6ef5efd2cfdc293bbcf566fc3614d4e9b0ee1349795470b920c"
+      },
+      {
+        "file": "backend/src/modules/admin/controllers/recruiterController.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\controllers\\recruiterController.js",
+        "sha256": "7e1bb4314e0f0ec97c6576e92f9f8d3851c4c5294c00d1af7a2b2fcc97795093"
+      },
+      {
+        "file": "backend/src/modules/admin/controllers/tenantcontroller.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\controllers\\tenantcontroller.js",
+        "sha256": "e2a04f2f9d4431b354b08e614e72ec8c79f4c12b4b77459e1ceb11701c0bd718"
+      },
+      {
+        "file": "backend/src/modules/jobs/services/jobApplicationService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\jobs\\services\\jobApplicationService.js",
+        "sha256": "946aa90d09bd4b4562c546c2e7e6d2452bc28ecb62d42780f4b48e90982163a1"
+      },
+      {
+        "file": "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\controllers\\hub\\applicationShortlistController.js",
+        "sha256": "e3b17baa4af6013d7c4e836f768310392685303f0d7fc8e41171bd7e5b9dbd0f"
+      },
+      {
+        "file": "backend/src/modules/recruiter/models/RecruiterShortlist.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\models\\RecruiterShortlist.js",
+        "sha256": "64ebbc6e30c0d613a6871a4d2ebca1c8d0ef4d019ce64be4f74823b80c67b8bd"
+      },
+      {
+        "file": "backend/src/modules/recruiter/routes/hub/recruiterJobRoutes.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\routes\\hub\\recruiterJobRoutes.js",
+        "sha256": "a0473fb09a54cf051e2acb880110e15320dc22146e41f841ca1f7da1c44adbb2"
+      },
+      {
+        "file": "backend/src/modules/recruiter/routes/hub/shortlistRoutes.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\routes\\hub\\shortlistRoutes.js",
+        "sha256": "d1d899e3803a4fb7889e8e6f1b8475e925fdda954afbbc131ed104fcb0ad4c07"
+      },
+      {
+        "file": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\applicationShortlistService.js",
+        "sha256": "6e4ea691e337b2df74f180e0bdc94f254c7029a2337da105a4fe689147b71840"
+      },
+      {
+        "file": "backend/src/modules/recruiter/services/hub/matchService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\matchService.js",
+        "sha256": "ebf5edd056ac4cd8d45b1632fae6cbb0fee4ef57007cc198a80cbbc5fb31924e"
+      },
+      {
+        "file": "backend/src/modules/recruiter/services/hub/recruiterAnalyticsService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterAnalyticsService.js",
+        "sha256": "a7d55a793b987f0771e9e6a1e855ec0f4e57b94c33e03dde5a2c51a71adc02b9"
+      },
+      {
+        "file": "backend/src/modules/recruiter/services/hub/shortlistService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\shortlistService.js",
+        "sha256": "68774640872de4b751c27439689edb245bf064e3bc8b78aca045c1e4ee1c1f80"
+      },
+      {
+        "file": "backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\utils\\hub\\recruiterEvaluationAccess.js",
+        "sha256": "a473038b66146b4abdd69631ac12fadb0665553102b5bd7a85a520d55c8a7d25"
+      },
+      {
+        "file": "backend/src/scripts/repairRecruiterLegacyRecords.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\repairRecruiterLegacyRecords.js",
+        "sha256": "0abf15fd1fb329c7c8aba7e4945f264a195f4248903a514276fc2892c37b6a59"
+      },
+      {
+        "file": "backend/src/tests/core/applicationEvaluationRequestLogging.test.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\core\\applicationEvaluationRequestLogging.test.js",
+        "sha256": "722084faf57d7ea10edd6210cc476226e8e5c655bd54e22fb54fd03b65e3144d"
+      },
+      {
+        "file": "backend/src/tests/recruiter/applicationShortlists.integration.test.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\recruiter\\applicationShortlists.integration.test.js",
+        "sha256": "62c9678e15aeca28443b260f1d4ec2a716d49373694e5b9426495fd6ed442a87"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\shortlist-card\\shortlist-card.component.html",
+        "sha256": "fe141230701b8214b0b0ecd69f6bb4316a180e8e34390aad8aaac7ffab92b386"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\shortlist-card\\shortlist-card.component.ts",
+        "sha256": "197bd949fc65ffcd7d6b222c6f3dc99a78773309062688ccc767b9432f049e6b"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\job-details\\job-details.component.html",
+        "sha256": "6398214adf67716401f5e14e137c4f3cbc610ef3bcc0c7a55806882d3781929e"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/pages/job-details/job-details.component.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\job-details\\job-details.component.ts",
+        "sha256": "f9abac7674704844fb604647630fa205780d1f82ab2c1a680c1fcd6f2171187c"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\shortlists\\shortlists.component.html",
+        "sha256": "340ba51e8ffa463c5e87097013781e80883897b145547e33cdf4e446ef622569"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\shortlists\\shortlists.component.ts",
+        "sha256": "dd9c7249c9229a87893b17c58919a0af01bcdc3713a2e1fa66816c62f30a7c3a"
+      },
+      {
+        "file": "frontend/src/app/features/recruiter/services/recruiter-match.service.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\services\\recruiter-match.service.ts",
+        "sha256": "1be46988133b81c35a7ea536d8e1c9d63c9dbfbfeeb9ebd4024c0c74dcfd2e96"
+      },
+      {
+        "file": "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\direct-applications\\application-shortlist-ui.spec.ts",
+        "sha256": "5895764597e1a44e882d3fb90725bdba7357ed467cf61ff2b3ac110666e9908c"
+      },
+      {
+        "file": "frontend/src/app/shared/components/direct-applications/job-applicants.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\direct-applications\\job-applicants.component.html",
+        "sha256": "d2c334ed61db3af234c44ffc51868cb8dc65fbe4c3dde3510b4940e3c93946f2"
+      },
+      {
+        "file": "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\direct-applications\\job-applicants.component.ts",
+        "sha256": "eda4f52ec17fae514ef06e0d1d6aa4d4191f7e9ec9b31db85b815eb0804f9461"
+      },
+      {
+        "file": "frontend/src/app/shared/services/api.service.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\api.service.ts",
+        "sha256": "090fba392b390206933c439f6ddf1988afd5bc1523eb6607499674d89e180853"
+      },
+      {
+        "file": "frontend/src/app/shared/services/job-applications.service.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\job-applications.service.ts",
+        "sha256": "2a606213629601d2dd912cd40c26c72d8bab45e292013eae7d8e654b8a82142d"
+      }
+    ],
+    "retainedEvidence": [
+      "backend/verification/jobs-hub/p1.4a-backend-tests.log",
+      "backend/verification/jobs-hub/p1.4a-cleanup.json",
+      "backend/verification/jobs-hub/p1.4a-final-backend-tests.log",
+      "backend/verification/jobs-hub/p1.4a-implementation.json",
+      "backend/verification/jobs-hub/p1.4a-linkage-tests.json",
+      "frontend/verification/recruiter/p1.4a-build.log",
+      "frontend/verification/recruiter/p1.4a-final-angular-tests.log"
+    ],
+    "moved": [],
+    "deletedSource": [],
+    "deletedTemporaryFiles": "See exact paths and hashes in p1.4a-cleanup.json; 463 task-owned generated files/superseded log removed."
+  }
+}

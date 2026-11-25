@@ -1,0 +1,9 @@
+{
+  "issue": "recommendations",
+  "exitCode": 0,
+  "testFiles": ["recommendations/recommendationsPerformance.test.js"],
+  "productionDataUsed": false,
+  "counts": ["# tests 2", "# pass 2", "# fail 0", "# skipped 0", "# duration_ms 11608.4647"],
+  "failures": [],
+  "cleanup": "Suite-owned disposable Mongo cleanup; see TAP and suite evidence"
+}

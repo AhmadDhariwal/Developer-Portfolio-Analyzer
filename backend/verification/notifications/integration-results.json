@@ -17,12 +17,12 @@
     "index bounded reads and Mongo-only admission PASS"
   ],
   "productionDataUsed": false,
-  "crossWorkerDeliveryMs": 97.79569999999876,
+  "crossWorkerDeliveryMs": 278.90969999998924,
   "persistenceSample": {
     "count": 25,
-    "p50Ms": 31.335900000005495,
-    "p95Ms": 55.82240000000456,
-    "eventsPerSecond": 29.054726553184263,
+    "p50Ms": 32.25819999999658,
+    "p95Ms": 68.72250000000349,
+    "eventsPerSecond": 26.16319470607632,
     "workload": "sequential single recipient; local disposable replica; not a production capacity claim"
   },
   "inboxQuery": {
@@ -33,7 +33,7 @@
   "auditOnlyMigrationPreservesEmptyDatabase": true,
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 220,
+    "temporaryFilesRemoved": 227,
     "productionDataUsed": false
   }
 }

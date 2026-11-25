@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { withLease } = require('../../services/weeklyReportCoordinationService');
+const { withLease } = require('../../modules/weekly-reports/services/weeklyReportCoordinationService');
 mongoose
   .connect(process.env.WEEKLY_FIXTURE_URI)
   .then(() =>

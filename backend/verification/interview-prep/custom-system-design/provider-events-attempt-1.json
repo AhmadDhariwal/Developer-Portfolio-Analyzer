@@ -1,0 +1,96 @@
+[
+  {
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "attempt": 0
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "attempt": 0
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b"
+  },
+  {
+    "ts": "2026-11-15T12:02:57.514Z",
+    "message": "interview-prep-ai",
+    "reasonCode": "provider_error"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "reason": "timeout",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_switched",
+    "provider": "openai",
+    "reason": "timeout"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "reason": "timeout",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_switched",
+    "provider": "groq",
+    "reason": "timeout"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "reason": "incomplete_output",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "scope": "AIService",
+    "event": "fallback_all_providers_failed",
+    "reason": "attempt_budget",
+    "durationMs": 18503
+  }
+]

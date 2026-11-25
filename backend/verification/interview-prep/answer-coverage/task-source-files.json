@@ -1,0 +1,40 @@
+{
+  "backend": [
+    "backend/src/services/aiProviderManager.js",
+    "backend/src/services/interviewAnswerCoverage.js",
+    "backend/src/services/interviewEnrichmentOrchestrator.js",
+    "backend/src/services/interviewPrepService.js",
+    "backend/src/services/interviewProjectContext.js",
+    "backend/src/services/providers/interviewAIProvider.js",
+    "backend/src/tests/fixtures/interviewCoverageFixture.js",
+    "backend/src/tests/interviewAnswerCoverage.test.js",
+    "backend/src/tests/interviewCompleteAI.test.js",
+    "backend/src/tests/interviewCustomSystemDesign.test.js",
+    "backend/src/tests/interviewPrepPerformance.test.js"
+  ],
+  "frontend": [
+    "frontend/scripts/interview-prep-preview.cjs",
+    "frontend/scripts/verify-interview-answer-coverage.cjs",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-answer-content.component.ts",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-answer-content.component.spec.ts",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.ts",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.html",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.spec.ts",
+    "frontend/src/app/features/developer/pages/interview-prep/interview-prep.component.html",
+    "frontend/src/app/shared/models/interview-prep.model.ts"
+  ],
+  "movedByThisTask": [],
+  "deletedByThisTask": [],
+  "frontendOriginalPaths": [
+    "frontend/scripts/interview-prep-preview.cjs",
+    "frontend/scripts/verify-interview-answer-coverage.cjs",
+    "frontend/src/app/pages/interview-prep/components/interview-answer-content.component.ts",
+    "frontend/src/app/pages/interview-prep/components/interview-answer-content.component.spec.ts",
+    "frontend/src/app/pages/interview-prep/components/interview-question-card.component.ts",
+    "frontend/src/app/pages/interview-prep/components/interview-question-card.component.html",
+    "frontend/src/app/pages/interview-prep/components/interview-question-card.component.spec.ts",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+    "frontend/src/app/shared/models/interview-prep.model.ts"
+  ],
+  "note": "Interview Prep paths moved by concurrent external restructuring, not by this task; implementation preserved at the new paths."
+}

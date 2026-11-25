@@ -1,0 +1,149 @@
+<section class="hub-page">
+  <header class="page-header">
+    <div class="page-header__copy">
+      <span class="page-header__eyebrow">Recruiter Hub · Audit Stream</span>
+      <h1>Activity Logs</h1>
+      <p>
+        Inspect persisted recruiter workflow events, AI operations, and requisition activity
+        filters.
+      </p>
+    </div>
+
+    <div class="page-header__actions">
+      <span class="count-pill">{{ meta.total ?? logs.length }} logged events</span>
+      <button
+        type="button"
+        class="btn-secondary"
+        *ngIf="hasActiveFilters"
+        [disabled]="loading"
+        (click)="resetFilters()"
+      >
+        Reset Filters
+      </button>
+      <button type="button" class="btn-primary" [disabled]="loading" (click)="loadActivity()">
+        {{ loading ? 'Refreshing...' : 'Refresh' }}
+      </button>
+    </div>
+  </header>
+
+  <app-ui-error-state
+    *ngIf="error && !logs.length && !loading"
+    title="Unable to load activity logs"
+    [message]="error"
+    (retry)="loadActivity()"
+  />
+
+  <div class="banner banner--error" *ngIf="error && (logs.length || loading)">{{ error }}</div>
+
+  <div class="metric-grid">
+    <app-recruiter-stat-card
+      label="Loaded Events"
+      [value]="logs.length"
+      tone="indigo"
+      hint="Matching current filter selection"
+    />
+    <app-recruiter-stat-card
+      label="AI & Match Actions"
+      [value]="aiActions"
+      tone="cyan"
+      hint="Candidate analyses & JD match runs"
+    />
+    <app-recruiter-stat-card
+      label="Shortlist Updates"
+      [value]="shortlistActions"
+      tone="green"
+      hint="Shortlist additions, notes & stages"
+    />
+    <app-recruiter-stat-card
+      label="Requisition Actions"
+      [value]="jobActions"
+      tone="blue"
+      hint="Job create, update & archive events"
+    />
+  </div>
+
+  <section class="surface-card filter-panel">
+    <div class="filter-grid">
+      <div class="field">
+        <label for="activity-action-filter">Action Type</label>
+        <app-searchable-select
+          inputId="activity-action-filter"
+          [options]="actionOptions"
+          [(value)]="filters.action"
+          placeholder="All Actions"
+        />
+      </div>
+
+      <div class="field">
+        <label for="activity-candidate-filter">Candidate</label>
+        <app-searchable-select
+          inputId="activity-candidate-filter"
+          [options]="candidateOptions"
+          [(value)]="filters.candidateId"
+          placeholder="All Candidates"
+        />
+      </div>
+
+      <div class="field">
+        <label for="activity-job-filter">Job Requisition</label>
+        <app-searchable-select
+          inputId="activity-job-filter"
+          [options]="jobOptions"
+          [(value)]="filters.jobId"
+          placeholder="All Requisitions"
+        />
+      </div>
+
+      <div class="field">
+        <label for="activity-from">From Date</label>
+        <input id="activity-from" type="date" [(ngModel)]="filters.from" />
+      </div>
+
+      <div class="field">
+        <label for="activity-to">To Date</label>
+        <input id="activity-to" type="date" [(ngModel)]="filters.to" />
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button
+        type="button"
+        class="btn-secondary"
+        [disabled]="loading || !hasActiveFilters"
+        (click)="resetFilters()"
+      >
+        Reset
+      </button>
+      <button type="button" class="btn-primary" [disabled]="loading" (click)="applyFilters()">
+        Apply Filters
+      </button>
+    </div>
+  </section>
+
+  <app-recruiter-performance-chart
+    *ngIf="!loading && actionBreakdownItems.length > 0"
+    title="Loaded Events by Action Type"
+    subtitle="Event frequency derived from the active audit log slice"
+    mode="bars"
+    tone="indigo"
+    [height]="195"
+    [items]="actionBreakdownItems"
+  />
+
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading recruiter activity logs..."
+    variant="timeline"
+    [count]="6"
+  />
+
+  <ng-container *ngIf="!loading">
+    <app-activity-timeline *ngIf="logs.length > 0" [items]="logs" />
+
+    <app-recruiter-empty-state
+      *ngIf="logs.length === 0 && !error"
+      title="No activity logs match"
+      message="Widen the date range or reset action, candidate, and job filters to inspect older events."
+    />
+  </ng-container>
+</section>

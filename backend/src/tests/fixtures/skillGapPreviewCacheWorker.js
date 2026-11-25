@@ -1,6 +1,6 @@
 'use strict';
 // Real preview cache in a credential-free child process, with Redis deliberately absent.
-const cache = require('../../services/previewResumeCacheService');
+const cache = require('../../modules/resume/services/previewResumeCacheService');
 process.on('message', async (message) => {
   try {
     const value =

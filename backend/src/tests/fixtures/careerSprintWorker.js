@@ -10,7 +10,7 @@ const {
   getRedisCacheClient,
   closeRedisCache,
   isRedisCacheEnabled
-} = require('../../services/redisCacheService');
+} = require('../../core/cache/redisCacheService');
 const owner = process.env.CAREER_SPRINT_TEST_OWNER;
 if (!/^[a-f0-9]{24}$/.test(owner || '')) throw new Error('An isolated fixture owner is required.');
 const prefix = `career-sprint-test:${owner}:`;
@@ -22,7 +22,7 @@ const mock = (request, exports) => {
   const file = require.resolve(request);
   require.cache[file] = { id: file, filename: file, loaded: true, exports };
 };
-mock('../../services/aiservice', {
+mock('../../core/ai/aiservice', {
   getSharedCache: async (key, namespace) => {
     if (!isRedisCacheEnabled()) throw new Error('Redis unavailable');
     const value = await redis.get(prefix + namespace + ':' + key);
@@ -41,8 +41,8 @@ mock('../../services/aiservice', {
     await redis.set(ownedKey, JSON.stringify(value), { EX: ttl });
   }
 });
-mock('../../services/developerSignalService', { getDeveloperSignals: async () => ({}) });
-const sprint = require('../../services/careerSprintService');
+mock('../../core/developer-context/developerSignalService', { getDeveloperSignals: async () => ({}) });
+const sprint = require('../../modules/career-sprint/services/careerSprintService');
 const ready = (async () => {
   await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 5000,

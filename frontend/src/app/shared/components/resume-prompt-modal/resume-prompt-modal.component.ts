@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DismissMode } from '../../../shared/services/resume-onboarding.service';
+import { DismissMode } from '../../services/resume-onboarding.service';
 
 @Component({
   selector: 'app-resume-prompt-modal',

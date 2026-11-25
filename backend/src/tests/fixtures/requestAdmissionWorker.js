@@ -1,13 +1,13 @@
 'use strict';
 const mongoose = require('mongoose');
-const store = require('../../services/integrationMongoGovernanceService');
+const store = require('../../modules/integrations/services/integrationMongoGovernanceService');
 if (
   !/^mongodb:\/\/127\.0\.0\.1:\d+\/integration_live_acceptance\?replicaSet=integration-live$/.test(
     process.env.REQUEST_ADMISSION_TEST_URI || ''
   )
 )
   throw Error('Disposable loopback replica set required.');
-require('../../services/redisCacheService').getRedisCacheClient = () => {
+require('../../core/cache/redisCacheService').getRedisCacheClient = () => {
   throw Error('Admission cannot access Redis.');
 };
 mongoose

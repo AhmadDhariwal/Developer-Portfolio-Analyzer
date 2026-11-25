@@ -1,0 +1,44 @@
+{
+  "status": "failed",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "requests": [
+    {
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "path": "/api/tenant/organizations/6b05fd0af3f6fc46136ba9b0/teams",
+      "status": 403
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 200
+    },
+    {
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "checks": [],
+  "angularDevServer": true,
+  "browserCleanup": {
+    "browserStopped": true,
+    "temporaryFilesRemoved": 1948
+  },
+  "angularCleanup": {
+    "angularStopped": true,
+    "output": "\u001b[32m✔\u001b[0m \u001b[33mConsole Ninja\u001b[0m extension is connected to \u001b[33mAngular\u001b[0m, see \u001b[36mhttps://tinyurl.com/2vt8jxzw\u001b[0m\n> Building...\r\n√ Building...\r\nInitial chunk files | Names              |  Raw size\nmain.js             | main               |   8.46 MB | \nchunk-3E57FXAJ.js   | -                  | 332.59 kB | \nstyles.css          | styles             |  87.10 kB | \nchunk-TORQPJFN.js   | -                  |  79.53 kB | \nchunk-7ISFN4PN.js   | -                  |  34.89 kB | \nchunk-HD4PLDJE.js   | -                  |  24.34 kB | \nchunk-YLN3RK67.js   | -                  |   7.30 kB | \n\n                    | Initial total      |   9.02 MB\n\nLazy chunk files    | Names              |  Raw size\nchunk-MKIFBERT.js   | admin-module       |   1.52 MB | \nchunk-ADOJI3JW.js   | recruiter-module   |   1.23 MB | \nchunk-SWKHYKRV.js   | super-admin-module | 773.22 kB | \n\nApplication bundle generation complete. [411.288 seconds] - 2026-11-24T21:19:14.398Z\n\nWatch mode enabled. Watching for file changes...\nNOTE: Raw file sizes do not reflect development server per-request transformations.\n  ➜  Local:   http://127.0.0.1:55194/\n"
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 341,
+    "productionDataUsed": false
+  },
+  "failure": "Error: Browser state timeout: authorized shortlist page\n    at Object.wait (D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\disposableBrowser.js:157:15)\n    at async pageFor (D:\\Developer-Portfolio-Analyzer\\backend\\scripts\\smoke-application-shortlists.cjs:95:7)\n    at async main (D:\\Developer-Portfolio-Analyzer\\backend\\scripts\\smoke-application-shortlists.cjs:111:18)"
+}

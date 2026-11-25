@@ -1,0 +1,167 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+.hub-page {
+  @include recruiter.page-shell;
+}
+
+.page-header {
+  @include recruiter.canvas-header;
+}
+
+.page-header__copy {
+  @include recruiter.header-copy;
+}
+
+.page-header__eyebrow {
+  @include recruiter.eyebrow;
+}
+
+.page-header__actions {
+  @include recruiter.header-actions;
+}
+
+.count-pill {
+  @include recruiter.status-pill('neutral');
+}
+
+.btn-primary {
+  @include recruiter.btn-primary;
+}
+
+.btn-secondary {
+  @include recruiter.btn-secondary;
+}
+
+.callout-note {
+  @include recruiter.callout-note(info);
+
+  &--primary {
+    @include recruiter.callout-note(primary);
+  }
+}
+
+.banner--error {
+  @include recruiter.banner-error;
+}
+
+.banner--success {
+  @include recruiter.banner-success;
+}
+
+.metric-grid {
+  @include recruiter.metric-grid(195px);
+}
+
+.pipeline-strip {
+  display: grid;
+  gap: 14px;
+}
+
+.pipeline-strip__bar {
+  display: flex;
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-tertiary);
+}
+
+.seg {
+  display: block;
+  height: 100%;
+  transition: width 0.25s ease;
+
+  &--shortlisted {
+    background: var(--color-primary);
+  }
+
+  &--reviewing {
+    background: var(--color-info);
+  }
+
+  &--contacted {
+    background: var(--color-warning);
+  }
+
+  &--interview {
+    background: var(--color-success);
+  }
+
+  &--rejected {
+    background: var(--color-danger);
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.segmented-tabs {
+  @include recruiter.segmented-tabs;
+}
+
+.toolbar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1 1 min(100%, 280px);
+  justify-content: flex-end;
+
+  select,
+  input {
+    @include recruiter.field-control;
+    min-height: 38px;
+    width: auto;
+    min-width: min(100%, 170px);
+  }
+
+  input {
+    flex: 1 1 200px;
+    max-width: 280px;
+  }
+}
+
+.card-grid {
+  @include recruiter.card-grid(340px);
+}
+
+.pager {
+  @include recruiter.pager-bar;
+}
+
+.pager__summary {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pager__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.pager__btn {
+  @include recruiter.btn-secondary;
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+@media (max-width: 780px) {
+  .toolbar__filters {
+    justify-content: stretch;
+
+    select,
+    input {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}

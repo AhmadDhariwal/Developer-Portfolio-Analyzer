@@ -1,0 +1,167 @@
+{
+  "scope": "P1.2B only — explicit team evaluation sharing for existing Recruiter Hub matches/shortlists",
+  "date": "2026-11-22",
+  "branch": "fix/P1-project",
+  "integrationTarget": "not applicable",
+  "baseline": "Accepted staged P1.2A work preserved; no index writes, commits, pushes, deployments, production mutations, dependencies, AI calls, Redis caches, queues, workers or new domain collections.",
+  "contracts": {
+    "ownership": "Job remains authoritative. Job.teamShared is metadata permission only. New Job.evaluationShared defaults false and requires explicit owner intent, an active same-organization selected team, and metadata sharing. RecruiterMatch/RecruiterShortlist retain their unique owner/job/candidate keys and existing collections.",
+    "disclosure": "Owner opt-in shares existing public-candidate evaluation results and shortlist notes with the selected team. Changing team resets evaluationShared unless the owner explicitly opts in for that new team in the same versioned patch. Metadata unsharing disables evaluations. Disabling evaluation sharing alone remains available to an owner whose team membership was revoked.",
+    "capabilities": "Job.access adds evaluationView/evaluationManage without broadening matching/privateEvidence. Evaluation rows add access {view,manage,isOwner} and version. Angular matching workspace uses listEvaluationJobs(); private comparison pickers keep owner-only listJobs().",
+    "routes": "Existing /api/recruiter-hub/jobs, /matches, /matches/generate, /matches/:id, /matches/:id/status and /shortlists CRUD routes are retained. Sharing uses expectedVersion on Job patches; match status and shortlist updates accept optional expectedVersion for existing-client compatibility. Current UI supplies returned versions.",
+    "privateHelper": "getRecruiterJobDetails remains owner-only, unchanged. Comparison services remain owner-scoped for job-specific scoring. Shared-result Compare navigation uses the existing public candidate comparison without a shared jobId.",
+    "errors": "401 unauthenticated; 403 visible read-only evaluation mutation or invalid active actor scope; 404 hidden/cross-org jobs/rows or withdrawn candidate eligibility; 400 invalid status/version; 409 stale observed version. Lists omit no-longer-eligible records; a targeted hidden job returns 404."
+  },
+  "permissionMatrix": [
+    {
+      "actor": "Active Recruiter owning the job",
+      "view": "Existing eligible evaluations",
+      "manage": true,
+      "changeEvaluationSharing": true,
+      "privateApplications": "Existing owner-only authorization"
+    },
+    {
+      "actor": "Active exact-team Recruiter manager/admin Membership on an explicitly evaluation-shared job",
+      "view": true,
+      "generate": true,
+      "manageStatusesAndNotes": true,
+      "removeShortlist": true,
+      "changeEvaluationSharing": false,
+      "privateApplications": false
+    },
+    {
+      "actor": "Active exact-team Recruiter member on an explicitly evaluation-shared job",
+      "view": true,
+      "generate": false,
+      "manageStatusesAndNotes": false,
+      "removeShortlist": false,
+      "changeEvaluationSharing": false,
+      "privateApplications": false
+    },
+    {
+      "actor": "Metadata-only shared teammate",
+      "view": false,
+      "manage": false,
+      "privateApplications": false
+    },
+    {
+      "actor": "Unrelated/cross-org Recruiter or organization-wide admin membership without exact team grant",
+      "view": "Own evaluations only",
+      "manage": "Own evaluations only",
+      "privateApplications": "No additional grant"
+    },
+    {
+      "actor": "Platform Admin/Super Admin account",
+      "view": "Recruiter Hub denied",
+      "manage": false,
+      "privateApplications": false
+    }
+  ],
+  "consentAndRevocation": {
+    "source": "Existing User.isPublic discovery consent, active Developer account, current durable PlatformSettings candidateVisibility (including organization restriction), and current public-portfolio privacy are rechecked per request/transaction. A private existing PublicProfile or hidden projects section suppresses retained evaluations to avoid disclosing old project explanations. Missing PublicProfile supplies no portfolio evidence and does not revoke the existing User discovery opt-in.",
+    "locks": "P1.2A's live actor/org/membership/team/job transaction policy is reused. Candidate User, existing PublicProfile, active legacy Candidate aliases and current global Settings documents are fenced in that same snapshot/majority transaction. Concurrent updates conflict and retry authorization before committing.",
+    "batching": "Eligible candidate document reads/fences are batched. Transaction-local memoization avoids rehydrating/fencing the same candidate twice; no grants survive the request or a transaction retry. Candidate source queries receive the same optional Mongo session and execute sequentially within transactions. Matching inputs, six weights, score semantics and explainability are unchanged.",
+    "retention": "Revocation hides retained rows and blocks mutation; it does not destroy audit/history or application records. Access is re-evaluated when team membership, team state, organization state, canonical ownership or candidate eligibility changes.",
+    "applicationBoundary": "No JobApplication service/model/route changes. No team applicant lists, PDF downloads, submitted portfolio snapshots, applicant status mutations or application notification recipients. Public discovery consent is never application disclosure consent.",
+    "notes": "The owner opt-in explicitly covers existing evaluation notes. Recruiters remain responsible for placing only team-appropriate evaluation content in shared notes; the system does not infer free-text provenance or import application evidence."
+  },
+  "concurrencyAndIdempotency": {
+    "canonicalScope": "All job-associated generation and shortlist mutations use current job.recruiterId, organizationId and teamId, not the acting teammate's identity or client-supplied ownership. Stale rows belonging to a former owner are excluded rather than silently transferred.",
+    "generation": "P1.2A job/org coordination serializes collaborators. Existing unique indexes/upserts produce one match per canonical owner/job/candidate, preserve current match status, and derive inserted status from existing shortlists.",
+    "shortlist": "Concurrent add/retry returns the same canonical shortlist and preserves existing notes/status using setOnInsert. Deliberate changes use PATCH. Jobless personal shortlists remain private to their creator; their existing team metadata never grants collaboration.",
+    "status": "Observed-version updates reject stale requests with 409 and increment existing __v. Same match status is a no-op. Existing shortlist-to-match status synchronization remains transactional and now increments changed match versions. Delete retry returns 404 after removal. No JobApplication status synchronization is introduced.",
+    "audit": "Existing audit action names and acting-request identity are retained. Job audits add evaluationShared; evaluation mutation audits use current canonical team scope and identify canonical owner where applicable. Current team identity is projected on evaluation rows and refreshed on mutations. Existing post-commit audit persistence behavior remains; retries may create additional request audit events even when domain upserts do not duplicate records."
+  },
+  "ui": [
+    "Jobs editor exposes a separate explicit evaluation checkbox only to the owner, describes sharing of existing results/notes, and resets it when changing team or metadata-sharing selection. Manager payloads strip all sharing fields.",
+    "Jobs labels now describe owned and shared team roles. Job Details separately gates evaluation previews/generation and owner-only application panels.",
+    "Matches includes only evaluation-eligible job choices, shows owner/team and read/manage information, disables generation for members, hides unauthorized status actions, clears stale results on denied reads, cancels superseded match-list requests and refreshes after authorization/version errors.",
+    "Shortlist cards show ownership/team and read-only status, restrict notes/stage/remove actions to server capabilities and submit observed versions. Failed reloads clear retained data; denied/stale mutations refresh.",
+    "Recruiter-only toolbar CSS bounds long names/handles and permits search shrinking. A narrow headless Edge CSS fixture reproduces overlap against the staged stylesheet and checks final geometry, without application APIs or a user session. It is not a full browser acceptance matrix.",
+    "The reported fixed-sidebar overlap came from width 0.2s ease versus navbar left/content margin-left 0.25s ease-in-out. Sidebar motion now uses the same --transition-base; navbar uses shared sidebar width tokens. Recruiter toolbar names remain bounded and search can shrink. The retained Edge script compares staged/final actual shell CSS at 1440px through opening and closing frames, without APIs or a user session."
+  ],
+  "changedFiles": [
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/controllers/hub/matchController.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/controllers/hub/recruiterJobController.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/controllers/hub/shortlistController.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/models/Job.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/services/hub/candidateService.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/services/hub/matchService.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/services/hub/recruiterJobService.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/services/hub/shortlistService.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/services/matching/matchingService.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/recruiter/candidateAssessment.test.js",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/core/layouts/main-layout/navbar/navbar.component.scss",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/components/match-card/match-card.component.html",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/job-details/job-details.component.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/jobs/jobs.component.html",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/jobs/jobs.component.spec.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/jobs/jobs.component.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/matches/matches.component.html",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/matches/matches.component.spec.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/matches/matches.component.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/recruiter-pages.spec.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/services/recruiter-domain-services.spec.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/services/recruiter-job.service.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/services/recruiter-match.service.ts",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/core/layouts/main-layout/sidebar/sidebar.component.scss"
+  ],
+  "addedFiles": [
+    "D:/Developer-Portfolio-Analyzer/backend/scripts/verify-recruiter-toolbar.cjs",
+    "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/recruiter/teamEvaluations.integration.test.js",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/jobs-hub/p1.2b-team-evaluations.json"
+  ],
+  "movedFiles": [],
+  "deletedSourceFiles": [],
+  "validation": {
+    "status": "passed focused validation",
+    "angular": "42 unique tests across 8 affected Angular spec files passed. Main recruiter/navbar run: 35 passed in 6 files. Final shell follow-up after the sidebar correction: 11 passed in 3 files (4 navbar tests overlap). Final formatting rerun of Matches/Recruiter pages: 14 passed. No frontend suite was run in full.",
+    "typescript": "Installed tsc --noEmit and ngc --noEmit passed for frontend/tsconfig.app.json, including the final shell change.",
+    "backend": "Final serial command: 7 affected test files, 44 Node tests including parents: 43 passed, 0 failed, 1 optional Redis outage subtest skipped. Includes evaluation collaboration/consent/concurrency, P1.2A metadata sharing, owned/legacy HTTP contracts, recruiter acceptance with existing performance/index checks, unchanged six-weight ranking, candidate assessment and direct-application/SSE lifecycle. The batching regression initially exposed string-vs-native-ObjectId filtering in organization-mode raw fences; corrected to native actor organizationId and verified by existing real HTTP tests. No timing assertion or fail-closed setting was weakened.",
+    "toolbar": "Reported sidebar overlap reproduced in isolated Edge using the staged sidebar/navbar/main-layout CSS at actual innerWidth 1440. At opening 150ms: sidebar right 252.5625px versus navbar/page left 197.59375px. Final CSS aligns sidebar width/transform timing with --transition-base used by navbar/content, and uses shared width variables for navbar offsets. All 15 initial/opening/closing sampled frames keep sidebar edge equal to navbar/page left (within 1px); at 150ms all equal 197.59375px. No application API/session is used. This verifies actual CSS geometry, not full Angular acceptance or the original runtime trigger.",
+    "quality": "All 31 changed source/test/script files formatted in write mode with the installed Prettier using explicit paths and existing per-file conventions; the same paths/options passed --check. All 14 backend JavaScript/CJS files passed node --check. Verification JSON formatted and checked. Staged and unstaged Git whitespace checks passed.",
+    "cleanup": {
+      "noScreenshotsOrLogsCreated": true,
+      "failedFixtureFilesRemoved": 775,
+      "verifiedTaskOwnedDirectoriesRemoved": [
+        "D:/Developer-Portfolio-Analyzer/backend/verification/devinsight-real-integrations-AI4lLy",
+        "D:/Developer-Portfolio-Analyzer/backend/verification/devinsight-real-integrations-Vt7y7z",
+        "C:/Users/Ahmad/AppData/Local/Temp/devinsight-real-integrations-Pnxmlp"
+      ],
+      "method": "Confirmed task ownership and no running process referencing those dbpaths; removed individually verified files then exact empty directories. Older unrelated MongoDB service was preserved. Toolbar fixture cleans only its isolated temporary files/profiles.",
+      "finalState": "Disposable Mongo fixtures completed cleanup in the successful final serial run; Edge fixture reports temporaryFilesCleaned. No task-owned browser/server/DB processes are intentionally left running. No moved/deleted accepted source files or unrelated user artifacts."
+    },
+    "notRun": [
+      "Full project suites",
+      "Production build/deployment/migrations",
+      "Full application/browser/theme matrix",
+      "Live Redis outage subtest (optional disposable Redis URL not configured; no Redis infrastructure changed)"
+    ],
+    "toolbarCommands": [
+      "node backend/scripts/verify-recruiter-toolbar.cjs --baseline (compares against preserved staged CSS)",
+      "node backend/scripts/verify-recruiter-toolbar.cjs"
+    ],
+    "backendCommand": "node --test --test-concurrency=1 src/tests/recruiter/teamEvaluations.integration.test.js src/tests/recruiter/teamSharedJobs.integration.test.js src/tests/recruiter/recruiterHttp.integration.test.js src/tests/recruiter/recruiterAcceptance.integration.test.js src/tests/recruiter/recruiterRankingEngine.test.js src/tests/recruiter/candidateAssessment.test.js src/tests/jobs/jobApplications.integration.test.js (cwd backend)",
+    "priorAttempts": "An initial sandbox Mongo readiness failure required permitted execution outside the sandbox. A parallel compiler/Edge/multi-Mongo run hit resource contention, an existing timing limit and fixture-shutdown timeouts; one verified task-owned HTTP test child was stopped after its Mongo fixture had stopped, and exact leftover task-owned fixture files were cleaned. Final backend validation ran serially and passed. One Edge run under that load timed out after emitting DOM; final sequential sidebar-geometry baseline/fix checks passed. Vitest runs outside the sandbox to avoid its temporary-cache EPERM limitation.",
+    "angularCommands": [
+      "npm test -- --watch=false --include=src/app/features/recruiter/pages/matches/matches.component.spec.ts --include=src/app/features/recruiter/pages/jobs/jobs.component.spec.ts --include=src/app/features/recruiter/pages/recruiter-pages.spec.ts --include=src/app/features/recruiter/components/recruiter-components.spec.ts --include=src/app/features/recruiter/services/recruiter-domain-services.spec.ts --include=src/app/core/layouts/main-layout/navbar/navbar.component.spec.ts",
+      "npm test -- --watch=false --include=src/app/core/layouts/main-layout/navbar/navbar.component.spec.ts --include=src/app/core/layouts/main-layout/sidebar/sidebar.component.spec.ts --include=src/app/core/layouts/main-layout/main-layout.component.spec.ts"
+    ],
+    "backendFollowup": "After the final shortlist-removal audit-scope correction: teamEvaluations.integration.test.js rerun, 8 passed, 0 failed/skipped. Includes an API regression proving teamId is null on the removal audit after job team assignment is cleared."
+  },
+  "remainingRisksAndDependencies": [
+    "Replica-set transactions are required. Conservative global-settings and organization fences serialize evaluation workloads; batching reduces calls, but no production throughput claim is made.",
+    "Existing unpaginated workspace/list response shapes and post-commit audit behavior remain. Legacy clients may omit evaluation expectedVersion and retain serial last-writer behavior; current UI sends versions.",
+    "No ownership-transfer workflow is added. Former-owner evaluation rows stay retained and hidden after external job ownership changes; a future explicit transfer policy is required.",
+    "Further P1.2C collaboration surfaces must use evaluation permission and live candidate eligibility explicitly. Metadata/evaluation grants must never be reused as JobApplication evidence grants or silently broaden comparisons, analytics, exports or notifications.",
+    "P1.4 requires an explicit applicationId linkage to canonical jobId/applicantId/organizationId, duplicate/merge/legacy backfill policy and a defined authority for each status field. Shortlist stages (shortlisted/reviewing/contacted/interview/rejected) do not map automatically to application states (submitted/reviewing/rejected/withdrawn).",
+    "Before P1.4 synchronization, define allowed direction and actor permissions, applicant disclosure/consent and evidence recipients, terminal withdrawal/rejection behavior, owner-transfer/revocation effects, concurrent version conflicts, idempotency/event identity, audit history and notification deduplication. Apply linked transitions atomically; never match unrelated records by candidateId alone.",
+    "Existing Mongoose deprecated-option and jsdom canvas warnings are non-fatal and outside this scope."
+  ],
+  "repositoryRoot": "D:/Developer-Portfolio-Analyzer"
+}

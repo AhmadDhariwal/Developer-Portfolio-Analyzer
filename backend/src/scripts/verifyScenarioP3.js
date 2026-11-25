@@ -496,11 +496,11 @@ async function main() {
   mongo = await startMongo();
   const redisPort = await startRedis();
   if (traceQuota) redisTrace = await require('./scenarioRedisTrace')(redis, redisPort);
-  const User = require('../models/user');
-  const Scenario = require('../models/scenarioSimulation');
-  const Sprint = require('../models/careerSprint');
-  const engine = require('../services/scoring/scenarioPlanningScore');
-  const service = require('../services/scenarioSimulatorService');
+  const User = require('../modules/auth/models/user');
+  const Scenario = require('../modules/scenario-simulator/models/scenarioSimulation');
+  const Sprint = require('../modules/career-sprint/models/careerSprint');
+  const engine = require('../core/scoring/scenarioPlanningScore');
+  const service = require('../modules/scenario-simulator/services/scenarioSimulatorService');
   await Promise.all([User.init(), Scenario.init(), Sprint.init()]);
   report.environment.mongoBuild = await mongoose.connection.db
     .admin()
@@ -548,7 +548,7 @@ async function main() {
   const payload = { ...input, evaluation: engine.calculate(input).evaluation };
   const saved = [];
   for (const user of users) saved.push(await service.saveScenarioForUser(user._id, payload));
-  const { sprintWindow } = require('../utils/sprintCalendar');
+  const { sprintWindow } = require('../modules/career-sprint/utils/sprintCalendar');
   const window = sprintWindow('Asia/Karachi');
   const sprints = await Sprint.insertMany(
     users.map((user) => ({
@@ -559,7 +559,7 @@ async function main() {
     })),
   );
   // Existing healthy evidence with correct owner/profile identity; no AI/provider call.
-  await require('../models/publicProfile').collection.insertMany(
+  await require('../modules/public-portfolio/models/publicProfile').collection.insertMany(
     users.map((user, index) => ({
       userId: user._id,
       slug: `p3-${index}`,
@@ -571,7 +571,7 @@ async function main() {
       updatedAt: new Date(),
     })),
   );
-  await require('../models/integrationInsight').collection.insertMany(
+  await require('../modules/integrations/models/integrationInsight').collection.insertMany(
     users.map((user) => ({
       userId: user._id,
       mergedSkills: ['TypeScript'],

@@ -1,0 +1,202 @@
+<div class="analyzer-page">
+  <!-- Page Header -->
+  <app-ui-page-header
+    title="GitHub Analysis"
+    subtitle="Repository quality, engineering signals, and verifiable GitHub evidence."
+  >
+    <div page-actions class="page-header-actions" *ngIf="analysisReady && result">
+      <app-ui-button
+        *ngIf="!isTemporaryView"
+        variant="outline"
+        size="sm"
+        (clicked)="refreshSavedData()"
+        [disabled]="isAnalyzing"
+        >Refresh Data</app-ui-button
+      >
+      <app-ui-button
+        *ngIf="isTemporaryView"
+        variant="ghost"
+        size="sm"
+        (clicked)="returnToDefaultProfile()"
+        [disabled]="isAnalyzing"
+      >
+        Return to My Profile (@{{ defaultUsername }})
+      </app-ui-button>
+      <app-ui-button
+        variant="outline"
+        size="sm"
+        (clicked)="toggleEvidenceDrawer()"
+        [disabled]="isAnalyzing"
+      >
+        Analysis Details & Audit
+      </app-ui-button>
+      <app-ui-button
+        variant="secondary"
+        size="sm"
+        (clicked)="refreshAnalysis()"
+        [loading]="isAnalyzing"
+        [disabled]="isAnalyzing"
+      >
+        Sync GitHub
+      </app-ui-button>
+    </div>
+    <div page-actions *ngIf="!analysisReady && defaultUsername">
+      <app-ui-button
+        variant="secondary"
+        size="sm"
+        (clicked)="refreshAnalysis()"
+        [disabled]="isAnalyzing"
+        >Sync GitHub</app-ui-button
+      >
+    </div>
+  </app-ui-page-header>
+
+  <app-github-profile-search
+    [isStale]="isStale"
+    [defaultUsername]="defaultUsername"
+    [isTemporaryView]="isTemporaryView"
+    [cacheStatusLabel]="cacheStatusLabel"
+    [calculationTimestamp]="calculationTimestamp"
+    [isDefaultProfile]="isDefaultProfile"
+    [viewedUsername]="viewedUsername"
+    [errorMessage]="errorMessage"
+    [result]="result"
+    [analysisReady]="analysisReady"
+    [isAnalyzing]="isAnalyzing"
+    [username]="username"
+    (analyzeRequested)="analyze(false)"
+    (returnRequested)="returnToDefaultProfile()"
+    (usernameChange)="username = $event"
+  ></app-github-profile-search>
+  <!-- Error State (when no previous analysis exists) -->
+  <app-ui-error-state
+    *ngIf="errorMessage && !analysisReady"
+    [title]="invalidUsername ? 'GitHub Profile Not Found' : 'Analysis Request Failed'"
+    [message]="errorMessage"
+    [retryable]="true"
+    (retry)="refreshSavedData()"
+  >
+  </app-ui-error-state>
+
+  <!-- Error Banner (when refreshing with prior results available) -->
+  <div class="error-banner-overlay" *ngIf="errorMessage && analysisReady" role="alert">
+    <strong>Refresh Issue:</strong> {{ errorMessage }}
+  </div>
+
+  <!-- Initial State: No GitHub configured in profile -->
+  <app-ui-empty-state
+    *ngIf="hasNoConfiguredGithub"
+    icon="search"
+    title="No GitHub Account Analyzed Yet"
+    description="Enter any public GitHub username above to evaluate repository code quality, engineering signals, and activity depth. Link your profile in Portfolio Settings for automated tracking."
+  >
+    <div actions>
+      <a routerLink="/app/portfolio-settings" class="settings-link">
+        <app-ui-button variant="outline" size="sm"> Configure in Portfolio Settings </app-ui-button>
+      </a>
+    </div>
+  </app-ui-empty-state>
+
+  <!-- Loading Skeletons -->
+  <div class="loading-skeleton-container" *ngIf="isInitLoading || (isAnalyzing && !analysisReady)">
+    <div class="skeleton-header-block">
+      <app-ui-skeleton variant="text" [lines]="2"></app-ui-skeleton>
+    </div>
+    <div class="skeleton-metrics-grid">
+      <app-ui-skeleton variant="card" height="100px"></app-ui-skeleton>
+      <app-ui-skeleton variant="card" height="100px"></app-ui-skeleton>
+      <app-ui-skeleton variant="card" height="100px"></app-ui-skeleton>
+      <app-ui-skeleton variant="card" height="100px"></app-ui-skeleton>
+      <app-ui-skeleton variant="card" height="100px"></app-ui-skeleton>
+      <app-ui-skeleton variant="card" height="100px"></app-ui-skeleton>
+    </div>
+    <div class="skeleton-summary-block">
+      <app-ui-skeleton variant="card" height="180px"></app-ui-skeleton>
+    </div>
+    <div class="skeleton-breakdown-block">
+      <app-ui-skeleton variant="card" height="260px"></app-ui-skeleton>
+    </div>
+  </div>
+
+  <!-- Empty Repositories State (Account exists but has 0 repos) -->
+  <app-ui-empty-state
+    *ngIf="hasEmptyRepositories && !isAnalyzing"
+    icon="folder"
+    title="No Public Repositories Found"
+    [description]="
+      'GitHub user @' + viewedUsername + ' has no public repositories available for evaluation.'
+    "
+  >
+  </app-ui-empty-state>
+
+  <!-- Main Analysis Content -->
+  <ng-container *ngIf="analysisReady && result && !hasEmptyRepositories">
+    <app-github-health-overview
+      [displayLanguages]="displayLanguages"
+      [totalSampledCommits]="totalSampledCommits"
+      [forkedRepoCount]="forkedRepoCount"
+      [originalRepoCount]="originalRepoCount"
+      [topRecommendedAction]="topRecommendedAction"
+      [biggestWeakness]="biggestWeakness"
+      [strongestSignal]="strongestSignal"
+      [executiveExplanation]="executiveExplanation"
+      [result]="result"
+      [executiveHeadline]="executiveHeadline"
+      [qualitativeState]="qualitativeState"
+      [qualitativeStateVariant]="qualitativeStateVariant"
+      [healthScoreValue]="healthScoreValue"
+    ></app-github-health-overview>
+    <app-github-scoring-breakdown
+      [scoreBreakdownList]="scoreBreakdownList"
+      [ruleVersion]="ruleVersion"
+      (auditRequested)="toggleEvidenceDrawer()"
+    ></app-github-scoring-breakdown>
+    <app-github-charts
+      [supportLanguages]="supportLanguages"
+      [displayLanguages]="displayLanguages"
+      [result]="result"
+      [hasActivityData]="hasActivityData"
+      [hasLanguageData]="hasLanguageData"
+    ></app-github-charts>
+    <app-github-repository-table
+      [username]="username"
+      [viewedUsername]="viewedUsername"
+      [sortedRepositoryRows]="sortedRepositoryRows"
+      [repoSortAsc]="repoSortAsc"
+      [repoSortField]="repoSortField"
+      [showAllRepositories]="showAllRepositories"
+      [repositoryRows]="repositoryRows"
+      (showAllRequested)="toggleShowAllRepositories()"
+      (sortRequested)="setRepoSort($event)"
+    ></app-github-repository-table>
+    <app-github-technology-fingerprint
+      [technologyCategories]="technologyCategories"
+      [hasTechnologyData]="hasTechnologyData"
+    ></app-github-technology-fingerprint>
+    <app-github-insights
+      [hasRecruiterInsights]="hasRecruiterInsights"
+      [hasWeakAreas]="hasWeakAreas"
+      [hasStrengths]="hasStrengths"
+      [hasAiContent]="hasAiContent"
+      [result]="result"
+    ></app-github-insights>
+  </ng-container>
+
+  <app-github-technical-audit
+    [scoringWarnings]="scoringWarnings"
+    [technologyCategories]="technologyCategories"
+    [hasTechnologyData]="hasTechnologyData"
+    [scoreBreakdownList]="scoreBreakdownList"
+    [evidenceFacts]="evidenceFacts"
+    [totalSampledCommits]="totalSampledCommits"
+    [archivedRepoCount]="archivedRepoCount"
+    [forkedRepoCount]="forkedRepoCount"
+    [originalRepoCount]="originalRepoCount"
+    [cacheStatusLabel]="cacheStatusLabel"
+    [calculationTimestamp]="calculationTimestamp"
+    [ruleVersion]="ruleVersion"
+    [result]="result"
+    [showEvidenceDrawer]="showEvidenceDrawer"
+    (closed)="toggleEvidenceDrawer()"
+  ></app-github-technical-audit>
+</div>

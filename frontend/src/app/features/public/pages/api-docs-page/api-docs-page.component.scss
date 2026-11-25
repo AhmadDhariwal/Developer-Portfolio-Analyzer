@@ -1,0 +1,67 @@
+.is-stacked-kpis {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.explorer-heading {
+  margin-top: 0.6rem !important;
+}
+
+.domain-detail-grid {
+  align-items: stretch;
+}
+
+.payload-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--lp-card-border);
+}
+
+.payload-keys-label {
+  font-family: var(--lp-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--lp-muted);
+}
+
+.payload-key-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.copy-terminal-btn {
+  min-height: 44px;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-family: var(--lp-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    background: #334155;
+    border-color: #6366f1;
+    color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #818cf8;
+    outline-offset: 2px;
+  }
+}
+
+.card-cta-spacer {
+  margin-top: auto;
+  padding-top: 0.5rem;
+}

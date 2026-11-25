@@ -1,0 +1,98 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+.hub-page {
+  @include recruiter.page-shell;
+}
+
+.page-header {
+  @include recruiter.canvas-header;
+}
+
+.page-header__copy {
+  @include recruiter.header-copy;
+}
+
+.page-header__eyebrow {
+  @include recruiter.eyebrow;
+}
+
+.page-header__actions {
+  @include recruiter.header-actions;
+}
+
+.count-pill {
+  @include recruiter.status-pill('neutral');
+}
+
+.btn-primary {
+  @include recruiter.btn-primary;
+}
+
+.btn-secondary {
+  @include recruiter.btn-secondary;
+}
+
+.banner--error {
+  @include recruiter.banner-error;
+}
+
+.metric-grid {
+  @include recruiter.metric-grid(195px);
+}
+
+.surface-card {
+  @include recruiter.card-surface(20px);
+  min-width: 0;
+  max-width: 100%;
+  display: grid;
+  gap: 16px;
+
+  @media (max-width: 480px) {
+    padding: 14px;
+  }
+}
+
+.filter-panel {
+  overflow: visible;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+
+  label {
+    @include recruiter.field-label;
+  }
+
+  input {
+    @include recruiter.field-control;
+    min-height: 38px;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 640px) {
+  .filter-actions {
+    justify-content: stretch;
+
+    button {
+      flex: 1 1 130px;
+    }
+  }
+}

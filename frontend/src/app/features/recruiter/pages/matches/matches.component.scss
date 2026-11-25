@@ -1,0 +1,232 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+.hub-page {
+  @include recruiter.page-shell;
+}
+
+.page-header {
+  @include recruiter.canvas-header;
+}
+
+.page-header__copy {
+  @include recruiter.header-copy;
+}
+
+.page-header__eyebrow {
+  @include recruiter.eyebrow;
+}
+
+.page-header__actions {
+  @include recruiter.header-actions;
+}
+
+.count-pill {
+  @include recruiter.status-pill('neutral');
+}
+
+.btn-primary {
+  @include recruiter.btn-primary;
+}
+
+.btn-secondary {
+  @include recruiter.btn-secondary;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.banner--error {
+  @include recruiter.banner-error;
+}
+
+.banner--success {
+  @include recruiter.banner-success;
+}
+
+.metric-grid {
+  @include recruiter.metric-grid(195px);
+}
+
+.surface-card {
+  @include recruiter.card-surface(20px);
+}
+
+.controls-panel {
+  overflow: visible;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: minmax(min(100%, 250px), 320px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.control-block {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+
+  label {
+    @include recruiter.field-label;
+  }
+
+  small {
+    display: block;
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  input {
+    @include recruiter.field-control;
+    min-height: 38px;
+  }
+}
+
+.focus-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.candidate-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  max-height: 136px;
+  overflow-y: auto;
+  padding-top: 4px;
+}
+
+.candidate-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  small {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+
+  &.is-selected {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary-text);
+
+    small {
+      color: var(--color-primary-text);
+    }
+  }
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 18px;
+  min-width: 0;
+}
+
+.compare-tray {
+  @include recruiter.card-surface(12px 16px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-border);
+}
+
+.compare-tray__items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.compare-tray__label {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.compare-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+
+  button {
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0 2px;
+    font-size: 15px;
+    line-height: 1;
+
+    &:hover {
+      color: var(--color-danger-text);
+    }
+  }
+}
+
+.compare-tray__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.segmented-tabs {
+  @include recruiter.segmented-tabs;
+}
+
+.card-grid {
+  @include recruiter.card-grid(340px);
+}
+
+@media (max-width: 900px) {
+  .controls-grid {
+    grid-template-columns: 1fr;
+  }
+}

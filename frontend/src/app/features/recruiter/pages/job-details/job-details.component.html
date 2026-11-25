@@ -1,0 +1,262 @@
+<section class="hub-page">
+  <div class="top-nav">
+    <app-recruiter-back-button fallbackRoute="/app/recruiter/jobs" label="Back to Jobs" />
+    <span class="breadcrumb" *ngIf="job">Jobs / {{ job.title }}</span>
+  </div>
+
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading job details..."
+    variant="cards"
+    [count]="2"
+  />
+
+  <app-ui-error-state
+    *ngIf="error && !job && !loading"
+    title="Unable to load job details"
+    [message]="error"
+    (retry)="loadJob()"
+  />
+
+  <div class="banner banner--error" *ngIf="error && job">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && job">
+    <header class="page-header">
+      <div class="page-header__copy">
+        <div class="eyebrow-row">
+          <span class="page-header__eyebrow">Requisition Details</span>
+          <span [class]="statusToneClass">{{ job.status || 'open' }}</span>
+          <span
+            class="discovery-pill"
+            [class.discovery-pill--published]="job.published"
+            [class.discovery-pill--draft]="!job.published"
+          >
+            {{ job.published ? 'Published in Developer Jobs' : 'Not published' }}
+          </span>
+        </div>
+        <h1>{{ job.title }}</h1>
+        <div class="ownership-strip">
+          <span class="ownership-badge">
+            Owner: {{ job.owner?.name }}{{ job.access?.isOwner ? ' (you)' : '' }}
+          </span>
+          <span class="ownership-badge" [class.ownership-badge--shared]="job.teamShared">
+            {{
+              job.teamShared
+                ? 'Shared team: ' + (job.sharedTeam?.name || 'Unavailable')
+                : 'Private to owner'
+            }}
+          </span>
+        </div>
+        <div class="meta-pills">
+          <span *ngIf="job.role">{{ job.role }}</span>
+          <span>{{ job.employmentType || 'full-time' }}</span>
+          <span>{{ job.location || 'Remote' }}</span>
+          <span>{{ job.minExperienceYears || 0 }}+ yrs experience</span>
+        </div>
+      </div>
+
+      <div class="page-header__actions" *ngIf="job.access?.evaluationView">
+        <a
+          class="btn-secondary"
+          [routerLink]="['/app/recruiter/matches']"
+          [queryParams]="{ jobId: job._id }"
+        >
+          View Matches ({{ jobMatches.length }})
+        </a>
+        <button
+          type="button"
+          class="btn-primary"
+          *ngIf="job.access?.evaluationManage"
+          [disabled]="generating"
+          (click)="generateMatches()"
+        >
+          {{ generating ? 'Generating...' : 'Generate Match Results' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="detail-layout">
+      <div class="detail-main">
+        <article class="panel">
+          <h2>Role Overview &amp; Responsibilities</h2>
+          <p class="role-description">
+            {{
+              job.description || 'No detailed description has been added to this requisition yet.'
+            }}
+          </p>
+        </article>
+
+        <article class="panel">
+          <h2>Technical Qualifications</h2>
+
+          <div class="skills-group">
+            <h3>Required Skills ({{ (job.requiredSkills || []).length }})</h3>
+            <div class="tag-row" *ngIf="(job.requiredSkills || []).length; else noReqSkills">
+              <span class="tag tag--primary" *ngFor="let skill of job.requiredSkills">{{
+                skill
+              }}</span>
+            </div>
+            <ng-template #noReqSkills>
+              <p class="muted">No required skills specified.</p>
+            </ng-template>
+          </div>
+
+          <div class="skills-group">
+            <h3>Preferred Skills ({{ (job.preferredSkills || []).length }})</h3>
+            <div class="tag-row" *ngIf="(job.preferredSkills || []).length; else noPrefSkills">
+              <span class="tag" *ngFor="let skill of job.preferredSkills">{{ skill }}</span>
+            </div>
+            <ng-template #noPrefSkills>
+              <p class="muted">No preferred skills specified.</p>
+            </ng-template>
+          </div>
+        </article>
+
+        <app-job-applicants
+          *ngIf="job.access?.privateEvidence"
+          [jobId]="job._id"
+          [applicationId]="selectedApplicationId"
+        />
+        <article class="panel" *ngIf="!job.access?.privateEvidence">
+          <div class="callout-note">
+            Applications and submitted evidence remain private to the job owner. Evaluation access
+            is controlled separately.
+          </div>
+        </article>
+
+        <article class="panel" *ngIf="job.access?.evaluationView">
+          <div class="panel-head">
+            <h2>Matched Candidates Preview</h2>
+            <a
+              [routerLink]="['/app/recruiter/matches']"
+              [queryParams]="{ jobId: job._id }"
+              class="panel-link"
+            >
+              Open in Matches &rarr;
+            </a>
+          </div>
+
+          <div class="matches-table-wrap" *ngIf="jobMatches.length; else noMatchesYet">
+            <table class="matches-table">
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Match Score</th>
+                  <th>Readiness</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of jobMatches">
+                  <td data-label="Candidate">
+                    <a
+                      *ngIf="m?.candidateId"
+                      [routerLink]="['/app/recruiter/candidates', m.candidateId]"
+                    >
+                      {{ m?.candidate?.name || m?.candidate?.fullName || m?.candidateId }}
+                    </a>
+                  </td>
+                  <td data-label="Match Score">
+                    <strong>{{ m?.matchScore || 0 }}%</strong>
+                  </td>
+                  <td data-label="Readiness">{{ m?.readinessScore || 0 }}</td>
+                  <td data-label="Status">
+                    <span class="status-pill">{{ m?.status || 'generated' }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noMatchesYet>
+            <p class="muted">
+              No matches generated for this job yet. Click "Generate Match Results" to rank scoped
+              candidates.
+            </p>
+          </ng-template>
+        </article>
+      </div>
+
+      <aside class="detail-side">
+        <article class="panel discovery-panel">
+          <div class="panel-head">
+            <h2>Developer discovery</h2>
+            <span
+              class="discovery-pill"
+              [class.discovery-pill--published]="job.published"
+              [class.discovery-pill--draft]="!job.published"
+            >
+              {{ job.published ? 'Published' : 'Unpublished' }}
+            </span>
+          </div>
+          <div class="discovery-status-box" [class.is-published]="job.published">
+            <span class="discovery-dot" aria-hidden="true"></span>
+            <p class="discovery-copy">
+              {{
+                job.published
+                  ? 'Published for direct applications while open.'
+                  : 'Not published in Developer Jobs.'
+              }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="btn-secondary discovery-toggle-btn"
+            *ngIf="job.access?.publish"
+            (click)="togglePublication()"
+            [disabled]="publishing"
+          >
+            {{
+              publishing
+                ? 'Saving…'
+                : job.published
+                  ? 'Unpublish'
+                  : 'Publish for direct applications'
+            }}
+          </button>
+        </article>
+
+        <article class="panel">
+          <h2>Job Snapshot</h2>
+          <dl class="snapshot-list">
+            <div>
+              <dt>Status</dt>
+              <dd>{{ job.status || 'open' }}</dd>
+            </div>
+            <div>
+              <dt>Direct Discovery</dt>
+              <dd>{{ job.published ? 'Published' : 'Unpublished' }}</dd>
+            </div>
+            <div>
+              <dt>Primary Stack</dt>
+              <dd>{{ job.stack || 'Generalist' }}</dd>
+            </div>
+            <div>
+              <dt>Employment Type</dt>
+              <dd>{{ job.employmentType || 'full-time' }}</dd>
+            </div>
+            <div>
+              <dt>Location</dt>
+              <dd>{{ job.location || 'Remote' }}</dd>
+            </div>
+            <div>
+              <dt>Experience</dt>
+              <dd>{{ job.minExperienceYears || 0 }}+ years</dd>
+            </div>
+            <div>
+              <dt>Compensation</dt>
+              <dd>{{ salaryLabel }}</dd>
+            </div>
+            <div *ngIf="job.createdAt">
+              <dt>Created</dt>
+              <dd>{{ job.createdAt | date: 'mediumDate' }}</dd>
+            </div>
+            <div *ngIf="job.updatedAt">
+              <dt>Updated</dt>
+              <dd>{{ job.updatedAt | date: 'mediumDate' }}</dd>
+            </div>
+          </dl>
+        </article>
+      </aside>
+    </div>
+  </ng-container>
+</section>

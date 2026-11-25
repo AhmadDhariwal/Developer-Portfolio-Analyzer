@@ -4,10 +4,10 @@ const path = require('node:path');
 const mongoose = require('mongoose');
 const root = path.resolve(__dirname, '../..');
 require('dotenv').config({ path: path.join(root, '.env'), quiet: true });
-const cache = require('../services/redisCacheService');
-const catalog = require('../services/newsCatalogService');
-const Article = require('../models/newsArticle');
-const Pool = require('../models/news');
+const cache = require('../core/cache/redisCacheService');
+const catalog = require('../modules/news/services/newsCatalogService');
+const Article = require('../modules/news/models/newsArticle');
+const Pool = require('../modules/news/models/news');
 const phase = process.argv.includes('--before') ? 'before' : 'after';
 
 async function main() {

@@ -15,8 +15,13 @@ const targets = new Set([
   '/app/portfolio',
 ]);
 
-export function notificationTarget(notification: AppNotification): string {
+export function notificationTarget(notification: AppNotification, role?: string): string {
+  const fallback = role === 'recruiter' ? '/app/recruiter/notifications' : '/app/notifications';
   const target = notification.meta?.['target'];
+  if (target === '/app/notifications' || target === '/app/recruiter/notifications') return fallback;
+  if (target === '/app/jobs?view=internal')
+    return ['developer', 'user', 'guest'].includes(role || '') ? target : fallback;
+  if (target === '/app/recruiter/jobs') return role === 'recruiter' ? target : fallback;
   if (typeof target === 'string' && targets.has(target)) return target;
   if (notification.meta?.['ticketId']) return '/app/support';
   if (notification.meta?.['reportId']) return '/app/weekly-reports';
@@ -24,5 +29,5 @@ export function notificationTarget(notification: AppNotification): string {
   if (notification.type === 'resume_upload') return '/app/resume-analyzer';
   if (notification.type === 'github_update') return '/app/github-analyzer';
   if (notification.type === 'low_score') return '/app/dashboard';
-  return '/app/notifications';
+  return fallback;
 }

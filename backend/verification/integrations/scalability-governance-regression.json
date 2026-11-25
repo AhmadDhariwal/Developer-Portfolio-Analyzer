@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-05T14:20:54.466Z",
+  "checkedAt": "2026-11-20T09:16:17.907Z",
   "providerHttpRequests": 0,
   "checks": [
     "provider/user 429; denied requests do not consume other counters",
@@ -18,22 +18,22 @@
   "performance": {
     "workload": "12 sequential admissions, release outside timing",
     "n": 12,
-    "p50Ms": 6.182499999998981,
-    "p95Ms": 9.268099999999322,
-    "p99Ms": 9.268099999999322,
+    "p50Ms": 15.780799999993178,
+    "p95Ms": 24.30829999999696,
+    "p99Ms": 24.30829999999696,
     "samplesMs": [
-      5.18999999999869,
-      5.42870000000039,
-      5.994599999999991,
-      6.065300000000207,
-      6.096400000000358,
-      6.182499999998981,
-      7.090299999999843,
-      7.615699999998469,
-      8.007799999999406,
-      8.747199999999793,
-      8.869399999999587,
-      9.268099999999322
+      11.609599999996135,
+      13.520199999999022,
+      15.191099999996368,
+      15.209300000002258,
+      15.489300000001094,
+      15.780799999993178,
+      15.833299999998417,
+      15.868600000001607,
+      16.046300000001793,
+      16.29320000000007,
+      16.592299999996612,
+      24.30829999999696
     ],
     "collectionReads": 12,
     "collectionReplacements": 48,
@@ -69,7 +69,7 @@
         "CLIENT",
         "CLIENT",
         "SET",
-        "GET"
+        "EVAL_GET_PTTL"
       ]
     },
     {
@@ -94,7 +94,7 @@
         "CLIENT",
         "CLIENT",
         "SET",
-        "GET"
+        "EVAL_GET_PTTL"
       ]
     },
     {
@@ -108,7 +108,7 @@
       "cacheCommands": [
         "CLIENT",
         "CLIENT",
-        "GET"
+        "EVAL_GET_PTTL"
       ]
     },
     {
@@ -123,7 +123,7 @@
         "CLIENT",
         "CLIENT",
         "SET",
-        "GET"
+        "EVAL_GET_PTTL"
       ]
     }
   ],
@@ -131,7 +131,7 @@
   "fixtureReplays": 3,
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 128,
+    "temporaryFilesRemoved": 75,
     "productionDataUsed": false
   }
 }

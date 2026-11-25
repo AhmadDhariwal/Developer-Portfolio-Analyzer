@@ -1,0 +1,361 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+.hub-page {
+  @include recruiter.page-shell;
+}
+
+.banner {
+  &--info {
+    @include recruiter.banner-info;
+  }
+
+  &--error {
+    @include recruiter.banner-error;
+  }
+
+  &--success {
+    @include recruiter.banner-success;
+  }
+}
+
+.page-header {
+  @include recruiter.canvas-header;
+  align-items: center;
+}
+
+.identity-cluster {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1 1 min(100%, 300px);
+  min-width: 0;
+}
+
+.identity-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--dev-radius-surface, 8px);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-text);
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.page-header__copy {
+  @include recruiter.header-copy;
+
+  h1 {
+    @include recruiter.page-title;
+  }
+
+  p {
+    @include recruiter.page-subtitle;
+  }
+}
+
+.page-header__eyebrow {
+  @include recruiter.eyebrow;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr));
+  gap: 10px;
+  flex: 1 1 min(100%, 420px);
+  min-width: 0;
+}
+
+.hero-stat {
+  padding: 10px 14px;
+  border-radius: var(--dev-radius-surface, 8px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+
+  span {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+  }
+}
+
+.completion-card {
+  @include recruiter.card-surface(16px 18px);
+  display: grid;
+  gap: 10px;
+}
+
+.completion-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.completion-eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.completion-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.completion-pill {
+  @include recruiter.status-pill(neutral);
+
+  &--done {
+    @include recruiter.status-pill(success);
+  }
+}
+
+.completion-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface-tertiary);
+  overflow: hidden;
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--color-primary);
+    transition: width 0.25s ease;
+  }
+}
+
+.details-form {
+  display: grid;
+  gap: 18px;
+}
+
+.panel {
+  @include recruiter.card-surface(20px);
+  display: grid;
+  gap: 16px;
+}
+
+.panel__heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+
+  h2 {
+    margin: 2px 0 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.panel__eyebrow {
+  @include recruiter.eyebrow;
+  margin-bottom: 2px;
+}
+
+.panel__copy {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.panel__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+
+  &--wide {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    @include recruiter.field-label;
+    justify-content: space-between;
+  }
+
+  input,
+  textarea {
+    @include recruiter.field-control;
+  }
+
+  textarea {
+    min-height: 92px;
+    resize: vertical;
+  }
+}
+
+.field__meta {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+
+  &--required {
+    color: var(--color-primary-text);
+    font-weight: 600;
+  }
+}
+
+.field__error {
+  font-size: 12px;
+  color: var(--color-danger-text);
+}
+
+.toggle-row {
+  padding: 12px 14px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    min-height: 18px;
+    margin-top: 2px;
+    accent-color: var(--color-primary);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+}
+
+.checkbox-copy {
+  display: grid;
+  gap: 2px;
+
+  strong {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  small {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+}
+
+.org-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.org-card {
+  padding: 14px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  display: grid;
+  gap: 4px;
+
+  strong {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+}
+
+.org-card__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: var(--dev-radius-surface, 8px);
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+
+  @media (max-width: 520px) {
+    justify-content: stretch;
+
+    button {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+.btn-primary {
+  @include recruiter.btn-primary;
+}
+
+.btn-secondary {
+  @include recruiter.btn-secondary;
+}

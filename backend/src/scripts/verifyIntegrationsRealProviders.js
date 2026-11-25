@@ -299,11 +299,11 @@ async function main() {
   ])
     delete process.env[key];
   const mongoose = require('mongoose');
-  const cache = require('../services/redisCacheService');
-  const Connection = require('../models/integrationConnection');
-  const Insight = require('../models/integrationInsight');
-  const Log = require('../models/integrationSyncLog');
-  const User = require('../models/user');
+  const cache = require('../core/cache/redisCacheService');
+  const Connection = require('../modules/integrations/models/integrationConnection');
+  const Insight = require('../modules/integrations/models/integrationInsight');
+  const Log = require('../modules/integrations/models/integrationSyncLog');
+  const User = require('../modules/auth/models/user');
   let runtime;
   let server;
   let current;
@@ -373,7 +373,7 @@ async function main() {
     const app = express();
     app.use(express.json());
     // Narrative AI is outside provider acceptance; use its existing deterministic fallback.
-    require('../services/aiservice').runAIAnalysis = async (_prompt, fallback) => fallback;
+    require('../core/ai/aiservice').runAIAnalysis = async (_prompt, fallback) => fallback;
     for (const [prefix, route] of [
       ['integrations', 'integrations.routes'],
       ['dashboard', 'dashboard.routes'],
@@ -448,7 +448,7 @@ async function main() {
           );
           assert.ok(evidence, 'Previously verified live extraction and sync evidence is required');
           replay = evidence.data.providers.find((row) => row.provider === provider);
-          const persistence = require('../services/integrationPersistenceService');
+          const persistence = require('../modules/integrations/services/integrationPersistenceService');
           const operation = await persistence.beginManual(owner, provider);
           await persistence.connect(
             owner,
@@ -506,7 +506,7 @@ async function main() {
             { userId: owner, provider },
             { $set: { nextSyncAt: new Date(0) } }
           );
-          await require('../services/integrationSyncService').syncDueConnections();
+          await require('../modules/integrations/services/integrationSyncService').syncDueConnections();
           assert.ok(
             await Log.exists({ userId: owner, provider, reason: 'polling', status: 'success' })
           );
@@ -527,7 +527,7 @@ async function main() {
         assert.notEqual(adopted.fromCache, true);
         assert.equal(cached.fromCache, true);
         const signal =
-          await require('../services/developerSignalService').summarizeIntegrationSignal(owner);
+          await require('../core/developer-context/developerSignalService').summarizeIntegrationSignal(owner);
         assert.deepEqual(signal.verifiedSkills, []);
         assert.ok(signal.usedProviders.includes(provider));
         assert.deepEqual(sprint.signalsUsed.integrations.usedProviders, [provider]);

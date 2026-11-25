@@ -1,0 +1,137 @@
+{
+  "phase": "P1.5B finalization",
+  "formatting": {
+    "write": "passed; explicit 15 backend and 6 frontend files; unchanged",
+    "check": "passed; backend and frontend configured options"
+  },
+  "syntax": {
+    "checked": [
+      "backend/scripts/smoke-application-shortlists.cjs",
+      "backend/scripts/benchmark-recruiter-contention.cjs",
+      "backend/scripts/verify-recruiter-p15b.cjs",
+      "backend/src/modules/jobs/jobApplicationController.js",
+      "backend/src/modules/jobs/services/jobApplicationService.js",
+      "backend/src/modules/notifications/services/notificationTransactionService.js",
+      "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+      "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+      "backend/src/modules/recruiter/utils/hub/applicationIdentityValidation.js",
+      "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+      "backend/src/modules/recruiter/utils/hub/applicationWorkflowBudget.js",
+      "backend/src/tests/fixtures/applicationPerformanceFixture.js",
+      "backend/src/tests/fixtures/disposableAngular.js",
+      "backend/src/tests/fixtures/recruiterAngularProxy.cjs",
+      "backend/src/tests/recruiter/applicationConcurrency.integration.test.js"
+    ],
+    "status": "passed"
+  },
+  "sourceHashes": [
+    {
+      "path": "backend/scripts/smoke-application-shortlists.cjs",
+      "sha256": "faf4ce0bb833de33b251e360c19f12687b4e586310efd01ae293ca23c35a9beb"
+    },
+    {
+      "path": "backend/scripts/benchmark-recruiter-contention.cjs",
+      "sha256": "e5ba172600e3d7ef2d2a3f9c597dcc25cb1535ebde3b8ec655f28a9ff0fdc4d0"
+    },
+    {
+      "path": "backend/scripts/verify-recruiter-p15b.cjs",
+      "sha256": "f72122423878a4cc577884989e4936c40d340daa5f3f7506843d17b80579bf5f"
+    },
+    {
+      "path": "backend/src/modules/jobs/jobApplicationController.js",
+      "sha256": "fa1272948819f689d6ba0a1d917463baa77bfdc34e8c520c205828202357a0ee"
+    },
+    {
+      "path": "backend/src/modules/jobs/services/jobApplicationService.js",
+      "sha256": "652fee668b361c03d268331a7e77a202d6bdecaf46558e318b67b01440b1c9b6"
+    },
+    {
+      "path": "backend/src/modules/notifications/services/notificationTransactionService.js",
+      "sha256": "295835903013feecc88a2b0ca01c0d349f4e446864068b9b4b7f5373ed1c1589"
+    },
+    {
+      "path": "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+      "sha256": "0323fc16ff31ac43e4a12598640aab40493aa79bc89af7914af3c79586bdbc61"
+    },
+    {
+      "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+      "sha256": "5c8edb2b89170bfe024a3e75eec3f8f5e85ba2d01e552b77a2cf7bdb457d6ab2"
+    },
+    {
+      "path": "backend/src/modules/recruiter/utils/hub/applicationIdentityValidation.js",
+      "sha256": "68d1eafd7172d64064f4b16e217aba81b8c05e43e168ec93f2d30e0d45450809"
+    },
+    {
+      "path": "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+      "sha256": "6edb32d9feeba06287be0a1ee7fa1eb92cc9168fadfd9cf0e9214f2efe843808"
+    },
+    {
+      "path": "backend/src/modules/recruiter/utils/hub/applicationWorkflowBudget.js",
+      "sha256": "cd67007768b304743a04584898dc12dd451374111d945d2bed64df3692171dc4"
+    },
+    {
+      "path": "backend/src/tests/fixtures/applicationPerformanceFixture.js",
+      "sha256": "17c5c69ec8c0fefb63eebe1fb14d29330e38d1b91b07f2daf6ab646b12e51d37"
+    },
+    {
+      "path": "backend/src/tests/fixtures/disposableAngular.js",
+      "sha256": "d9db3ae017ceeceaebbee78eca6462815e964584f2922d0dc48fd7ddfb152e05"
+    },
+    {
+      "path": "backend/src/tests/fixtures/recruiterAngularProxy.cjs",
+      "sha256": "51bbf5b628ad791151c5a38651add337e995fa8d022f5d2d645b20c173a588a5"
+    },
+    {
+      "path": "backend/src/tests/recruiter/applicationConcurrency.integration.test.js",
+      "sha256": "1e2fa2ebde68fdf31d2af568cdf4f7c8dfb48377be6c18e147f6b947c9afbda6"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html",
+      "sha256": "b8bb6a53834f5b58f31eb117125d429304fef872c21aafd420587e7dcbcbd8e2"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts",
+      "sha256": "10f84c80cb2be8b089a7dfb008e032a3425cdbf9dae3b4201480ef14d5561999"
+    },
+    {
+      "path": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+      "sha256": "6f3da6dfe84ffef40e4978c465c365d7306e51f23ab348b5dc3a4d7055d65316"
+    },
+    {
+      "path": "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+      "sha256": "cdcc11cbfa4384a0dbbbd10c1e1d536c922f98bb82b1c9e413bda97cf57198e7"
+    },
+    {
+      "path": "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+      "sha256": "1120b58770217e27d9f21d0669e876534cffe94bbb2b5b562d511e2f5e46b605"
+    },
+    {
+      "path": "frontend/src/app/shared/services/api.service.ts",
+      "sha256": "3fb7cfe4341bc7417815376eef7d9c2ddd15ec2ea231ccf6a43a2d99c0597ac2"
+    }
+  ],
+  "preservedIndex": [
+    {
+      "path": "backend/index.js",
+      "blob": "062dca31f08172d875fcc1eadf595af2e398c3de",
+      "indexUnchanged": true
+    },
+    {
+      "path": "backend/src/core/observability/logger.js",
+      "blob": "0e8f1c89b89aa76153d798acfcc4971758d51458",
+      "indexUnchanged": true
+    },
+    {
+      "path": "backend/src/tests/core/logger.test.js",
+      "blob": "451639374e0bcaac6ab8d4860e8a9dfa22365a1d",
+      "indexUnchanged": true
+    }
+  ],
+  "git": {
+    "diffCheck": "passed",
+    "cachedDiffCheck": "passed",
+    "branch": "fix/P1-project",
+    "head": "5b18f4d1e3802b52dfaebcd060f2b42a3df5c5e8"
+  },
+  "noUnrelatedFormatting": true
+}

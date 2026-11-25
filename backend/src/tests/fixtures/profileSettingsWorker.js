@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const service = require('../../services/publicProfileService');
+const service = require('../../modules/public-portfolio/services/publicProfileService');
 process.on('message', async (message) => {
   try {
     if (message.op === 'connect') {

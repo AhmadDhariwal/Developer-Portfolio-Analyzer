@@ -1,0 +1,38 @@
+{
+  "sourceFiles": [
+    "backend/src/services/interviewQuestionQualityService.js",
+    "backend/src/services/interviewEnrichmentOrchestrator.js",
+    "backend/src/services/interviewPrepService.js",
+    "backend/src/services/providers/interviewAIProvider.js",
+    "backend/src/services/aiProviderManager.js",
+    "backend/src/tests/interviewCustomPromptStyle.test.js"
+  ],
+  "sourceHashes": {
+    "backend/src/services/interviewQuestionQualityService.js": "7541c093348bc14bea3fe8ad1ab42fe188a4a8112e8fa4a2ecc0f12ce4fe0394",
+    "backend/src/services/interviewEnrichmentOrchestrator.js": "0c59ce174cf4f707f20ff97d189377f2186b60a9150803c25de3b27754f925b6",
+    "backend/src/services/interviewPrepService.js": "dce4bb86b3efaef5ad040824eac115d292509af46ff3138c8c13f5b62020e7d4",
+    "backend/src/services/providers/interviewAIProvider.js": "881b8c79b6a495d0eadad148eecdc754aa6edc9d0fd7015dce7cceb8a14623bc",
+    "backend/src/services/aiProviderManager.js": "dc94a4d6ca351a851ae7778922690f1c1aedece96f5eebb9d0c99837e8b8bf34",
+    "backend/src/tests/interviewCustomPromptStyle.test.js": "9a4d65f2b288c393a70caf65a0980ac7cbebfc5499889e7e740b0b62f0f0f577"
+  },
+  "existingStagedAndUnrelatedWorkPreserved": true,
+  "formatWriteCheckPassed": true,
+  "syntaxWhitespacePassed": true,
+  "movedSourceFiles": [],
+  "deletedFiles": [],
+  "temporaryFilesCreated": [],
+  "retainedOperationalLogs": "See runtime.json; corrected backend remains running.",
+  "backendTestsPassed": 76,
+  "backendTestsFailed": 0,
+  "liveExactRagRequestHttpStatus": 200,
+  "livePrivateReusePassed": true,
+  "finalBackendReady": true,
+  "readyCheck": "HTTP 200 from http://127.0.0.1:5000/",
+  "activeBackend": {
+    "pid": 1376,
+    "logs": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\prompt-final-952abcf4b91a4165adec6a7724a072ee",
+    "port": 5000,
+    "startedAt": "2026-11-15T21:25:50.1907119+00:00",
+    "mode": "normal local backend"
+  }
+}

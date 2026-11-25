@@ -1,6 +1,6 @@
 'use strict';
 const mongoose = require('mongoose');
-const cache = require('../../services/redisCacheService');
+const cache = require('../../core/cache/redisCacheService');
 if (
   !/^mongodb:\/\/127\.0\.0\.1:\d+\/integration_acceptance\?replicaSet=integration-test$/.test(
     process.env.INTEGRATION_TEST_URI || ''
@@ -8,12 +8,12 @@ if (
   !/^redis:\/\/127\.0\.0\.1:\d+$/.test(process.env.REDIS_URL || '')
 )
   throw Error('Disposable endpoints required.');
-const persistence = require('../../services/integrationPersistenceService');
-const sync = require('../../services/integrationSyncService');
-const { getAdapter } = require('../../services/integrations');
-const Connection = require('../../models/integrationConnection');
-const Insight = require('../../models/integrationInsight');
-const controller = require('../../controllers/integrationscontroller');
+const persistence = require('../../modules/integrations/services/integrationPersistenceService');
+const sync = require('../../modules/integrations/services/integrationSyncService');
+const { getAdapter } = require('../../modules/integrations/services/adapters');
+const Connection = require('../../modules/integrations/models/integrationConnection');
+const Insight = require('../../modules/integrations/models/integrationInsight');
+const controller = require('../../modules/integrations/integrationscontroller');
 getAdapter('github').refreshAccessToken = async () => {
   await Connection.db
     .collection('fixtureRefreshCounts')
@@ -70,13 +70,13 @@ process.on('message', async (message) => {
         value = await persistence.disconnect(message.owner, message.provider || 'leetcode');
         break;
       case 'read':
-        value = await require('../../services/integrationInsightService').getIntegrationInsight(
+        value = await require('../../modules/integrations/services/integrationInsightService').getIntegrationInsight(
           message.owner
         );
         break;
       case 'cache': {
         const snapshot = await Insight.findOne({ userId: message.owner }).lean();
-        const service = require('../../services/sprintOverviewCacheService');
+        const service = require('../../modules/career-sprint/services/sprintOverviewCacheService');
         const sprint = {
           _id: 'sprint-test',
           userId: message.owner,

@@ -2,7 +2,7 @@
 const path = require('node:path');
 const fs = require('node:fs');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
-const service = require('../services/courseService');
+const service = require('../modules/courses/services/courseService');
 (async () => {
   const configured =
     !!process.env.YOUTUBE_API_KEY && process.env.YOUTUBE_API_KEY !== 'your_youtube_api_key';

@@ -1,0 +1,778 @@
+const DIFFICULTY_SET = new Set(['easy', 'medium', 'hard', 'senior']);
+const INTERVIEW_CATEGORY_SET = new Set([
+  'core-concepts',
+  'practical-implementation',
+  'debugging',
+  'performance',
+  'security',
+  'architecture',
+  'testing',
+  'real-world-scenarios',
+  'behavioral-technical',
+  'system-design'
+]);
+const LEGACY_CATEGORY_MAP = {
+  conceptual: 'core-concepts',
+  scenario_based: 'real-world-scenarios',
+  code_output: 'practical-implementation',
+  best_practice: 'practical-implementation',
+  system_design: 'system-design',
+  behavioral: 'behavioral-technical',
+  database: 'core-concepts'
+};
+const STOP_WORDS = new Set([
+  'the',
+  'a',
+  'an',
+  'in',
+  'on',
+  'at',
+  'to',
+  'for',
+  'of',
+  'and',
+  'or',
+  'is',
+  'are',
+  'was',
+  'were',
+  'what',
+  'why',
+  'how',
+  'when',
+  'where'
+]);
+const CANONICAL_STOP_WORDS = new Set([
+  ...STOP_WORDS,
+  'tell',
+  'me',
+  'about',
+  'explain',
+  'describe',
+  'define',
+  'can',
+  'you',
+  'please',
+  'discuss',
+  'elaborate',
+  'briefly',
+  'detail',
+  'overview',
+  'could',
+  'would',
+  'do',
+  'does',
+  'its',
+  'it',
+  'us',
+  'give',
+  'talk',
+  'walk',
+  'through',
+  'know',
+  'think',
+  'mean',
+  'means',
+  'say',
+  'said',
+  'work',
+  'works'
+]);
+const FILLER_PHRASE_PATTERNS = [
+  /^can you (tell me|explain|describe|discuss|elaborate on|walk me through)\s+/i,
+  /^(tell me about|explain to me|give me an overview of|briefly explain|elaborate on)\s+/i,
+  /^(describe the|define the|discuss the|talk about|walk me through)\s+/i,
+  /^(what is|what are|what does|what do|how do|how does|how is|how are)\s+(the\s+)?/i,
+  /^(why is|why are|why do|why does)\s+(the\s+)?/i,
+  /^(could you|would you|please)\s+(explain|describe|tell me|discuss)\s+/i
+];
+const INTENT_PATTERNS = [
+  {
+    intent: 'comparison',
+    patterns: [
+      /\b(difference|differences)\s+(between|of)\b/i,
+      /\bvs\.?\b/i,
+      /\bcompare\b/i,
+      /\bcompared\s+to\b/i,
+      /\bversus\b/i
+    ]
+  },
+  {
+    intent: 'use_case',
+    patterns: [
+      /\b(when\s+to\s+use|why\s+use|how\s+to\s+use|use\s+case|when\s+should)\b/i,
+      /\bpurpose\s+of\b/i
+    ]
+  },
+  {
+    intent: 'lifecycle',
+    patterns: [/\blifecycle\b/i, /\bhow\s+.+\s+works?\b/i, /\bflow\s+of\b/i, /\bprocess\s+of\b/i]
+  },
+  {
+    intent: 'debugging',
+    patterns: [/\bdebug(ging)?\b/i, /\bfix(ing)?\b/i, /\btroubleshoot(ing)?\b/i, /\berror\s+handling\b/i]
+  },
+  {
+    intent: 'design',
+    patterns: [/\bdesign(ing)?\b/i, /\barchitect(ure)?\b/i, /\bstructure\b/i, /\bpattern\b/i]
+  },
+  { intent: 'definition', patterns: [/^(what|explain|describe|define|tell)/i, /\bmeaning\s+of\b/i] }
+];
+const TOPIC_TOKEN_ALIASES = {
+  javascript: [
+    'javascript',
+    'js',
+    'ecmascript',
+    'promise',
+    'closure',
+    'prototype',
+    'event',
+    'async',
+    'await'
+  ],
+  typescript: ['typescript', 'ts', 'type', 'interface', 'generic', 'enum'],
+  python: ['python', 'py', 'list', 'dict', 'tuple', 'decorator', 'generator'],
+  java: ['java', 'jvm', 'spring', 'class', 'interface'],
+  cpp: ['cpp', 'cplusplus', 'pointer', 'reference', 'template', 'stl'],
+  angular: ['angular', 'component', 'directive', 'service', 'rxjs', 'module', 'injector'],
+  react: ['react', 'jsx', 'component', 'hook', 'state', 'props', 'useeffect', 'usestate'],
+  nodejs: ['nodejs', 'node', 'js'],
+  expressjs: ['expressjs', 'express', 'node'],
+  nextjs: ['nextjs', 'next', 'react'],
+  mongodb: ['mongodb', 'mongo'],
+  mysql: ['mysql', 'sql'],
+  postgresql: ['postgresql', 'postgres'],
+  redis: ['redis', 'cache', 'ttl', 'pubsub', 'sorted', 'lua'],
+  'rest-apis': ['rest', 'api', 'apis', 'http'],
+  graphql: ['graphql', 'resolver', 'schema', 'query', 'mutation'],
+  html: ['html', 'semantic', 'element', 'form', 'dom', 'aria'],
+  css: ['css', 'layout', 'grid', 'flexbox', 'selector', 'cascade'],
+  'git-github': ['git', 'github', 'branch', 'commit', 'rebase', 'pull', 'merge'],
+  oop: ['oop', 'class', 'object', 'encapsulation', 'inheritance', 'polymorphism'],
+  dsa: ['dsa', 'algorithm', 'complexity', 'array', 'hash', 'tree', 'graph'],
+  aws: ['aws', 'amazon', 'iam', 's3', 'lambda', 'ec2', 'cloud'],
+  'generative-ai': ['generative', 'genai', 'prompt', 'embedding', 'inference', 'model'],
+  'ai-agents': ['agent', 'tool', 'planner', 'memory', 'orchestration', 'workflow'],
+  llm: ['llm', 'token', 'transformer', 'prompt', 'context', 'model'],
+  rag: ['rag', 'retrieval', 'embedding', 'vector', 'rerank', 'chunk'],
+  langchain: ['langchain', 'chain', 'agent', 'retriever', 'prompt', 'tool'],
+  'system-design': ['system', 'design', 'distributed', 'scalability'],
+  mern: ['mern', 'mongo', 'express', 'react', 'node'],
+  mean: ['mean', 'mongo', 'express', 'angular', 'node'],
+  'full-stack-web-development': ['frontend', 'backend', 'api', 'database', 'web']
+};
+const SOURCE_QUALITY_BASE = {
+  verified_seed: 0.95,
+  prebuilt: 0.94,
+  ai: 0.88,
+  ai_generated: 0.88,
+  user_asked: 0.88,
+  scraped: 0.86
+};
+const GENERIC_ANSWER_PATTERNS = [
+  /\bdepends on the situation\b/i,
+  /\bit is important to understand\b/i,
+  /\bcan be used in many ways\b/i,
+  /\bstart with the definition\b/i,
+  /\bgenerally speaking\b/i,
+  /\bstop winging it\b/i,
+  /\bfor mid-to-senior developers\b/i
+];
+const WEAK_OR_PLACEHOLDER_PATTERNS = [
+  /\btodo\b/i,
+  /\btbd\b/i,
+  /\bplaceholder\b/i,
+  /\blorem ipsum\b/i,
+  /\bas an ai\b/i,
+  /\bai language model\b/i,
+  /\bi cannot\b/i,
+  /\bgenerated by ai\b/i,
+  /\bcopy paste\b/i,
+  /\binsert answer\b/i,
+  /\bdefine the concept\b/i,
+  /\bexplain (?:the )?relevant [a-z0-9.+#-]+ concept\b/i,
+  /\ba useful interview answer should\b/i,
+  /\bstrong answers? (?:should )?avoid generic theory\b/i,
+  /\btie the answer to concrete\b/i,
+  /\bmention one tradeoff\b/i
+];
+const NOISY_SOURCE_PATTERNS = [
+  /generated by ai during triage/i,
+  /\bparent related to #\d+/i,
+  /\bwhat to build\b/i,
+  /\bPRODUCT\.md\b/i,
+  /\bDESIGN\.md\b/i,
+  /\bstocked-equipment\b/i,
+  /\bissue should produce\b/i,
+  /\bpull request\b/i
+];
+const DIFFICULTY_KEYWORDS = {
+  easy: ['define', 'what is', 'basic', 'syntax', 'simple', 'example', 'introduction'],
+  medium: ['tradeoff', 'debug', 'pattern', 'practical', 'use case', 'compare', 'handle'],
+  hard: ['internals', 'performance', 'architecture', 'scaling', 'edge case', 'distributed', 'optimize']
+};
+
+const normalizeWhitespace = (value = '') =>
+  String(value || '')
+    .replaceAll(/\s+/g, ' ')
+    .trim();
+
+const normalizeQuestionText = (value = '') => {
+  const normalized = normalizeWhitespace(value);
+  if (!normalized) return '';
+  return normalized.endsWith('?') ? normalized : `${normalized}?`;
+};
+
+const normalizeAnswerText = (value = '') => normalizeWhitespace(value);
+
+const sanitizeDifficulty = (value = '') => {
+  const normalized = normalizeWhitespace(value).toLowerCase();
+  if (DIFFICULTY_SET.has(normalized)) return normalized;
+  return 'medium';
+};
+
+const sanitizeCategory = (value = '') => {
+  const normalized = normalizeWhitespace(value).toLowerCase().replace(/\s+/g, '-');
+  const legacyMapped = LEGACY_CATEGORY_MAP[normalized] || LEGACY_CATEGORY_MAP[normalized.replace(/-/g, '_')];
+  if (legacyMapped) return legacyMapped;
+  if (INTERVIEW_CATEGORY_SET.has(normalized)) return normalized;
+  return 'core-concepts';
+};
+
+const isSupportedCategory = (value = '') => {
+  const normalized = normalizeWhitespace(value).toLowerCase().replace(/\s+/g, '-');
+  return (
+    INTERVIEW_CATEGORY_SET.has(normalized) ||
+    Boolean(LEGACY_CATEGORY_MAP[normalized] || LEGACY_CATEGORY_MAP[normalized.replace(/-/g, '_')])
+  );
+};
+
+const normalizeQualityScore = (value = 80) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 80;
+  if (numeric > 0 && numeric <= 5) {
+    return Math.min(100, Math.max(0, Math.round(numeric * 20)));
+  }
+  return Math.min(100, Math.max(0, Math.round(numeric)));
+};
+
+const sanitizeTags = (tags = []) => {
+  if (!Array.isArray(tags)) return [];
+  return [...new Set(tags.map((tag) => normalizeWhitespace(tag).toLowerCase()).filter(Boolean))];
+};
+
+const normalizeComparableText = (value = '') => {
+  return normalizeWhitespace(value)
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9\s]/g, '')
+    .replaceAll(/\s+/g, ' ')
+    .trim();
+};
+
+/**
+ * Detect question intent BEFORE stop-word removal so words like
+ * "difference", "between", "compare" are preserved for classification.
+ */
+const detectQuestionIntent = (text = '') => {
+  const cleaned = normalizeWhitespace(text).toLowerCase();
+  for (const { intent, patterns } of INTENT_PATTERNS) {
+    if (patterns.some((pattern) => pattern.test(cleaned))) {
+      return intent;
+    }
+  }
+  return 'general';
+};
+
+/**
+ * Strip filler preambles, then remove canonical stop words, sort tokens.
+ * Produces a deterministic canonical core like "typescript" or "react angular".
+ */
+const canonicalizeQuestion = (text = '') => {
+  let cleaned = normalizeWhitespace(text).toLowerCase();
+  // Strip trailing question mark
+  cleaned = cleaned.replace(/\?+$/, '').trim();
+  // Strip filler phrases
+  for (const pattern of FILLER_PHRASE_PATTERNS) {
+    cleaned = cleaned.replace(pattern, '').trim();
+  }
+  // Remove non-alphanumeric (keep spaces)
+  cleaned = cleaned
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Remove canonical stop words and sort
+  const tokens = cleaned
+    .split(' ')
+    .filter((token) => token && !CANONICAL_STOP_WORDS.has(token))
+    .sort();
+  return tokens.join(' ');
+};
+
+/**
+ * Build canonical question key in format: topicKey:intent:canonicalCore
+ * Intent detection runs on raw text BEFORE stop-word removal.
+ */
+const buildCanonicalQuestionKey = (text = '', topicKey = '') => {
+  const intent = detectQuestionIntent(text);
+  const core = canonicalizeQuestion(text);
+  const normalizedTopicKey = String(topicKey || '')
+    .trim()
+    .toLowerCase();
+  if (!core) return '';
+  return `${normalizedTopicKey || 'general'}:${intent}:${core}`;
+};
+
+const tokenize = (value = '') => {
+  const comparable = normalizeComparableText(value);
+  if (!comparable) return [];
+  return comparable
+    .split(' ')
+    .map((token) => {
+      if (token.length > 4 && token.endsWith('s')) {
+        return token.slice(0, -1);
+      }
+      return token;
+    })
+    .filter((token) => token && !STOP_WORDS.has(token));
+};
+
+const computeJaccardSimilarity = (a = '', b = '') => {
+  const setA = new Set(tokenize(a));
+  const setB = new Set(tokenize(b));
+  if (setA.size === 0 || setB.size === 0) return 0;
+
+  let intersection = 0;
+  for (const token of setA) {
+    if (setB.has(token)) intersection += 1;
+  }
+
+  const union = new Set([...setA, ...setB]).size;
+  if (union === 0) return 0;
+  return intersection / union;
+};
+
+const extractComparisonConcepts = (question = '') => {
+  const normalized = normalizeComparableText(question)
+    .replace(
+      /\bwhat is\b|\bwhat are\b|\bthe difference between\b|\bdifference between\b|\bcompare\b|\bcontrast\b/g,
+      ' '
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+  const parts = normalized
+    .split(/\s+(?:and|versus|vs)\s+/)
+    .map((part) => tokenize(part))
+    .filter((part) => part.length);
+  return parts.length >= 2 ? [parts[0], parts[1]] : [];
+};
+
+const comparisonAnswerCompleteness = ({ question = '', answer = '', answerSections = {} } = {}) => {
+  if (detectQuestionIntent(question) !== 'comparison') return { valid: true, reasons: [] };
+  const concepts = extractComparisonConcepts(question);
+  const combined = normalizeComparableText(`${answer} ${JSON.stringify(answerSections || {})}`);
+  const coversBoth =
+    concepts.length === 2 && concepts.every((tokens) => tokens.some((token) => combined.includes(token)));
+  const checks = [
+    [coversBoth, 'comparison_missing_main_concept'],
+    [
+      /\b(?:whereas|while|unlike|difference|in contrast|but)\b/i.test(combined),
+      'comparison_missing_difference'
+    ],
+    [
+      Boolean(answerSections?.example || answerSections?.codeExample) || /\bexample\b/i.test(combined),
+      'comparison_missing_example'
+    ],
+    [
+      Boolean(answerSections?.realWorldUseCase || answerSections?.realWorldContext) ||
+        /\buse case\b|\bwhen to use\b|\bin practice\b/i.test(combined),
+      'comparison_missing_use_case'
+    ],
+    [
+      /\btradeoffs?\b|\bcost\b|\blimitation\b|\bprefer\b|\badvantage\b|\bdisadvantage\b|\b(?:static|dynamic)\s+typing\b|\bcompile(?:-time)?\b|\bruntime\b|\bperformance\b|\boverhead\b|\bcoupling\b|\bflexibility\b|\bmaintainability\b|\blatency\b|\bthroughput\b|\bmemory\b/i.test(
+        combined
+      ),
+      'comparison_missing_tradeoff'
+    ]
+  ];
+  const reasons = checks.filter(([valid]) => !valid).map(([, reason]) => reason);
+  return { valid: reasons.length === 0, reasons };
+};
+const getTopicTokens = (topicKey = '') => {
+  const normalizedTopic = String(topicKey || '')
+    .trim()
+    .toLowerCase();
+  return [
+    ...new Set(
+      [normalizedTopic, ...(TOPIC_TOKEN_ALIASES[normalizedTopic] || [])].flatMap((alias) => tokenize(alias))
+    )
+  ];
+};
+
+const containsTopicSignal = ({ topicKey = '', question = '', answer = '', tags = [] } = {}) => {
+  const topicTokens = getTopicTokens(topicKey);
+  if (!topicTokens.length) return true;
+  const combinedTokens = new Set(tokenize(`${question} ${answer} ${(tags || []).join(' ')}`));
+  return topicTokens.some((token) => combinedTokens.has(token));
+};
+
+const answerAddressesQuestionConcepts = ({ question = '', answer = '', topicKey = '' } = {}) => {
+  const topicTokens = new Set(getTopicTokens(topicKey));
+  const genericTokens = new Set([
+    'difference',
+    'compare',
+    'comparison',
+    'concept',
+    'behavior',
+    'relevant',
+    'explain',
+    'define',
+    'example',
+    'use',
+    'case'
+  ]);
+  const required = [
+    ...new Set(tokenize(question).filter((token) => !topicTokens.has(token) && !genericTokens.has(token)))
+  ];
+  if (!required.length) return true;
+  const answerTokens = new Set(tokenize(answer));
+  const matched = required.filter((token) => answerTokens.has(token)).length;
+  return matched >= Math.max(1, Math.ceil(required.length * 0.34));
+};
+
+const hasTopicContradiction = ({ topicKey = '', question = '', answer = '' } = {}) => {
+  const text = normalizeWhitespace(answer).toLowerCase();
+  const q = normalizeWhitespace(question).toLowerCase();
+  if (topicKey === 'java' && /\bjavascript\b/.test(text) && !/\bjavascript\b/.test(q)) return true;
+  if (topicKey === 'react' && /\breact native\b/.test(text) && !/\breact native\b/.test(q)) return true;
+  if (topicKey === 'nodejs' && /\bnext(?:\.js|js)?\b/.test(text) && !/\bnext(?:\.js|js)?\b/.test(q))
+    return true;
+  if (topicKey === 'cpp' && /\bc#|c sharp\b/.test(text) && !/\bc#|c sharp\b/.test(q)) return true;
+  return false;
+};
+const inferDifficultyFromContent = ({ question = '', answer = '' } = {}) => {
+  const text = normalizeComparableText(`${question} ${answer}`);
+  const scores = Object.entries(DIFFICULTY_KEYWORDS).map(([difficulty, keywords]) => ({
+    difficulty,
+    score: keywords.reduce(
+      (total, keyword) => total + (text.includes(normalizeComparableText(keyword)) ? 1 : 0),
+      0
+    )
+  }));
+  scores.sort((left, right) => right.score - left.score);
+  return scores[0]?.score > 0 ? scores[0].difficulty : '';
+};
+
+const containsUnsafeContent = (text = '') => {
+  const lower = String(text || '').toLowerCase();
+  return /(weapon build|malware|exploit code|hate speech|self harm|suicide method)/.test(lower);
+};
+
+const containsNoisySourceContent = (text = '') =>
+  NOISY_SOURCE_PATTERNS.some((pattern) => pattern.test(String(text || '')));
+
+const containsWeakOrPlaceholderContent = (text = '') =>
+  WEAK_OR_PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(String(text || '')));
+
+const isInterviewQuestionLike = (question = '') => {
+  const normalized = normalizeWhitespace(question).toLowerCase();
+  return (
+    /^(what|how|why|when|where|which|explain|describe|compare|contrast|design|implement|debug|optimize|walk me through|tell me about|can you|could you|please)\b/.test(
+      normalized
+    ) ||
+    // A named design task is valid without an opening verb, e.g. the user's
+    // "system design of Netflix". Bare labels still fail the question guard.
+    /^system\s+design\s+(?:of|for)\s+[\p{L}\p{N}][^?]{2,}/u.test(normalized)
+  );
+};
+
+const computeConfidenceScore = ({ sourceType = 'ai', answer = '', question = '' } = {}) => {
+  const answerLength = normalizeAnswerText(answer).length;
+  const questionLength = normalizeQuestionText(question).length;
+
+  let base = 0.6;
+  if (sourceType === 'verified_seed') base = 0.95;
+  if (sourceType === 'prebuilt') base = 0.95;
+  if (sourceType === 'ai') base = 0.72;
+  if (sourceType === 'scraped') base = 0.7;
+  if (sourceType === 'ai_generated') base = 0.72;
+  if (sourceType === 'user_asked') base = 0.75;
+
+  if (answerLength >= 220) base += 0.08;
+  else if (answerLength >= 120) base += 0.04;
+
+  if (questionLength >= 40) base += 0.03;
+
+  return Number(Math.max(0, Math.min(1, base)).toFixed(2));
+};
+
+const isQualityQuestionAnswer = ({ question = '', answer = '', topicKey = '' } = {}) => {
+  const normalizedQuestion = normalizeQuestionText(question);
+  const normalizedAnswer = normalizeAnswerText(answer);
+
+  if (!normalizedQuestion || !normalizedAnswer) return false;
+  if (normalizedQuestion.length < 12) return false;
+  if (normalizedAnswer.length < 40) return false;
+  if (containsUnsafeContent(`${normalizedQuestion} ${normalizedAnswer}`)) return false;
+  if (containsNoisySourceContent(`${normalizedQuestion} ${normalizedAnswer}`)) return false;
+  if (containsWeakOrPlaceholderContent(`${normalizedQuestion} ${normalizedAnswer}`)) return false;
+  if (/^start with the definition\b/i.test(normalizedAnswer)) return false;
+  if (topicKey) {
+    const topicTokens = getTopicTokens(topicKey);
+    const combinedTokens = new Set(tokenize(`${normalizedQuestion} ${normalizedAnswer}`));
+    if (topicTokens.length && !topicTokens.some((token) => combinedTokens.has(token))) return false;
+  }
+  return true;
+};
+
+const validateInterviewQuestionQuality = ({
+  question = '',
+  answer = '',
+  answerSections = {},
+  topicKey = '',
+  technology = '',
+  difficulty = '',
+  expectedDifficulty = '',
+  tags = [],
+  category = '',
+  sourceType = 'ai_generated',
+  confidenceScore = 0,
+  qualityScore = 0,
+  minimumScore = 0.75,
+  questionMode = 'generated'
+} = {}) => {
+  const normalizedQuestion = normalizeQuestionText(question);
+  const normalizedAnswer = normalizeAnswerText(answer);
+  const normalizedTopicKey = String(topicKey || technology || '')
+    .trim()
+    .toLowerCase();
+  const normalizedDifficulty = sanitizeDifficulty(difficulty);
+  const reasons = [];
+  let score = 1;
+
+  if (!normalizedQuestion || normalizedQuestion.length < 12) {
+    reasons.push('question_too_short');
+    score -= 0.28;
+  }
+
+  if (!normalizedAnswer || normalizedAnswer.length < 80) {
+    reasons.push('answer_too_short');
+    score -= 0.3;
+  }
+
+  if (containsUnsafeContent(`${normalizedQuestion} ${normalizedAnswer}`)) {
+    reasons.push('unsafe_content');
+    score -= 0.5;
+  }
+
+  if (containsNoisySourceContent(`${normalizedQuestion} ${normalizedAnswer}`)) {
+    reasons.push('noisy_scraped_or_repository_content');
+    score -= 0.5;
+  }
+
+  if (containsWeakOrPlaceholderContent(`${normalizedQuestion} ${normalizedAnswer}`)) {
+    reasons.push('placeholder_or_weak_ai_content');
+    score -= 0.5;
+  }
+
+  if (category && !isSupportedCategory(category)) {
+    reasons.push('invalid_category');
+    score -= 0.2;
+  }
+
+  if (
+    questionMode !== 'custom' &&
+    ['scraped', 'ai', 'ai_generated'].includes(String(sourceType || '').toLowerCase()) &&
+    !isInterviewQuestionLike(normalizedQuestion)
+  ) {
+    reasons.push('not_an_interview_question');
+    score -= 0.24;
+  }
+
+  const safeTags = sanitizeTags(tags);
+  if (
+    !containsTopicSignal({
+      topicKey: normalizedTopicKey,
+      question: normalizedQuestion,
+      answer: normalizedAnswer,
+      tags: safeTags
+    })
+  ) {
+    reasons.push('topic_mismatch');
+    score -= 0.38;
+  }
+
+  if (
+    normalizedTopicKey &&
+    safeTags.length &&
+    !containsTopicSignal({ topicKey: normalizedTopicKey, tags: safeTags })
+  ) {
+    reasons.push('tags_do_not_match_topic');
+    score -= 0.12;
+  }
+
+  const hasStructuredAnswer =
+    answerSections &&
+    typeof answerSections === 'object' &&
+    Boolean(answerSections.summary || answerSections.explanation || answerSections.shortAnswer);
+  const questionAnswerOverlap = computeJaccardSimilarity(normalizedQuestion, normalizedAnswer);
+  const questionTokens = tokenize(normalizedQuestion);
+  // A structured answer can address a question without repeating its wording.
+  // Keep the lexical-overlap guard for unstructured/scraped content, where it
+  // is the only direct-answer signal, but do not reject valid structured AI
+  // answers merely because they use different technical terminology.
+  if (!hasStructuredAnswer && questionTokens.length >= 3 && questionAnswerOverlap < 0.08) {
+    reasons.push('answer_does_not_directly_address_question');
+    score -= 0.18;
+  }
+
+  if (GENERIC_ANSWER_PATTERNS.some((pattern) => pattern.test(normalizedAnswer))) {
+    reasons.push('answer_is_generic');
+    score -= 0.16;
+  }
+
+  if (
+    !hasStructuredAnswer &&
+    !answerAddressesQuestionConcepts({
+      question: normalizedQuestion,
+      answer: normalizedAnswer,
+      topicKey: normalizedTopicKey
+    })
+  ) {
+    reasons.push('answer_missing_question_concepts');
+    score -= 0.32;
+  }
+
+  if (
+    hasTopicContradiction({
+      topicKey: normalizedTopicKey,
+      question: normalizedQuestion,
+      answer: normalizedAnswer
+    })
+  ) {
+    reasons.push('answer_topic_contradiction');
+    score -= 0.5;
+  }
+
+  const comparison = comparisonAnswerCompleteness({
+    question: normalizedQuestion,
+    answer: normalizedAnswer,
+    answerSections
+  });
+  if (!comparison.valid) {
+    reasons.push(...comparison.reasons);
+    score -= Math.min(0.55, comparison.reasons.length * 0.12);
+  }
+
+  const sourceBase = SOURCE_QUALITY_BASE[String(sourceType || '').toLowerCase()] ?? 0.7;
+  if (sourceBase < 0.7) {
+    reasons.push('source_quality_low');
+    score -= 0.1;
+  }
+
+  const numericConfidence = Number(confidenceScore || 0);
+  if (numericConfidence > 0 && numericConfidence < 0.72) {
+    reasons.push('confidence_below_threshold');
+    score -= 0.16;
+  }
+
+  const numericQuality = normalizeQualityScore(qualityScore || 0);
+  if (numericQuality > 0 && numericQuality < 80) {
+    reasons.push('quality_score_below_threshold');
+    score -= 0.12;
+  }
+
+  const requestedDifficulty = String(expectedDifficulty || '')
+    .trim()
+    .toLowerCase();
+  const inferredDifficulty = inferDifficultyFromContent({
+    question: normalizedQuestion,
+    answer: normalizedAnswer
+  });
+  if (
+    requestedDifficulty &&
+    DIFFICULTY_SET.has(requestedDifficulty) &&
+    normalizedDifficulty !== requestedDifficulty
+  ) {
+    reasons.push('difficulty_mismatch');
+    score -= 0.16;
+  } else if (requestedDifficulty && inferredDifficulty && inferredDifficulty !== requestedDifficulty) {
+    reasons.push('difficulty_content_mismatch');
+    score -= 0.08;
+  }
+
+  if (String(sourceType || '').includes('ai') && !hasStructuredAnswer) {
+    reasons.push('missing_structured_answer');
+    score -= 0.1;
+  }
+
+  const relevanceScore = Number(Math.max(0, Math.min(1, score * sourceBase)).toFixed(2));
+  return {
+    isValid: relevanceScore >= minimumScore && reasons.length < 3,
+    relevanceScore,
+    reasons
+  };
+};
+
+const isNearDuplicate = (question = '', existingQuestions = [], similarityThreshold = 0.65) => {
+  const normalized = normalizeComparableText(question);
+  if (!normalized) return true;
+
+  for (const existing of existingQuestions) {
+    const similarity = computeJaccardSimilarity(normalized, existing);
+    if (similarity >= similarityThreshold) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const dedupeQuestions = ({ questions = [], existingComparableQuestions = [] } = {}) => {
+  const unique = [];
+  const normalizedSet = new Set(existingComparableQuestions);
+  const mutableExisting = [...existingComparableQuestions];
+
+  for (const item of Array.isArray(questions) ? questions : []) {
+    const normalizedQuestion = normalizeQuestionText(item.question);
+    const comparable = normalizeComparableText(normalizedQuestion);
+    if (!comparable) continue;
+    if (normalizedSet.has(comparable)) continue;
+    if (isNearDuplicate(comparable, mutableExisting)) continue;
+
+    normalizedSet.add(comparable);
+    mutableExisting.push(comparable);
+    unique.push(item);
+  }
+
+  return unique;
+};
+
+module.exports = {
+  normalizeWhitespace,
+  normalizeQuestionText,
+  normalizeAnswerText,
+  normalizeComparableText,
+  sanitizeDifficulty,
+  sanitizeCategory,
+  isSupportedCategory,
+  sanitizeTags,
+  normalizeQualityScore,
+  INTERVIEW_CATEGORY_SET,
+  DIFFICULTY_SET,
+  containsUnsafeContent,
+  containsWeakOrPlaceholderContent,
+  computeConfidenceScore,
+  isQualityQuestionAnswer,
+  validateInterviewQuestionQuality,
+  inferDifficultyFromContent,
+  dedupeQuestions,
+  computeJaccardSimilarity,
+  tokenize,
+  canonicalizeQuestion,
+  detectQuestionIntent,
+  buildCanonicalQuestionKey,
+  extractComparisonConcepts,
+  comparisonAnswerCompleteness,
+  answerAddressesQuestionConcepts,
+  hasTopicContradiction
+};

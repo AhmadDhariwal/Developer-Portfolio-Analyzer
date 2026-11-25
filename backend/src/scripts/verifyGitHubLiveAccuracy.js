@@ -164,7 +164,7 @@ function compare(username, result, source) {
   assert.ok(result.repositoryActivity.length <= 5);
   assert.ok(source.filter((row) => row.url.includes('/contents/README.md')).length <= 2);
   assert.ok(source.filter((row) => row.url.endsWith('/languages')).length <= 8);
-  const reproduced = require('../services/scoring/githubHealthScore').calculate(
+  const reproduced = require('../core/scoring/githubHealthScore').calculate(
     result.scoring.evidence.inputs
   );
   equal('six-pillar score reproducibility', result.githubHealthScore, reproduced.score);
@@ -230,14 +230,14 @@ function compare(username, result, source) {
     await mongoose.connect(mongo.uri);
     const app = express();
     app.use(express.json());
-    app.use('/api/github', require('../routes/github.routes'));
+    app.use('/api/github', require('../modules/github/github.routes'));
     server = await new Promise((resolve) => {
       const handle = app.listen(0, '127.0.0.1', () => resolve(handle));
     });
     const base = `http://127.0.0.1:${server.address().port}/api/github`;
-    const User = require('../models/user'),
-      Analysis = require('../models/analysis'),
-      Repository = require('../models/repository');
+    const User = require('../modules/auth/models/user'),
+      Analysis = require('../modules/skill-gap/models/analysis'),
+      Repository = require('../modules/github/models/repository');
     const userId = new mongoose.Types.ObjectId();
     await User.collection.insertOne({
       _id: userId,

@@ -1,0 +1,27 @@
+{
+  "mode": "regressions",
+  "exitCode": 1,
+  "durationMs": 82755,
+  "tests": 28,
+  "passed": 24,
+  "failed": 4,
+  "skipped": 0,
+  "failures": [
+    "    not ok 8 - authenticated API contracts, input rejection, practice fallback, and canonical personalization",
+    "not ok 2 - Interview Prep isolated Mongo critical paths",
+    "    not ok 8 - Mongo transport interruption closes streams and committed data reconciles on recovery",
+    "not ok 3 - notifications: disposable replica set, atomic production and two real workers"
+  ],
+  "prerequisiteSkips": [],
+  "testFiles": [
+    "src/tests/github/githubFreshnessMongo.integration.test.js",
+    "src/tests/interview-prep/interviewPrepFinalization.integration.test.js",
+    "src/tests/notifications/notificationsProduction.test.js",
+    "src/tests/recommendations/recommendationsPerformance.test.js"
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 154,
+    "productionDataUsed": false
+  }
+}

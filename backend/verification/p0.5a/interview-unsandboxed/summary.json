@@ -1,0 +1,13 @@
+{
+  "issue": "interview",
+  "exitCode": 1,
+  "testFiles": ["interview-prep/interviewPrepFinalization.integration.test.js"],
+  "productionDataUsed": false,
+  "counts": ["# tests 1", "# pass 0", "# fail 1", "# skipped 0", "# duration_ms 4312.1572"],
+  "failures": ["not ok 1 - Interview Prep isolated Mongo critical paths"],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 65,
+    "productionDataUsed": false
+  }
+}

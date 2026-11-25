@@ -1,0 +1,96 @@
+<section class="chart-card" [class]="'chart-card chart-card--' + tone">
+  <div class="chart-card__head">
+    <div class="chart-card__titles">
+      <h3>{{ title }}</h3>
+      <p *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+    <span class="chart-card__badge" *ngIf="trendLabel">{{ trendLabel }}</span>
+  </div>
+
+  <ng-container *ngIf="hasRenderableData; else emptyBlock">
+    <ng-container [ngSwitch]="resolvedMode">
+      <div class="donut-layout" *ngSwitchCase="'donut'">
+        <div class="donut-canvas-wrap">
+          <canvas #chartCanvas [attr.aria-label]="title"></canvas>
+          <div class="donut-center">
+            <strong>{{ totalValue }}</strong>
+            <span>Total</span>
+          </div>
+        </div>
+        <div class="legend-list">
+          <div
+            class="legend-item"
+            *ngFor="let item of donutItems; let index = index; trackBy: trackByItem"
+          >
+            <span class="legend-dot" [style.background]="paletteColor(index)"></span>
+            <span class="legend-label">{{ item.label || item.date || '-' }}</span>
+            <strong>{{ numericValue(item) }} ({{ donutShare(item) }}%)</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="heatmap-wrap" *ngSwitchCase="'heatmap'">
+        <div class="heat-row" *ngFor="let item of items; trackBy: trackByItem">
+          <span class="heat-row__label">{{ item.label || item.date || '-' }}</span>
+          <div class="heat-row__cells" aria-hidden="true">
+            <i
+              *ngFor="let level of heatCellsFor(item); trackBy: trackByIndex"
+              [style.opacity]="level"
+            ></i>
+          </div>
+          <strong class="heat-row__value">{{ numericValue(item) }}</strong>
+        </div>
+        <div class="heatmap-legend">
+          <span>Low</span>
+          <div class="heatmap-legend__swatches" aria-hidden="true">
+            <i style="opacity: 0.15"></i>
+            <i style="opacity: 0.4"></i>
+            <i style="opacity: 0.7"></i>
+            <i style="opacity: 1"></i>
+          </div>
+          <span>High</span>
+        </div>
+      </div>
+
+      <div class="gauge-wrap" *ngSwitchCase="'gauge'">
+        <svg class="gauge-svg" viewBox="0 0 140 140" role="img" [attr.aria-label]="title">
+          <circle class="gauge-svg__track" cx="70" cy="70" [attr.r]="gaugeRadius"></circle>
+          <circle
+            class="gauge-svg__fill"
+            cx="70"
+            cy="70"
+            [attr.r]="gaugeRadius"
+            [attr.stroke-dasharray]="gaugeCircumference"
+            [attr.stroke-dashoffset]="gaugeDashOffset"
+          ></circle>
+        </svg>
+        <div class="gauge-center">
+          <strong>{{ gaugeValue }}</strong>
+          <span>{{ gaugeLabel }}</span>
+        </div>
+      </div>
+
+      <div class="funnel-wrap" *ngSwitchCase="'funnel'">
+        <div class="funnel-row" *ngFor="let item of items; trackBy: trackByItem">
+          <div class="funnel-row__meta">
+            <span>{{ item.label || item.date || '-' }}</span>
+            <strong>{{ numericValue(item) }} ({{ funnelPercent(item) }}%)</strong>
+          </div>
+          <div class="funnel-row__track">
+            <i [style.width.%]="funnelPercent(item)"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-canvas-wrap" *ngSwitchDefault [style.height.px]="height">
+        <canvas #chartCanvas [attr.aria-label]="title"></canvas>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #emptyBlock>
+    <div class="chart-card__empty" [style.minHeight.px]="height - 40">
+      <p>{{ emptyMessage }}</p>
+    </div>
+  </ng-template>
+</section>

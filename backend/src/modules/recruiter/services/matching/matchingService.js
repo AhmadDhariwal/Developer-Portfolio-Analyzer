@@ -1,0 +1,847 @@
+const mongoose = require('mongoose');
+const User = require('../../../auth/models/user');
+const Analysis = require('../../../skill-gap/models/analysis');
+const ResumeAnalysis = require('../../../resume/models/resumeAnalysis');
+const PublicProfile = require('../../../public-portfolio/models/publicProfile');
+const CareerSprint = require('../../../career-sprint/models/careerSprint');
+const WeeklyReport = require('../../../weekly-reports/models/weeklyReport');
+const Candidate = require('../../models/Candidate');
+const Job = require('../../models/Job');
+const { rankCandidates } = require('./aiRankingService');
+const { deleteJobWithPipeline } = require('./jobLifecycleService');
+const PlatformSettings = require('../../../super-admin/models/platformSettings');
+const { escapeRegex } = require('../../../../core/utils/validation');
+const { requireObjectId, validateCandidateIds } = require('../../utils/recruiterValidation');
+const { measuredScore, averageAvailableScores } = require('../../utils/hub/candidateFormatter');
+
+const DEVELOPER_ROLE_VALUES = Object.freeze(['developer', 'user']);
+
+const EXPERIENCE_LEVEL_TO_YEARS = {
+  Student: 0,
+  Intern: 0.5,
+  '0-1 years': 1,
+  '1-2 years': 2,
+  '2-3 years': 3,
+  '3-5 years': 5,
+  '5+ years': 7
+};
+const JOB_DEFAULT_PAGE = 1;
+const JOB_DEFAULT_LIMIT = 10;
+const JOB_MAX_LIMIT = 50;
+const JOB_ALLOWED_SORT_FIELDS = new Set([
+  'createdAt',
+  'updatedAt',
+  'title',
+  'stack',
+  'status',
+  'employmentType',
+  'location',
+  'minExperienceYears'
+]);
+
+const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(value) || 0));
+const toPositiveInt = (value, fallback) => {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const flattenResumeSkills = (skillsMap = {}) => {
+  if (!skillsMap) return [];
+  const values =
+    skillsMap instanceof Map ? Array.from(skillsMap.values()) : Object.values(skillsMap);
+  return [
+    ...new Set(
+      values
+        .flat()
+        .map((item) => String(item || '').trim())
+        .filter(Boolean)
+    )
+  ];
+};
+
+const normalizeSkills = (skills = []) => {
+  return [
+    ...new Set(
+      (Array.isArray(skills) ? skills : []).map((item) => String(item || '').trim()).filter(Boolean)
+    )
+  ];
+};
+
+const sanitizePublicCandidate = (candidate = {}) => ({
+  id: candidate.id,
+  userId: candidate.userId,
+  fullName: candidate.fullName || candidate.name || '',
+  stack: candidate.stack || '',
+  yearsOfExperience: Number(candidate.yearsOfExperience || 0),
+  headline: candidate.headline || candidate.jobTitle || '',
+  location: candidate.location || '',
+  githubUsername: candidate.githubUsername || '',
+  publicProfileSlug: candidate.publicProfileSlug || null,
+  githubScore: candidate.githubScore ?? null,
+  resumeScore: Number(candidate.resumeScore || 0),
+  consistencyScore: Number(candidate.consistencyScore || 0),
+  growthPotentialScore: Number(candidate.growthPotentialScore || 0),
+  score: Number(candidate.score || 0),
+  assessmentEvidence: candidate.assessmentEvidence,
+  skills: Array.isArray(candidate.skills) ? candidate.skills : [],
+  skillScores: Array.isArray(candidate.skillScores) ? candidate.skillScores : [],
+  projects: Array.isArray(candidate.projects)
+    ? candidate.projects.map((project) => ({
+        title: project?.title || '',
+        description: project?.description || '',
+        technologies: Array.isArray(project?.technologies) ? project.technologies : [],
+        status: project?.status || '',
+        impactScore: Number(project?.impactScore || 0)
+      }))
+    : [],
+  githubStats: {
+    repos: Number(candidate.githubStats?.repos || 0),
+    stars: Number(candidate.githubStats?.stars || 0),
+    forks: Number(candidate.githubStats?.forks || 0),
+    followers: Number(candidate.githubStats?.followers || 0)
+  },
+  lastActive: candidate.lastActive || null,
+  experienceLevel: candidate.experienceLevel || '',
+  isActive: candidate.isActive !== false,
+  aiInsight: {
+    summary: String(candidate.aiInsight?.summary || ''),
+    strengths: Array.isArray(candidate.aiInsight?.strengths) ? candidate.aiInsight.strengths : [],
+    weaknesses: Array.isArray(candidate.aiInsight?.weaknesses)
+      ? candidate.aiInsight.weaknesses
+      : [],
+    recommendation: String(candidate.aiInsight?.recommendation || '')
+  }
+});
+
+const computeResumeScore = (resumeAnalysis) => {
+  if (!resumeAnalysis) return 0;
+  const scores = [
+    Number(resumeAnalysis.atsScore || 0),
+    Number(resumeAnalysis.keywordDensity || 0),
+    Number(resumeAnalysis.formatScore || 0),
+    Number(resumeAnalysis.contentQuality || 0)
+  ].filter((score) => Number.isFinite(score));
+
+  if (!scores.length) return 0;
+  return Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length);
+};
+
+const computeConsistencyScore = ({ sprint, weeklyReport }) => {
+  const completionRate = Number(sprint?.tasks?.length)
+    ? (sprint.tasks.filter((task) => task.isCompleted).length / sprint.tasks.length) * 100
+    : Number(weeklyReport?.meta?.sprint?.completionRate || 0);
+  const streak = Number(
+    sprint?.currentStreak || sprint?.streak || weeklyReport?.meta?.sprint?.streak || 0
+  );
+  const streakScore = Math.min(streak * 8, 100);
+  return clamp(completionRate * 0.65 + streakScore * 0.35);
+};
+
+const computeGrowthSignals = ({ weeklyReport, sprint, projectCount = 0 }) => {
+  const readinessDelta = Number(weeklyReport?.meta?.comparisons?.readinessDelta || 0);
+  const coverageDelta = Number(weeklyReport?.meta?.comparisons?.coverageDelta || 0);
+  const sprintCompletionRate =
+    Number(weeklyReport?.meta?.sprint?.completionRate || 0) ||
+    (Number(sprint?.tasks?.length)
+      ? (sprint.tasks.filter((task) => task.isCompleted).length / sprint.tasks.length) * 100
+      : 0);
+  const githubConsistencySignal = Number(weeklyReport?.meta?.activity?.weeklyCommitSignal || 0);
+  const projectVelocity = Math.min(projectCount * 12, 100);
+
+  return {
+    readinessDelta,
+    weeklyCoverageDelta: coverageDelta,
+    sprintCompletionRate,
+    githubConsistencySignal,
+    projectVelocity
+  };
+};
+
+const baseCandidateScore = (candidate) => {
+  const score =
+    Number(candidate.githubScore || 0) * 0.3 +
+    Number(candidate.resumeScore || 0) * 0.3 +
+    Number(candidate.consistencyScore || 0) * 0.2 +
+    Number(candidate.growthPotentialScore || 0) * 0.2;
+  return Number(clamp(score).toFixed(2));
+};
+
+const toObjectId = (id) => {
+  if (!id) return null;
+  if (!mongoose.Types.ObjectId.isValid(id)) return null;
+  return new mongoose.Types.ObjectId(id);
+};
+
+const buildVisibleDeveloperFilter = async (organizationId, session) => {
+  // Consent and global discovery policy must be current on every worker.
+  const settings = await PlatformSettings.findOne({ scope: 'global' })
+    .select('recruiter.candidateVisibility')
+    .session(session)
+    .lean();
+  const mode = String(settings?.recruiter?.candidateVisibility || 'public').toLowerCase();
+  if (['private', 'disabled', 'none', 'off'].includes(mode)) return null;
+  if (mode === 'organization' && !organizationId) return null;
+  const filter = {
+    role: { $in: DEVELOPER_ROLE_VALUES },
+    isPublic: true,
+    isActive: { $ne: false }
+  };
+  if (mode === 'organization')
+    filter.organizationId = requireObjectId(organizationId, 'organizationId');
+  return filter;
+};
+
+// MongoDB does not support parallel operations on a transaction session.
+const resolveCandidateReads = async (reads, session) => {
+  if (!session) return Promise.all(reads);
+  const results = [];
+  for (const read of reads) results.push(await read);
+  return results;
+};
+
+const hydrateUserCandidates = async (users = [], session) => {
+  if (!users.length) return [];
+
+  const userIds = users.map((user) => user._id);
+
+  const [analyses, resumeAnalyses, publicProfiles, sprints, weeklyReports] =
+    await resolveCandidateReads(
+      [
+        Analysis.find({ userId: { $in: userIds } })
+          .session(session)
+          .lean(),
+        ResumeAnalysis.find({ userId: { $in: userIds } })
+          .sort({ analyzedAt: -1 })
+          .session(session)
+          .lean(),
+        PublicProfile.find({ userId: { $in: userIds }, isPublic: true })
+          .select('userId slug isPublic skills projects')
+          .session(session)
+          .lean(),
+        CareerSprint.find({ userId: { $in: userIds } })
+          .sort({ updatedAt: -1 })
+          .session(session)
+          .lean(),
+        WeeklyReport.find({ userId: { $in: userIds } })
+          .sort({ weekEndDate: -1 })
+          .session(session)
+          .lean()
+      ],
+      session
+    );
+
+  const analysisByUser = new Map(analyses.map((entry) => [String(entry.userId), entry]));
+  const resumeByUser = new Map();
+  resumeAnalyses.forEach((entry) => {
+    const key = String(entry.userId);
+    if (!resumeByUser.has(key)) resumeByUser.set(key, entry);
+  });
+  const profileByUser = new Map(publicProfiles.map((entry) => [String(entry.userId), entry]));
+  const sprintByUser = new Map();
+  sprints.forEach((entry) => {
+    const key = String(entry.userId);
+    if (!sprintByUser.has(key)) sprintByUser.set(key, entry);
+  });
+  const weeklyByUser = new Map();
+  weeklyReports.forEach((entry) => {
+    const key = String(entry.userId);
+    if (!weeklyByUser.has(key)) weeklyByUser.set(key, entry);
+  });
+
+  return users.map((user) => {
+    const userId = String(user._id);
+    return candidateFromSources(user, {
+      analysis: analysisByUser.get(userId),
+      resume: resumeByUser.get(userId),
+      profile: profileByUser.get(userId),
+      sprint: sprintByUser.get(userId),
+      weeklyReport: weeklyByUser.get(userId)
+    });
+  });
+};
+
+const candidateFromSources = (user, { analysis, resume, profile, sprint, weeklyReport }) => {
+  const resumeSkills = flattenResumeSkills(resume?.skills);
+  const profileSkills = (profile?.skills || []).map((skill) => skill?.name).filter(Boolean);
+  const skills = normalizeSkills([...resumeSkills, ...profileSkills]);
+  const projects = (profile?.projects || []).map((project) => ({
+    title: project.title,
+    description: project.description || '',
+    technologies: normalizeSkills(project.tech || []),
+    impactScore: 65,
+    status: project.status === 'completed' ? 'completed' : 'in-progress'
+  }));
+
+  const githubScore = analysis?.githubScore ?? null;
+  const resumeScore = computeResumeScore(resume);
+  const consistencyScore = computeConsistencyScore({ sprint, weeklyReport });
+  const growthSignals = computeGrowthSignals({
+    weeklyReport,
+    sprint,
+    projectCount: projects.length
+  });
+  const growthPotentialScore = clamp(
+    growthSignals.weeklyCoverageDelta +
+      growthSignals.readinessDelta +
+      growthSignals.sprintCompletionRate * 0.4 +
+      growthSignals.githubConsistencySignal * 0.4 +
+      growthSignals.projectVelocity * 0.2
+  );
+
+  const candidate = {
+    id: String(user._id),
+    userId: String(user._id),
+    sourceType: 'user',
+    name: user.name,
+    fullName: user.name,
+    email: user.email,
+    stack: user.activeCareerStack || user.careerStack || 'Full Stack',
+    yearsOfExperience: Number(
+      resume?.experienceYears ||
+        EXPERIENCE_LEVEL_TO_YEARS[user.activeExperienceLevel || user.experienceLevel] ||
+        0
+    ),
+    jobTitle: user.jobTitle || '',
+    headline: user.jobTitle || '',
+    location: user.location || '',
+    avatar: user.avatar || '',
+    githubUsername: user.githubUsername || '',
+    githubScore,
+    resumeScore,
+    consistencyScore,
+    growthPotentialScore,
+    skills,
+    skillScores: (profile?.skills || [])
+      .map((skill) => ({
+        name: skill?.name || '',
+        score: Number(skill?.score || 0)
+      }))
+      .filter((skill) => Boolean(skill.name)),
+    projects,
+    skillGaps: analysis?.missingSkills || [],
+    publicProfileSlug: profile?.isPublic ? String(profile.slug || '') : null,
+    lastActive: user.updatedAt || user.createdAt || null,
+    experienceLevel: user.activeExperienceLevel || user.experienceLevel || '',
+    isActive: user.isActive !== false,
+    githubStats: {
+      repos: Number(analysis?.githubStats?.repos || 0),
+      stars: Number(analysis?.githubStats?.stars || 0),
+      forks: Number(analysis?.githubStats?.forks || 0),
+      followers: Number(analysis?.githubStats?.followers || 0)
+    },
+    aiInsight: {
+      summary: '',
+      strengths: [],
+      weaknesses: [],
+      recommendation: ''
+    },
+    enrichment: growthSignals
+  };
+
+  candidate.score = baseCandidateScore(candidate);
+  // Presentation metadata only: do not change the matching inputs above.
+  const githubTimestamp = analysis?.githubSignals?.analyzedAt || null;
+  const githubMeasured = Boolean(
+    githubTimestamp ||
+    analysis?.githubSignals?.acceptedResult ||
+    analysis?.githubAnalysisHistory?.length ||
+    Number(analysis?.githubScore) > 0
+  );
+  const assessedGithubScore = githubMeasured ? measuredScore(githubScore) : null;
+  const assessedResumeScore = resume
+    ? averageAvailableScores([
+        resume.atsScore,
+        resume.keywordDensity,
+        resume.formatScore,
+        resume.contentQuality
+      ])
+    : null;
+  const readinessAvailable =
+    assessedGithubScore !== null ||
+    assessedResumeScore !== null ||
+    Boolean(sprint || weeklyReport || projects.length);
+  candidate.assessmentEvidence = {
+    readiness: {
+      score: readinessAvailable ? measuredScore(candidate.score) : null,
+      recordedAt: null,
+      explanation: readinessAvailable
+        ? 'Existing weighted readiness score; derived from recorded inputs, not an independent measurement.'
+        : 'No recorded inputs support a readiness assessment.'
+    },
+    github: {
+      score: assessedGithubScore,
+      recordedAt: githubTimestamp,
+      explanation:
+        assessedGithubScore === null
+          ? 'No valid GitHub score with supporting analysis evidence is available.'
+          : 'Recorded GitHub analysis score; availability does not establish current skill or freshness.'
+    },
+    resume: {
+      score: assessedResumeScore,
+      recordedAt: resume?.analyzedAt || null,
+      explanation:
+        assessedResumeScore === null
+          ? 'No valid resume score measurements are available.'
+          : 'Mean of available ATS, keyword density, format and content measurements; resume claims are not verified ability.'
+    }
+  };
+  return candidate;
+};
+
+const normalizeCandidateDoc = (candidateDoc = {}) => {
+  const candidate = {
+    id: String(candidateDoc._id),
+    userId: candidateDoc.userId ? String(candidateDoc.userId) : '',
+    sourceType: 'candidate',
+    name: candidateDoc.fullName,
+    fullName: candidateDoc.fullName,
+    email: candidateDoc.email,
+    stack: candidateDoc.stack || 'Full Stack',
+    yearsOfExperience: Number(candidateDoc.yearsOfExperience || 0),
+    jobTitle: candidateDoc.headline || '',
+    headline: candidateDoc.headline || '',
+    location: candidateDoc.location || '',
+    avatar: '',
+    githubUsername: candidateDoc.githubUsername || '',
+    githubScore: candidateDoc.githubScore ?? null,
+    resumeScore: Number(candidateDoc.resumeScore || 0),
+    consistencyScore: Number(candidateDoc.consistencyScore || 0),
+    growthPotentialScore: Number(candidateDoc.growthPotentialScore || 0),
+    skills: normalizeSkills(candidateDoc.skills || []),
+    skillScores: [],
+    projects: Array.isArray(candidateDoc.projects) ? candidateDoc.projects : [],
+    skillGaps: Array.isArray(candidateDoc.skillGaps) ? candidateDoc.skillGaps : [],
+    publicProfileSlug: null,
+    githubStats: {
+      repos: Number(candidateDoc.githubStats?.repos || 0),
+      stars: Number(candidateDoc.githubStats?.stars || 0),
+      forks: Number(candidateDoc.githubStats?.forks || 0),
+      followers: Number(candidateDoc.githubStats?.followers || 0)
+    },
+    aiInsight: candidateDoc.aiInsight || {
+      summary: '',
+      strengths: [],
+      weaknesses: [],
+      recommendation: ''
+    },
+    enrichment: {}
+  };
+
+  candidate.score = baseCandidateScore(candidate);
+  return candidate;
+};
+
+const mergeCandidates = (candidateDocs = [], hydratedUsers = []) => {
+  const mergedMap = new Map();
+
+  hydratedUsers.forEach((candidate) => {
+    const key = candidate.userId || candidate.email.toLowerCase();
+    mergedMap.set(key, candidate);
+  });
+
+  candidateDocs.forEach((doc) => {
+    const normalized = normalizeCandidateDoc(doc);
+    const key = normalized.userId || normalized.email.toLowerCase();
+    const existing = mergedMap.get(key);
+
+    if (existing) {
+      mergedMap.set(key, {
+        ...existing,
+        ...normalized,
+        githubScore: existing.githubScore ?? normalized.githubScore,
+        name: normalized.name || existing.name,
+        jobTitle: normalized.jobTitle || existing.jobTitle,
+        avatar: normalized.avatar || existing.avatar || '',
+        publicProfileSlug: normalized.publicProfileSlug || existing.publicProfileSlug || null,
+        skillScores: normalized.skillScores?.length
+          ? normalized.skillScores
+          : existing.skillScores || [],
+        skills: normalizeSkills([...(existing.skills || []), ...(normalized.skills || [])]),
+        projects: normalized.projects?.length ? normalized.projects : existing.projects,
+        skillGaps: normalized.skillGaps?.length ? normalized.skillGaps : existing.skillGaps
+      });
+    } else {
+      mergedMap.set(key, normalized);
+    }
+  });
+
+  return Array.from(mergedMap.values());
+};
+
+const applyCandidateFilters = (candidates = [], filters = {}) => {
+  const normalizedSearch = String(filters.search || '')
+    .trim()
+    .toLowerCase();
+  const normalizedStack = String(filters.stack || '')
+    .trim()
+    .toLowerCase();
+  const minExperience = Number(filters.experience || 0);
+  const minScore = Number(filters.minScore || 0);
+
+  return candidates.filter((candidate) => {
+    if (normalizedSearch) {
+      const haystack =
+        `${candidate.fullName} ${candidate.githubUsername} ${candidate.headline}`.toLowerCase();
+      if (!haystack.includes(normalizedSearch)) return false;
+    }
+
+    if (normalizedStack && normalizedStack !== 'all') {
+      if (
+        !String(candidate.stack || '')
+          .toLowerCase()
+          .includes(normalizedStack)
+      )
+        return false;
+    }
+
+    if (minExperience > 0 && Number(candidate.yearsOfExperience || 0) < minExperience) {
+      return false;
+    }
+
+    if (minScore > 0 && Number(candidate.score || 0) < minScore) {
+      return false;
+    }
+
+    return true;
+  });
+};
+
+const listCandidates = async ({
+  search = '',
+  stack = '',
+  experience = 0,
+  minScore = 0,
+  organizationId = '',
+  limit = 50,
+  session
+} = {}) => {
+  const userQuery = await buildVisibleDeveloperFilter(organizationId, session);
+  if (!userQuery) return [];
+  const safeLimit = Math.min(2000, toPositiveInt(limit, 50));
+  const andConditions = [];
+
+  if (search) {
+    const regex = new RegExp(escapeRegex(search), 'i');
+    andConditions.push({ $or: [{ name: regex }, { githubUsername: regex }, { jobTitle: regex }] });
+  }
+
+  const normalizedStackFilter = String(stack || '').trim();
+  if (normalizedStackFilter && normalizedStackFilter.toLowerCase() !== 'all') {
+    const stackRegex = new RegExp(escapeRegex(normalizedStackFilter), 'i');
+    andConditions.push({ $or: [{ activeCareerStack: stackRegex }, { careerStack: stackRegex }] });
+  }
+
+  if (andConditions.length === 1) {
+    Object.assign(userQuery, andConditions[0]);
+  } else if (andConditions.length > 1) {
+    userQuery.$and = andConditions;
+  }
+
+  const users = await User.find(userQuery)
+    .select(
+      'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic isActive createdAt updatedAt'
+    )
+    .sort({ _id: 1 })
+    .limit(Math.max(safeLimit, 100))
+    .session(session)
+    .lean();
+
+  if (!users.length) return [];
+
+  const hydratedUsers = await hydrateUserCandidates(users, session);
+  const hydratedUserIds = hydratedUsers
+    .map((candidate) => candidate.userId)
+    .filter((id) => mongoose.Types.ObjectId.isValid(id))
+    .map((id) => new mongoose.Types.ObjectId(id));
+
+  const candidateDocs = hydratedUserIds.length
+    ? await Candidate.find({ isActive: true, userId: { $in: hydratedUserIds } })
+        .session(session)
+        .lean()
+    : [];
+
+  const merged = mergeCandidates(candidateDocs, hydratedUsers);
+  const filtered = applyCandidateFilters(merged, { search, stack, experience, minScore });
+
+  const sorted = [...filtered].sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
+  return sorted.slice(0, safeLimit).map((candidate) => sanitizePublicCandidate(candidate));
+};
+
+const getCandidatesByIds = async (ids, { organizationId, session } = {}) => {
+  const requestedIds = [...new Set(ids.map(toObjectId).filter(Boolean).map(String))];
+  if (!requestedIds.length) return new Map();
+
+  const userFilter = await buildVisibleDeveloperFilter(organizationId, session);
+  if (!userFilter) return new Map();
+  const aliases = await Candidate.find({ _id: { $in: requestedIds }, isActive: true })
+    .select('userId')
+    .session(session)
+    .lean();
+  const aliasMap = new Map(
+    aliases
+      .filter((entry) => entry.userId)
+      .map((entry) => [String(entry._id), String(entry.userId)])
+  );
+  const userIds = [...new Set([...requestedIds, ...aliasMap.values()])];
+  const users = await User.find({ ...userFilter, _id: { $in: userIds } })
+    .select(
+      'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel'
+    )
+    .session(session)
+    .lean();
+  if (!users.length) return new Map();
+
+  const [hydrated, documents] = await resolveCandidateReads(
+    [
+      hydrateUserCandidates(users, session),
+      Candidate.find({ userId: { $in: users.map((user) => user._id) }, isActive: true })
+        .session(session)
+        .lean()
+    ],
+    session
+  );
+  const candidates = new Map(
+    mergeCandidates(documents, hydrated).map((candidate) => [
+      candidate.userId,
+      sanitizePublicCandidate(candidate)
+    ])
+  );
+  return new Map(
+    requestedIds.map((id) => [id, candidates.get(id) || candidates.get(aliasMap.get(id)) || null])
+  );
+};
+
+const getCandidateById = async (id, options) => {
+  const objectId = toObjectId(id);
+  if (!objectId) return null;
+  const candidates = await getCandidatesByIds([objectId], options);
+  return candidates.get(String(objectId)) || null;
+};
+
+const assertOrganizationScope = (organizationId) => {
+  const safeOrganizationId = String(organizationId || '').trim();
+  if (!safeOrganizationId) {
+    const error = new Error('organizationId is required.');
+    error.code = 400;
+    throw error;
+  }
+
+  return requireObjectId(safeOrganizationId, 'organizationId');
+};
+
+const createJob = async ({ recruiterId, organizationId, payload }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+
+  const job = await Job.create({
+    organizationId: safeOrganizationId,
+    recruiterId,
+    title: String(payload.title || '').trim(),
+    role: String(payload.role || payload.title || '').trim(),
+    description: String(payload.description || '').trim(),
+    stack: String(payload.stack || 'Full Stack').trim(),
+    requiredSkills: normalizeSkills(payload.requiredSkills || []),
+    preferredSkills: normalizeSkills(payload.preferredSkills || []),
+    minExperienceYears: Number(payload.minExperienceYears || 0),
+    location: String(payload.location || '').trim(),
+    employmentType: payload.employmentType || 'full-time',
+    status: payload.status || 'open'
+  });
+
+  return job;
+};
+
+const updateJob = async ({ organizationId, recruiterId, jobId, payload }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+
+  const filter = { _id: requireObjectId(jobId, 'jobId'), organizationId: safeOrganizationId };
+  if (recruiterId) filter.recruiterId = requireObjectId(recruiterId, 'recruiterId');
+  const job = await Job.findOne(filter);
+  if (!job) return null;
+
+  const patch = {
+    title: payload.title,
+    role: payload.role,
+    description: payload.description,
+    stack: payload.stack,
+    requiredSkills: Array.isArray(payload.requiredSkills)
+      ? normalizeSkills(payload.requiredSkills)
+      : undefined,
+    preferredSkills: Array.isArray(payload.preferredSkills)
+      ? normalizeSkills(payload.preferredSkills)
+      : undefined,
+    minExperienceYears: payload.minExperienceYears,
+    location: payload.location,
+    employmentType: payload.employmentType,
+    status: payload.status,
+    archivedAt: Object.prototype.hasOwnProperty.call(payload || {}, 'archivedAt')
+      ? payload.archivedAt
+      : undefined
+  };
+
+  Object.entries(patch).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      job[key] = value;
+    }
+  });
+
+  await job.save();
+  return job;
+};
+
+const closeJob = async ({ organizationId, jobId }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const job = await Job.findOne({
+    _id: requireObjectId(jobId, 'jobId'),
+    organizationId: safeOrganizationId
+  });
+  if (!job) return null;
+
+  job.status = 'closed';
+  job.archivedAt = new Date();
+  await job.save();
+  return job;
+};
+
+const deleteJob = async ({ organizationId, recruiterId, jobId }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const filter = { _id: requireObjectId(jobId, 'jobId'), organizationId: safeOrganizationId };
+  if (recruiterId) filter.recruiterId = requireObjectId(recruiterId, 'recruiterId');
+  return deleteJobWithPipeline(filter);
+};
+
+const listJobs = async ({ organizationId, recruiterId = '' }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const query = { organizationId: safeOrganizationId };
+  if (recruiterId) query.recruiterId = requireObjectId(recruiterId, 'recruiterId');
+  return Job.find(query).sort({ updatedAt: -1 }).lean();
+};
+
+const listOrganizationJobs = async ({ organizationId, limit = 100 }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  return Job.find({ organizationId: safeOrganizationId })
+    .sort({ updatedAt: -1 })
+    .limit(Math.max(1, Math.min(500, Number(limit) || 100)))
+    .lean();
+};
+
+const listOrganizationJobsPage = async ({
+  organizationId,
+  page = JOB_DEFAULT_PAGE,
+  limit = JOB_DEFAULT_LIMIT,
+  search = '',
+  stack = '',
+  status = '',
+  employmentType = '',
+  location = '',
+  sortBy = 'updatedAt',
+  sortOrder = 'desc'
+} = {}) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const safePage = toPositiveInt(page, JOB_DEFAULT_PAGE);
+  const safeLimit = Math.min(toPositiveInt(limit, JOB_DEFAULT_LIMIT), JOB_MAX_LIMIT);
+  const safeSortBy = JOB_ALLOWED_SORT_FIELDS.has(String(sortBy || '').trim())
+    ? String(sortBy).trim()
+    : 'updatedAt';
+  const safeSortOrder = String(sortOrder || '').toLowerCase() === 'asc' ? 1 : -1;
+
+  const query = { organizationId: safeOrganizationId };
+  const normalizedSearch = String(search || '').trim();
+  const normalizedStack = String(stack || '').trim();
+  const normalizedStatus = String(status || '').trim();
+  const normalizedEmploymentType = String(employmentType || '').trim();
+  const normalizedLocation = String(location || '').trim();
+
+  if (normalizedSearch) {
+    const regex = new RegExp(escapeRegex(normalizedSearch), 'i');
+    query.$or = [
+      { title: regex },
+      { role: regex },
+      { description: regex },
+      { stack: regex },
+      { location: regex },
+      { requiredSkills: regex },
+      { preferredSkills: regex }
+    ];
+  }
+
+  if (normalizedStack) query.stack = normalizedStack;
+  if (normalizedStatus) query.status = normalizedStatus;
+  if (normalizedEmploymentType) query.employmentType = normalizedEmploymentType;
+  if (normalizedLocation) query.location = new RegExp(escapeRegex(normalizedLocation), 'i');
+
+  const [jobs, total] = await Promise.all([
+    Job.find(query)
+      .select(
+        'title role description stack requiredSkills preferredSkills minExperienceYears location employmentType status createdAt updatedAt archivedAt'
+      )
+      .sort({ [safeSortBy]: safeSortOrder, _id: 1 })
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit)
+      .lean(),
+    Job.countDocuments(query)
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+  return {
+    jobs,
+    page: safePage,
+    limit: safeLimit,
+    total,
+    totalPages,
+    hasMore: safePage < totalPages
+  };
+};
+
+const matchCandidatesToJob = async ({ organizationId, recruiterId, jobId, candidateIds = [] }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const selected = new Set(validateCandidateIds(candidateIds));
+  const job = await Job.findOne({
+    _id: requireObjectId(jobId, 'jobId'),
+    organizationId: safeOrganizationId,
+    recruiterId: requireObjectId(recruiterId, 'recruiterId')
+  }).lean();
+  if (!job) {
+    const error = new Error('Job not found.');
+    error.code = 404;
+    throw error;
+  }
+
+  const visibleCandidates = await listCandidates({
+    organizationId: safeOrganizationId,
+    stack: job.stack,
+    minScore: 0,
+    limit: 500
+  });
+
+  let candidates = visibleCandidates;
+  if (selected.size > 0) {
+    candidates = visibleCandidates.filter((candidate) => {
+      const candidateId = String(candidate.id || '').trim();
+      const userId = String(candidate.userId || '').trim();
+      return selected.has(candidateId) || selected.has(userId);
+    });
+  }
+
+  const ranked = rankCandidates({ job, candidates });
+  return {
+    job,
+    ...ranked
+  };
+};
+
+module.exports = {
+  candidateFromSources,
+  mergeCandidates,
+  sanitizePublicCandidate,
+  listCandidates,
+  getCandidateById,
+  getCandidatesByIds,
+  createJob,
+  updateJob,
+  closeJob,
+  deleteJob,
+  listJobs,
+  listOrganizationJobs,
+  listOrganizationJobsPage,
+  matchCandidatesToJob
+};

@@ -1,0 +1,19 @@
+{
+  "status": "failed",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "requests": [],
+  "errors": [],
+  "checks": [],
+  "angularDevServer": true,
+  "angularCleanup": {
+    "angularStopped": true,
+    "output": "\u001b[32m✔\u001b[0m \u001b[33mConsole Ninja\u001b[0m extension is connected to \u001b[33mAngular\u001b[0m, see \u001b[36mhttps://tinyurl.com/2vt8jxzw\u001b[0m\n> Building...\r\n√ Building...\r\nInitial chunk files | Names              |  Raw size\nmain.js             | main               |   8.46 MB | \nchunk-3E57FXAJ.js   | -                  | 332.59 kB | \nstyles.css          | styles             |  87.10 kB | \nchunk-TORQPJFN.js   | -                  |  79.53 kB | \nchunk-7ISFN4PN.js   | -                  |  34.89 kB | \nchunk-HD4PLDJE.js   | -                  |  24.34 kB | \nchunk-YLN3RK67.js   | -                  |   7.30 kB | \n\n                    | Initial total      |   9.02 MB\n\nLazy chunk files    | Names              |  Raw size\nchunk-MKIFBERT.js   | admin-module       |   1.52 MB | \nchunk-ADOJI3JW.js   | recruiter-module   |   1.23 MB | \nchunk-SWKHYKRV.js   | super-admin-module | 773.22 kB | \n\nApplication bundle generation complete. [307.724 seconds] - 2026-11-24T20:59:39.120Z\n\nWatch mode enabled. Watching for file changes...\nNOTE: Raw file sizes do not reflect development server per-request transformations.\n  ➜  Local:   http://127.0.0.1:60723/\n"
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 342,
+    "productionDataUsed": false
+  },
+  "failure": "Error: Disposable browser exited during startup.\n    at startBrowser (D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\disposableBrowser.js:94:42)\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at listOnTimeout (node:internal/timers:597:9)\n    at process.processTimers (node:internal/timers:571:7)\n    at async main (D:\\Developer-Portfolio-Analyzer\\backend\\scripts\\smoke-application-shortlists.cjs:50:15)"
+}

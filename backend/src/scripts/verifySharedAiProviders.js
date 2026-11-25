@@ -3,8 +3,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
-const manager = require('../services/aiProviderManager');
-const config = require('../config/aiProviders');
+const manager = require('../core/ai/aiProviderManager');
+const config = require('../core/config/aiProviders');
 const run = async () => {
   const report = {
     scope: 'Independent adapters; not a production load, quota or Mongo admission acceptance test',

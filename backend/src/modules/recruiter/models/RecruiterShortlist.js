@@ -1,0 +1,61 @@
+const mongoose = require('mongoose');
+
+const recruiterShortlistSchema = new mongoose.Schema(
+  {
+    recruiterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true
+    },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Organization',
+      required: true,
+      index: true
+    },
+    teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+      default: null,
+      index: true
+    },
+    candidateId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true
+    },
+    jobId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Job',
+      default: null,
+      index: true
+    },
+    // A reference only. Submitted evidence and applicant-visible status remain
+    // authoritative on JobApplication. Null/missing preserves legacy public rows.
+    applicationId: {
+      type: String,
+      default: null,
+      immutable: true,
+      validate: (value) => value === null || /^[a-f0-9]{64}$/.test(value)
+    },
+    notes: {
+      type: String,
+      default: ''
+    },
+    status: {
+      type: String,
+      enum: ['shortlisted', 'reviewing', 'contacted', 'interview', 'rejected'],
+      default: 'shortlisted',
+      index: true
+    }
+  },
+  { timestamps: true }
+);
+
+recruiterShortlistSchema.index({ recruiterId: 1, candidateId: 1, jobId: 1 }, { unique: true });
+recruiterShortlistSchema.index({ organizationId: 1, recruiterId: 1, updatedAt: -1 });
+recruiterShortlistSchema.index({ organizationId: 1, recruiterId: 1, jobId: 1, updatedAt: -1 });
+
+module.exports = mongoose.model('RecruiterShortlist', recruiterShortlistSchema);

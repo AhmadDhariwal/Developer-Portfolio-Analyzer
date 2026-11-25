@@ -1,0 +1,321 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.candidate-card {
+  @include recruiter.card-surface(18px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  &--selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+  }
+}
+
+.candidate-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.candidate-card__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.candidate-card__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-text);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.candidate-card__title-block {
+  min-width: 0;
+  flex: 1;
+
+  h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.candidate-card__score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  padding: 6px 10px;
+  border-radius: var(--dev-radius-control, 6px);
+  border: 1px solid var(--border-color);
+  background: var(--surface-secondary);
+  flex-shrink: 0;
+
+  strong {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  &--high {
+    background: var(--color-success-soft);
+    border-color: var(--color-success-border);
+
+    strong {
+      color: var(--color-success-text);
+    }
+  }
+
+  &--mid {
+    background: var(--color-warning-soft);
+    border-color: var(--color-warning-border);
+
+    strong {
+      color: var(--color-warning-text);
+    }
+  }
+
+  &--low {
+    background: var(--color-neutral-soft);
+    border-color: var(--color-neutral-border);
+
+    strong {
+      color: var(--color-neutral-text);
+    }
+  }
+}
+
+.candidate-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  span {
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+.candidate-card__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.metric-cell {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.unavailable-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface-tertiary);
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.candidate-card__availability {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.candidate-card__availability-badge {
+  @include recruiter.status-pill(success);
+}
+
+.candidate-card__activity {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.candidate-card__completeness {
+  display: grid;
+  gap: 4px;
+}
+
+.completeness-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-muted);
+
+  strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+}
+
+.completeness-track {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--surface-tertiary);
+  overflow: hidden;
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--color-primary);
+  }
+}
+
+.candidate-card__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skill-chip {
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 500;
+
+  &--more {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary-border);
+    color: var(--color-primary-text);
+    font-weight: 600;
+  }
+}
+
+.candidate-card__summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.candidate-card__actions {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+
+  @media (max-width: 420px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > .candidate-card__btn:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+.candidate-card__btn {
+  @include recruiter.btn-base;
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 12.5px;
+
+  &--primary {
+    @include recruiter.btn-primary;
+    min-height: 36px;
+    padding: 0 10px;
+  }
+
+  &--secondary {
+    @include recruiter.btn-secondary;
+    min-height: 36px;
+    padding: 0 10px;
+  }
+
+  &--selected {
+    background: var(--color-primary-soft);
+    border: 1px solid var(--color-primary-border);
+    color: var(--color-primary-text);
+  }
+}

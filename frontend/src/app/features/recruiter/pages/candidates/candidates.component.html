@@ -1,0 +1,197 @@
+<section class="hub-page">
+  <header class="page-header">
+    <div class="page-header__copy">
+      <span class="page-header__eyebrow">Recruiter Hub · Talent Pool</span>
+      <h1>Candidates</h1>
+      <p>
+        Browse developer profiles with visible readiness, skill, GitHub, and availability telemetry.
+      </p>
+    </div>
+
+    <div class="page-header__actions">
+      <span class="count-pill" aria-live="polite">{{
+        loading
+          ? 'Loading results...'
+          : error
+            ? 'Results unavailable'
+            : (meta?.total ?? 0) + (meta?.total === 1 ? ' matching profile' : ' matching profiles')
+      }}</span>
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="compareCount < 2"
+        (click)="openComparison()"
+      >
+        Compare Selected ({{ compareCount }}/3)
+      </button>
+    </div>
+  </header>
+
+  <app-ui-error-state
+    *ngIf="error && !candidates.length && !loading"
+    title="Unable to load candidates"
+    [message]="error"
+    (retry)="retryCandidates()"
+  />
+
+  <div class="banner banner--error" *ngIf="actionError" role="alert">
+    {{ actionError }}
+  </div>
+  <div class="banner banner--success" *ngIf="notice">{{ notice }}</div>
+
+  <div class="metric-grid">
+    <app-recruiter-stat-card
+      label="Total Matching Pool"
+      [value]="loading || error ? '--' : (meta?.total ?? 0)"
+      tone="indigo"
+      hint="Across active filter query"
+    />
+    <app-recruiter-stat-card
+      label="High Readiness (Page)"
+      [value]="loading || error ? '--' : highReadinessCount"
+      tone="green"
+      hint="Score >= 80 on current page"
+    />
+    <app-recruiter-stat-card
+      label="Remote Ready (Page)"
+      [value]="loading || error ? '--' : remoteCount"
+      tone="cyan"
+      hint="Visible on current page"
+    />
+    <app-recruiter-stat-card
+      label="Comparison Queue"
+      [value]="compareCount + ' / 3'"
+      tone="purple"
+      hint="Select 2-3 profiles to compare"
+    />
+  </div>
+
+  <p *ngIf="!loading && !error" aria-live="polite">
+    {{ candidates.length }} {{ candidates.length === 1 ? 'result' : 'results' }} on this page /
+    {{ meta?.total ?? 0 }} matching {{ meta?.total === 1 ? 'profile' : 'profiles' }}
+  </p>
+  <p *ngIf="!loading && optionsTruncated" class="muted">
+    Filter suggestions are limited; entered searches still cover all eligible profiles.
+  </p>
+  <div class="filter-panel">
+    <app-candidate-filter-bar
+      [model]="filters"
+      [stackOptions]="stackOptions"
+      [locationOptions]="locationOptions"
+      (apply)="applyFilters($event)"
+      (clear)="clearFilters()"
+    />
+  </div>
+
+  <div class="compare-tray" *ngIf="compareCount > 0">
+    <div class="compare-tray__items">
+      <span class="compare-tray__label">Comparison tray:</span>
+      <span class="compare-pill" *ngFor="let item of selectedCompareItems">
+        <span>{{ item.name }}</span>
+        <button
+          type="button"
+          [attr.aria-label]="'Remove ' + item.name + ' from comparison'"
+          (click)="removeCompareId(item.id)"
+        >
+          ×
+        </button>
+      </span>
+    </div>
+
+    <div class="compare-tray__actions">
+      <button type="button" class="btn-secondary btn-sm" (click)="clearCompare()">Clear</button>
+      <button
+        type="button"
+        class="btn-primary btn-sm"
+        [disabled]="compareCount < 2"
+        (click)="openComparison()"
+      >
+        Compare Now ({{ compareCount }})
+      </button>
+    </div>
+  </div>
+
+  <app-recruiter-loader *ngIf="loading" label="Loading candidates..." variant="cards" [count]="6" />
+
+  <div class="card-grid" *ngIf="!loading && candidates.length > 0">
+    <app-candidate-card
+      *ngFor="let candidate of candidates; trackBy: trackByCandidate"
+      [candidate]="candidate"
+      [selected]="isSelected(candidate)"
+      (view)="openCandidate($event)"
+      (shortlist)="shortlist($event)"
+      (compare)="toggleCompare($event)"
+    />
+  </div>
+
+  <app-recruiter-empty-state
+    *ngIf="!loading && candidates.length === 0 && !error"
+    [title]="meta?.total ? 'No results on this page' : 'No matching candidates found'"
+    [message]="
+      meta?.total
+        ? 'Results changed. Return to the first page or restart pagination.'
+        : 'Try adjusting your stack, location, experience, or search filters to widen results.'
+    "
+  />
+
+  <button
+    *ngIf="!loading && !error && !candidates.length && meta?.total && filters.page > 1"
+    type="button"
+    class="btn-secondary"
+    (click)="goToPage(1)"
+  >
+    Return to first page
+  </button>
+  <nav
+    class="pager"
+    aria-label="Candidate pagination"
+    *ngIf="!loading && (meta?.totalPages || 1) > 1"
+  >
+    <span class="pager__summary">
+      Page {{ meta?.page || 1 }} of {{ meta?.totalPages || 1 }}
+      <ng-container *ngIf="meta?.total"> · {{ meta.total }} candidates</ng-container>
+    </span>
+
+    <div class="pager__controls">
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="loading || filters.page === 1"
+        (click)="goToPage(1)"
+      >
+        First page
+      </button>
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="loading || (meta?.page || 1) <= 1 || !canVisitPage((meta?.page || 1) - 1)"
+        (click)="goToPage((meta?.page || 1) - 1)"
+      >
+        Previous
+      </button>
+
+      <button
+        type="button"
+        class="pager__btn"
+        *ngFor="let page of visiblePages"
+        [disabled]="loading || !canVisitPage(page)"
+        [class.is-active]="page === (meta?.page || 1)"
+        [attr.aria-current]="page === (meta?.page || 1) ? 'page' : null"
+        (click)="goToPage(page)"
+      >
+        {{ page }}
+      </button>
+
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="
+          loading || meta?.hasNext === false || (meta?.page || 1) >= (meta?.totalPages || 1)
+        "
+        (click)="goToPage((meta?.page || 1) + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </nav>
+</section>

@@ -1,0 +1,945 @@
+const notificationPersistence = require('../notifications/services/notificationPersistenceService');
+const developerContext = require('../../core/developer-context/developerContextService');
+const mongoose = require('mongoose');
+const {
+  extractTextFromPDF,
+  analyzeResume,
+  findCachedResumeAnalysis,
+  ANALYSIS_VERSION
+} = require('./services/resumeservice');
+const { generateResumeGuide } = require('./services/resumeGuideService');
+const ResumeFile = require('./models/resumeFile');
+const ResumeAnalysis = require('./models/resumeAnalysis');
+const User = require('../auth/models/user');
+const fs = require('fs/promises');
+const { invalidateDashboardSummaryCache } = require('../dashboard/dashboardcontroller');
+const aiService = require('../../core/ai/aiservice');
+const { assessContent, requireReadableContent } = require('./services/resumeContentQuality');
+const { createPreviewResume } = require('./services/previewResumeCacheService');
+
+const analyzeInFlight = new Map();
+
+const sanitizeClientMessage = (error, fallback) => {
+  const msg = String(error?.message || '').trim();
+  if (!msg || msg.length > 300) return fallback;
+  if (/[A-Za-z]:\\|\/(?:Users|home)\//i.test(msg)) return fallback;
+  if (/node_modules|at\s+\S+\s+\(|api[_-]?key|bearer\s|secret|password|token=/i.test(msg))
+    return fallback;
+  if (/stack|traceback|ENOENT|EACCES|uploads\//i.test(msg)) return fallback;
+  return msg;
+};
+
+const respondResumeError = (res, error, fallbackMessage) => {
+  const status = Number(error?.status || 0);
+  if (
+    status === 400 ||
+    error?.name === 'CastError' ||
+    /Cast to ObjectId failed/i.test(String(error?.message || ''))
+  ) {
+    return res
+      .status(400)
+      .json({ message: sanitizeClientMessage(error, 'Invalid resume request.') });
+  }
+  if (status === 403) {
+    return res.status(403).json({ message: sanitizeClientMessage(error, 'Unauthorized') });
+  }
+  if (status === 404) {
+    return res.status(404).json({ message: sanitizeClientMessage(error, 'Resume file not found') });
+  }
+  if (status === 413) {
+    return res
+      .status(413)
+      .json({ message: sanitizeClientMessage(error, 'Resume file is too large.') });
+  }
+  if (status === 409) {
+    return res.status(409).json({
+      message: sanitizeClientMessage(error, 'Resume analysis is already in progress. Please retry.')
+    });
+  }
+  if (status === 429) {
+    res.set('Retry-After', String(error.retryAfter || 2));
+    return res.status(429).json({
+      message: sanitizeClientMessage(error, 'Resume processing is busy. Please retry shortly.')
+    });
+  }
+  if (status === 503) return res.status(503).json({ message: 'Resume storage unavailable.' });
+  if (status === 422)
+    return res.status(422).json({
+      message: error.code?.startsWith('RESUME_')
+        ? error.message
+        : 'The resume could not be read. Upload a text-based PDF.',
+      contentQualityState: error.contentQualityState || { state: 'INVALID', scoreable: false }
+    });
+  return res.status(500).json({ message: fallbackMessage });
+};
+
+const parseResumeFileId = (raw) => {
+  const fileId = String(raw || '').trim();
+  if (!fileId) {
+    const error = new Error('fileId is required');
+    error.status = 400;
+    throw error;
+  }
+  if (fileId.length > 64 || !mongoose.Types.ObjectId.isValid(fileId)) {
+    const error = new Error('Invalid fileId');
+    error.status = 400;
+    throw error;
+  }
+  return fileId;
+};
+
+const canReadResumeAnalysisForUser = (requester, targetUserId) =>
+  Boolean(requester?._id) && String(requester._id) === String(targetUserId);
+
+const elapsedMs = (startedAt) => Number((process.hrtime.bigint() - startedAt) / 1000000n);
+
+const createPipelineTimings = () => ({
+  memoryCacheMs: 0,
+  redisMs: 0,
+  mongoMs: 0,
+  providerMs: 0,
+  aiMs: 0,
+  deterministicMs: 0,
+  validationMs: 0,
+  persistenceMs: 0,
+  cacheWriteMs: 0,
+  totalMs: 0,
+  // legacy aliases kept for existing log consumers
+  pdfTextExtractionMs: 0,
+  cacheLookupMs: 0,
+  deterministicAnalysisMs: 0,
+  aiInsightsMs: 0,
+  mongoWritesMs: 0,
+  responseSerializationMs: 0
+});
+
+const logPipelineTiming = ({ forceRefresh, cacheHit, status, timings, totalDurationMs }) => {
+  if (String(process.env.RESUME_TIMING || '') !== '1' && process.env.NODE_ENV === 'production')
+    return;
+  console.log(
+    '[ResumeAnalysisPipeline]',
+    JSON.stringify({
+      event: 'resume_analysis_complete',
+      forceRefresh: Boolean(forceRefresh),
+      cacheHit: Boolean(cacheHit),
+      status,
+      memoryCacheMs: timings.memoryCacheMs,
+      redisMs: timings.redisMs,
+      mongoMs: timings.mongoMs,
+      providerMs: timings.providerMs || timings.pdfTextExtractionMs,
+      aiMs: timings.aiMs || timings.aiInsightsMs,
+      deterministicMs: timings.deterministicMs || timings.deterministicAnalysisMs,
+      validationMs: timings.validationMs,
+      persistenceMs: timings.persistenceMs || timings.mongoWritesMs,
+      cacheWriteMs: timings.cacheWriteMs,
+      totalMs: totalDurationMs,
+      ...timings,
+      totalDurationMs
+    })
+  );
+};
+
+const toForceRefresh = (req) =>
+  String(req.body?.forceRefresh ?? req.query?.forceRefresh ?? '').toLowerCase() === 'true';
+
+const validateResumeUploadMetadata = (file) => {
+  if (file?.mimetype !== 'application/pdf' || !/\.pdf$/i.test(String(file?.originalname || ''))) {
+    const error = new Error('Only PDF files are allowed.');
+    error.status = 400;
+    throw error;
+  }
+  if (!Number.isFinite(file.size) || file.size > 10 * 1024 * 1024) {
+    const error = new Error('Resume PDF must be 10 MB or smaller.');
+    error.status = 413;
+    throw error;
+  }
+};
+
+const ensureResumeContext = (userId) =>
+  User.findById(userId).select('defaultResumeFileId activeResumeFileId');
+
+// @desc    Upload resume file
+// @route   POST /api/resume/upload
+// @access  Private
+const uploadResume = async (req, res) => {
+  let resumeFilePersisted = false;
+  let storageReference;
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No resume file uploaded' });
+    }
+
+    validateResumeUploadMetadata(req.file);
+    let signature;
+    if (req.file.buffer) signature = req.file.buffer.subarray(0, 5);
+    else {
+      const fileHandle = await fs.open(req.file.path, 'r');
+      signature = Buffer.alloc(5);
+      try {
+        await fileHandle.read(signature, 0, signature.length, 0);
+      } finally {
+        await fileHandle.close();
+      }
+    }
+    if (signature.toString('ascii') !== '%PDF-') {
+      if (req.file.path) await fs.unlink(req.file.path).catch(() => {});
+      return res.status(400).json({ message: 'Only valid PDF files are allowed' });
+    }
+
+    const uploadEvidence = {};
+    const text = await extractTextFromPDF(
+      req.file.buffer || req.file.path,
+      req.user._id,
+      uploadEvidence
+    );
+    const contentQualityState = assessContent(text);
+    storageReference = await require('./services/resumeStorageService').persist(
+      req.file,
+      req.user._id
+    );
+    const resumeFile = new ResumeFile({
+      userId: req.user._id,
+      fileName: req.file.originalname,
+      fileUrl: storageReference,
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype,
+      resumeHash: uploadEvidence.documentHash,
+      analysisVersion: ANALYSIS_VERSION,
+      contentQualityState
+    });
+
+    const notification = {
+      type: 'resume_upload',
+      title: 'New Resume Uploaded',
+      message: 'Your resume uploaded successfully.',
+      eventId: `resume_upload:${resumeFile._id}`,
+      meta: { target: '/app/resume-analyzer' }
+    };
+    if (require('../../core/storage/storedAssetService').parse(storageReference)) {
+      await require('../../core/storage/storedAssetService').commitResume(resumeFile, notification);
+      if (req.file.path) await fs.unlink(req.file.path).catch(() => {});
+    } else {
+      await notificationPersistence.commit(
+        req.user._id,
+        async (session) => {
+          resumeFile.isNew = true;
+          await resumeFile.save({ session });
+          await User.updateOne(
+            { _id: req.user._id, defaultResumeFileId: null },
+            { $set: { activeResumeFileId: resumeFile._id } },
+            { session }
+          );
+        },
+        notification,
+        Number(req.user.sessionRevision || 0)
+      );
+    }
+    resumeFilePersisted = true;
+    await invalidateResumeDependents(req.user._id);
+
+    res.json({
+      message: 'Resume uploaded successfully',
+      fileId: resumeFile._id,
+      fileName: resumeFile.fileName,
+      fileSize: resumeFile.fileSize,
+      contentQualityState
+    });
+  } catch (error) {
+    if (req.file?.path && !resumeFilePersisted) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    if (
+      storageReference &&
+      !resumeFilePersisted &&
+      require('../../core/storage/storedAssetService').parse(storageReference)
+    )
+      await require('../../core/storage/storedAssetService')
+        .remove(storageReference)
+        .catch(() => {});
+    console.error('Resume Upload Error:', sanitizeClientMessage(error, 'Server Error'));
+    respondResumeError(res, error, 'Server Error');
+  } finally {
+    req.releaseResumeReservation?.();
+  }
+};
+
+const createAnalysisDocument = (userId, resumeFile, analysis) => {
+  return new ResumeAnalysis({
+    userId,
+    fileId: resumeFile._id,
+    fileName: analysis.fileName,
+    fileSize: analysis.fileSize,
+    atsScore: analysis.atsScore,
+    keywordDensity: analysis.keywordDensity,
+    formatScore: analysis.formatScore,
+    contentQuality: analysis.contentQuality,
+    skills: new Map(Object.entries(analysis.skills || {})),
+    experienceYears: analysis.experienceYears,
+    experienceLevel: analysis.experienceLevel,
+    certifications: analysis.certifications,
+    keyAchievements: analysis.keyAchievements,
+    scoreBreakdown: analysis.scoreBreakdown,
+    suggestions: analysis.suggestions,
+    resumeHash: analysis.resumeHash,
+    analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+    normalized: analysis.normalized,
+    qualityScores: analysis.qualityScores,
+    technologyCategories: analysis.technologyCategories,
+    consistencyWarnings: analysis.consistencyWarnings,
+    recruiterPerspective: analysis.recruiterPerspective,
+    resumeSignals: analysis.resumeSignals,
+    scoring: analysis.scoring || analysis.resumeSignals?.scoring,
+    contentQualityState: analysis.contentQualityState,
+    aiInsights: analysis.aiInsights,
+    cacheMetadata: analysis.cacheMetadata,
+    previousAnalysisId: analysis.previousAnalysisId,
+    improvementDelta: analysis.improvementDelta,
+    scoreChanges: analysis.scoreChanges,
+    newSkillsAdded: analysis.newSkillsAdded,
+    uploadDate: resumeFile.uploadDate,
+    analyzedAt: analysis.scoring?.calculatedAt || new Date()
+  });
+};
+
+// Existing downstream cache hooks, without changing downstream analysis logic.
+const invalidateResumeDependents = async (userId) => {
+  invalidateDashboardSummaryCache(userId);
+  let timer;
+  try {
+    await Promise.race([
+      Promise.resolve()
+        .then(() => aiService.invalidateCachePrefix(`skill_gap:result:${String(userId)}:`))
+        .catch(() => {}),
+      new Promise((resolve) => {
+        timer = setTimeout(resolve, 150);
+      })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+// @desc    Analyze resume
+// @route   POST /api/resume/analyze
+// @access  Private
+const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, addTiming }) => {
+  const resumeFile = await ResumeFile.findById(fileId).select(
+    'userId fileName fileUrl fileSize uploadDate isAnalyzed resumeHash analysisVersion lastAnalyzedAt'
+  );
+  if (!resumeFile) {
+    const error = new Error('Resume file not found');
+    error.status = 404;
+    throw error;
+  }
+
+  if (resumeFile.userId.toString() !== req.user._id.toString()) {
+    const error = new Error('Unauthorized');
+    error.status = 403;
+    throw error;
+  }
+
+  const canLookupBeforeExtraction =
+    !forceRefresh && resumeFile.resumeHash && resumeFile.analysisVersion === ANALYSIS_VERSION;
+  let analysis = canLookupBeforeExtraction
+    ? await findCachedResumeAnalysis({
+        userId: req.user._id,
+        resumeFileId: resumeFile._id,
+        resumeHash: resumeFile.resumeHash,
+        analysisVersion: ANALYSIS_VERSION,
+        onTiming: addTiming
+      })
+    : null;
+
+  let deterministicRecord = null;
+  if (!analysis) {
+    const extractionStartedAt = process.hrtime.bigint();
+    const evidence = {};
+    const text = await extractTextFromPDF(resumeFile.fileUrl, req.user._id, evidence);
+    const providerMs = elapsedMs(extractionStartedAt);
+    addTiming('pdfTextExtractionMs', providerMs);
+    addTiming('providerMs', providerMs);
+
+    const previousAnalysis = await ResumeAnalysis.findOne({
+      userId: req.user._id,
+      fileId: resumeFile._id
+    })
+      .sort({ analyzedAt: -1, createdAt: -1, _id: -1 })
+      .select(
+        'atsScore keywordDensity formatScore contentQuality technologyCategories qualityScores analyzedAt createdAt analysisVersion'
+      )
+      .lean();
+    analysis = await analyzeResume(text, resumeFile.fileName, resumeFile.fileSize, {
+      userId: req.user._id,
+      resumeFileId: resumeFile._id,
+      forceRefresh,
+      cacheLookupCompleted: canLookupBeforeExtraction,
+      previousAnalysis,
+      documentHash: evidence.documentHash,
+      onDeterministicPersist: async (result) => {
+        if (req.resumeReservation)
+          await require('../integrations/services/integrationMongoGovernanceService').resumeLease(
+            req.user._id,
+            fileId,
+            req.resumeReservation
+          );
+        deterministicRecord = createAnalysisDocument(req.user._id, resumeFile, result);
+        const started = process.hrtime.bigint();
+        await notificationPersistence.commit(
+          req.user._id,
+          (session) => {
+            deterministicRecord.isNew = true;
+            return deterministicRecord.save({ session });
+          },
+          {
+            type: 'resume_upload',
+            title: 'Resume Analysis Completed',
+            message: `Resume analysis completed (ATS ${result.atsScore}%).`,
+            eventId: `resume_analysis:${resumeFile._id}:${result.resumeHash}:${result.analysisVersion || ANALYSIS_VERSION}`,
+            meta: { target: '/app/resume-analyzer' }
+          },
+          Number(req.user.sessionRevision || 0)
+        );
+        addTiming('persistenceMs', elapsedMs(started));
+      },
+      onTiming: addTiming
+    });
+  }
+
+  const cacheHit = Boolean(analysis.cacheMetadata?.loadedFromCache) && !forceRefresh;
+
+  let resumeAnalysis = deterministicRecord;
+  if (cacheHit) {
+    resumeAnalysis = await ResumeAnalysis.findOne({
+      userId: req.user._id,
+      fileId: resumeFile._id,
+      resumeHash: analysis.resumeHash,
+      analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION
+    })
+      .sort({ analyzedAt: -1, createdAt: -1, _id: -1 })
+      .select('analyzedAt');
+  }
+
+  let createdAnalysis = Boolean(deterministicRecord);
+  if (!resumeAnalysis) {
+    resumeAnalysis = createAnalysisDocument(req.user._id, resumeFile, analysis);
+
+    const analysisWriteStartedAt = process.hrtime.bigint();
+    await notificationPersistence.commit(
+      req.user._id,
+      (session) => {
+        resumeAnalysis.isNew = true;
+        return resumeAnalysis.save({ session });
+      },
+      {
+        type: 'resume_upload',
+        title: 'Resume Analysis Completed',
+        message: `Resume analysis completed (ATS ${analysis.atsScore}%).`,
+        eventId: `resume_analysis:${resumeFile._id}:${analysis.resumeHash}:${analysis.analysisVersion || ANALYSIS_VERSION}`,
+        meta: { target: '/app/resume-analyzer' }
+      },
+      Number(req.user.sessionRevision || 0)
+    );
+    const persistMs = elapsedMs(analysisWriteStartedAt);
+    addTiming('mongoWritesMs', persistMs);
+    addTiming('persistenceMs', persistMs);
+    createdAnalysis = true;
+  }
+
+  if (deterministicRecord) {
+    // Only critique fields may change after deterministic persistence.
+    await ResumeAnalysis.updateOne(
+      {
+        _id: deterministicRecord._id,
+        userId: req.user._id,
+        fileId: resumeFile._id,
+        resumeHash: analysis.resumeHash,
+        analysisVersion: ANALYSIS_VERSION
+      },
+      {
+        $set: {
+          aiInsights: analysis.aiInsights,
+          suggestions: analysis.suggestions,
+          'cacheMetadata.aiUsed': analysis.cacheMetadata?.aiUsed
+        }
+      },
+      { timestamps: false }
+    ).catch(() => {});
+  }
+  const resolvedResumeHash = analysis.resumeHash || resumeFile.resumeHash || '';
+  const resolvedAnalysisVersion = analysis.analysisVersion || ANALYSIS_VERSION;
+  const resumeFileNeedsSave =
+    !resumeFile.isAnalyzed ||
+    resumeFile.resumeHash !== resolvedResumeHash ||
+    resumeFile.analysisVersion !== resolvedAnalysisVersion ||
+    createdAnalysis;
+  if (resumeFileNeedsSave) {
+    resumeFile.isAnalyzed = true;
+    resumeFile.resumeHash = resolvedResumeHash;
+    resumeFile.lastAnalyzedAt = resumeAnalysis.analyzedAt || new Date();
+    resumeFile.analysisVersion = resolvedAnalysisVersion;
+  }
+
+  // Analyzing a historical file does not select it. Upload/PUT active own selection.
+  const contextWritesStartedAt = process.hrtime.bigint();
+  if (resumeFileNeedsSave) await resumeFile.save();
+  const contextMs = elapsedMs(contextWritesStartedAt);
+  addTiming('mongoWritesMs', contextMs);
+  addTiming('persistenceMs', contextMs);
+
+  if (createdAnalysis) await invalidateResumeDependents(req.user._id);
+
+  return {
+    cacheHit,
+    responsePayload: {
+      message: 'Resume analyzed successfully',
+      atsScore: analysis.atsScore,
+      keywordDensity: analysis.keywordDensity,
+      formatScore: analysis.formatScore,
+      contentQuality: analysis.contentQuality,
+      skills: analysis.skills,
+      experienceYears: analysis.experienceYears,
+      experienceLevel: analysis.experienceLevel,
+      certifications: analysis.certifications,
+      keyAchievements: analysis.keyAchievements,
+      scoreBreakdown: analysis.scoreBreakdown,
+      suggestions: analysis.suggestions,
+      fileName: analysis.fileName,
+      fileSize: analysis.fileSize,
+      fileId: resumeFile._id,
+      uploadDate: resumeFile.uploadDate,
+      analyzedAt: resumeAnalysis.analyzedAt,
+      resumeHash: analysis.resumeHash,
+      analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+      normalized: analysis.normalized,
+      qualityScores: analysis.qualityScores,
+      technologyCategories: analysis.technologyCategories,
+      consistencyWarnings: analysis.consistencyWarnings,
+      recruiterPerspective: analysis.recruiterPerspective,
+      resumeSignals: analysis.resumeSignals,
+      scoring: analysis.scoring || analysis.resumeSignals?.scoring,
+      contentQualityState: analysis.contentQualityState,
+      aiInsights: analysis.aiInsights,
+      cacheMetadata: analysis.cacheMetadata,
+      previousAnalysisId: analysis.previousAnalysisId,
+      improvementDelta: analysis.improvementDelta,
+      scoreChanges: analysis.scoreChanges,
+      newSkillsAdded: analysis.newSkillsAdded
+    }
+  };
+};
+
+const analyzeResumeFile = async (req, res) => {
+  const pipelineStartedAt = process.hrtime.bigint();
+  const timings = createPipelineTimings();
+  const addTiming = (stage, durationMs) => {
+    if (Object.prototype.hasOwnProperty.call(timings, stage)) {
+      timings[stage] += Number(durationMs || 0);
+    }
+  };
+  let fileId = '';
+  const forceRefresh = toForceRefresh(req);
+  let cacheHit = false;
+  let status = 'error';
+
+  try {
+    fileId = parseResumeFileId(req.body?.fileId);
+
+    const inFlightKey = `${req.user._id}:${fileId}:${ANALYSIS_VERSION}`;
+    if (analyzeInFlight.has(inFlightKey)) {
+      const shared = await analyzeInFlight.get(inFlightKey);
+      cacheHit = shared.cacheHit;
+      status = 'success';
+      return res.json(shared.responsePayload);
+    }
+
+    const pipelinePromise = runAnalyzeResumePipeline(req, {
+      fileId,
+      forceRefresh,
+      timings,
+      addTiming
+    });
+    analyzeInFlight.set(inFlightKey, pipelinePromise);
+    const { cacheHit: hit, responsePayload } = await pipelinePromise.finally(() => {
+      analyzeInFlight.delete(inFlightKey);
+    });
+    cacheHit = hit;
+
+    const serializationStartedAt = process.hrtime.bigint();
+    res.json(responsePayload);
+    addTiming('responseSerializationMs', elapsedMs(serializationStartedAt));
+    status = 'success';
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      error.status = 404;
+      if (!error.message || /ENOENT|no such file/i.test(error.message)) {
+        error.message = 'Resume file is missing or unreadable. Please upload the PDF again.';
+      }
+    }
+    console.error('Resume Analysis Error:', sanitizeClientMessage(error, 'Server Error'));
+    if (error?.status === 400) status = 'validation_error';
+    else if (error?.status === 403) status = 'forbidden';
+    else if (error?.status === 404) status = 'not_found';
+    respondResumeError(res, error, 'Server Error');
+  } finally {
+    req.releaseResumeReservation?.();
+    logPipelineTiming({
+      userId: req.user?._id,
+      fileId,
+      forceRefresh,
+      cacheHit,
+      status,
+      timings,
+      totalDurationMs: elapsedMs(pipelineStartedAt)
+    });
+  }
+};
+
+/** Convert a Mongoose Map or plain object to a plain JS object */
+const mapToObj = (skills) => {
+  if (skills instanceof Map) {
+    const obj = {};
+    skills.forEach((value, key) => {
+      obj[key] = value;
+    });
+    return obj;
+  }
+  return Object.assign({}, skills);
+};
+
+const serializeAnalysis = (analysis) => ({
+  scoring: analysis.scoring || analysis.resumeSignals?.scoring || null,
+  contentQualityState: analysis.contentQualityState || null,
+  atsScore: analysis.atsScore,
+  keywordDensity: analysis.keywordDensity,
+  formatScore: analysis.formatScore,
+  contentQuality: analysis.contentQuality,
+  skills: mapToObj(analysis.skills),
+  experienceYears: analysis.experienceYears,
+  experienceLevel: analysis.experienceLevel,
+  certifications: analysis.certifications,
+  keyAchievements: analysis.keyAchievements,
+  scoreBreakdown: analysis.scoreBreakdown,
+  suggestions: analysis.suggestions,
+  fileId: analysis.fileId,
+  fileName: analysis.fileName,
+  fileSize: analysis.fileSize,
+  uploadDate: analysis.uploadDate,
+  analyzedAt: analysis.analyzedAt,
+  resumeHash: analysis.resumeHash || '',
+  analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+  normalized: analysis.normalized || {},
+  qualityScores: analysis.qualityScores || {},
+  technologyCategories: analysis.technologyCategories || {},
+  consistencyWarnings: analysis.consistencyWarnings || [],
+  recruiterPerspective: analysis.recruiterPerspective || {},
+  resumeSignals: analysis.resumeSignals || {},
+  aiInsights: analysis.aiInsights || {},
+  cacheMetadata: {
+    ...(analysis.cacheMetadata || {}),
+    loadedFromCache: false,
+    analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+    resumeHash: analysis.resumeHash || ''
+  },
+  previousAnalysisId: analysis.previousAnalysisId || null,
+  improvementDelta: analysis.improvementDelta || {},
+  scoreChanges: analysis.scoreChanges || {},
+  newSkillsAdded: analysis.newSkillsAdded || []
+});
+
+// @desc    Get resume analysis for current user
+// @route   GET /api/resume/result
+// @access  Private
+const getResumeAnalysis = async (req, res) => {
+  try {
+    const user = await ensureResumeContext(req.user._id);
+    const requestedFileId = String(req.query.fileId || '').trim();
+
+    let analysis = null;
+    if (requestedFileId) {
+      parseResumeFileId(requestedFileId);
+      analysis = await ResumeAnalysis.findOne({ userId: req.user._id, fileId: requestedFileId })
+        .sort({ analyzedAt: -1, createdAt: -1, _id: -1 })
+        .lean();
+      if (!analysis) {
+        return res.status(404).json({ message: 'No analysis found' });
+      }
+      return res.json(serializeAnalysis(analysis));
+    }
+
+    analysis = await developerContext.resolveResumeAnalysis(req.user._id, user, {
+      ResumeFile,
+      ResumeAnalysis
+    });
+
+    if (!analysis) {
+      return res.status(404).json({ message: 'No analysis found' });
+    }
+
+    res.json(serializeAnalysis(analysis));
+  } catch (error) {
+    console.error('Get Analysis Error:', sanitizeClientMessage(error, 'Server Error'));
+    respondResumeError(res, error, 'Server Error');
+  }
+};
+
+// @desc    Get resume analysis by user ID
+// @route   GET /api/resume/result/:userId
+// @access  Private
+const getResumeAnalysisByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(String(userId || ''))) {
+      return res.status(400).json({ message: 'Invalid userId' });
+    }
+    if (!canReadResumeAnalysisForUser(req.user, userId)) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const analysis = await developerContext.resolveResumeAnalysis(userId, undefined, {
+      User,
+      ResumeFile,
+      ResumeAnalysis
+    });
+
+    if (!analysis) {
+      return res.status(404).json({ message: 'No analysis found for this user' });
+    }
+
+    res.json(serializeAnalysis(analysis));
+  } catch (error) {
+    console.error('Get Analysis Error:', sanitizeClientMessage(error, 'Server Error'));
+    respondResumeError(res, error, 'Server Error');
+  }
+};
+
+// @desc    Generate and download a personalised AI resume improvement guide
+// @route   GET /api/resume/guide
+// @access  Private
+const downloadResumeGuide = async (req, res) => {
+  try {
+    const analysis = await developerContext.resolveResumeAnalysis(req.user._id, undefined, {
+      User,
+      ResumeFile,
+      ResumeAnalysis
+    });
+
+    if (!analysis) {
+      return res.status(404).json({
+        message: 'No resume analysis found. Please upload and analyze your resume first.'
+      });
+    }
+
+    const htmlContent = await generateResumeGuide(analysis);
+
+    const safeName = (analysis.fileName || 'resume')
+      .replace(/\.pdf$/i, '')
+      .replace(/[^a-z0-9_-]/gi, '-')
+      .toLowerCase();
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="resume-guide-${safeName}.html"`);
+    res.setHeader('Cache-Control', 'no-cache');
+    res.send(htmlContent);
+  } catch (error) {
+    console.error(
+      'Resume Guide Error:',
+      sanitizeClientMessage(error, 'Failed to generate resume guide')
+    );
+    respondResumeError(res, error, 'Failed to generate resume guide');
+  }
+};
+
+// @desc    List resume files for current user
+// @route   GET /api/resume/files
+// @access  Private
+const getResumeFiles = async (req, res) => {
+  try {
+    const user = await ensureResumeContext(req.user._id);
+    const files = await ResumeFile.find({ userId: req.user._id })
+      .sort({ uploadDate: -1, createdAt: -1, _id: -1 })
+      .lean();
+    const active = await developerContext.resolveResumeFile(req.user._id, user, { ResumeFile });
+
+    res.json({
+      files: files.map((f) => ({
+        fileId: f._id,
+        fileName: f.fileName,
+        fileSize: f.fileSize,
+        uploadDate: f.uploadDate,
+        isAnalyzed: !!f.isAnalyzed,
+        lastAnalyzed: f.lastAnalyzedAt || null,
+        resumeHash: f.resumeHash || '',
+        analysisVersion: f.analysisVersion || '',
+        isDefault: String(user?.defaultResumeFileId || '') === String(f._id),
+        isActive: String(active?._id || '') === String(f._id),
+        contentQualityState: f.contentQualityState || null
+      }))
+    });
+  } catch (error) {
+    console.error('Resume files error:', sanitizeClientMessage(error, 'Server Error'));
+    respondResumeError(res, error, 'Server Error');
+  }
+};
+
+// @desc    Get active/default resume context for current user
+// @route   GET /api/resume/active
+// @access  Private
+const getActiveResumeContext = async (req, res) => {
+  try {
+    const user = await ensureResumeContext(req.user._id);
+
+    const [defaultFile, activeFile] = await Promise.all([
+      user?.defaultResumeFileId
+        ? ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: req.user._id }).lean()
+        : null,
+      developerContext.resolveResumeFile(req.user._id, user, { ResumeFile })
+    ]);
+
+    res.json({
+      defaultResume: defaultFile
+        ? {
+            fileId: defaultFile._id,
+            fileName: defaultFile.fileName,
+            uploadDate: defaultFile.uploadDate,
+            isAnalyzed: !!defaultFile.isAnalyzed,
+            lastAnalyzed: defaultFile.lastAnalyzedAt || null,
+            resumeHash: defaultFile.resumeHash || '',
+            analysisVersion: defaultFile.analysisVersion || ''
+          }
+        : null,
+      activeResume: activeFile
+        ? {
+            fileId: activeFile._id,
+            fileName: activeFile.fileName,
+            uploadDate: activeFile.uploadDate,
+            isAnalyzed: !!activeFile.isAnalyzed,
+            lastAnalyzed: activeFile.lastAnalyzedAt || null,
+            resumeHash: activeFile.resumeHash || '',
+            analysisVersion: activeFile.analysisVersion || '',
+            contentQualityState: activeFile.contentQualityState || null
+          }
+        : null
+    });
+  } catch (error) {
+    console.error('Active resume context error:', sanitizeClientMessage(error, 'Server Error'));
+    respondResumeError(res, error, 'Server Error');
+  }
+};
+
+// @desc    Set active resume (and optionally default resume)
+// @route   PUT /api/resume/active
+// @access  Private
+const setActiveResume = async (req, res) => {
+  try {
+    const fileId = parseResumeFileId(req.body?.fileId);
+    const { setAsDefault } = req.body;
+
+    const resumeFile = await ResumeFile.findOne({ _id: fileId, userId: req.user._id });
+    if (!resumeFile) {
+      return res.status(404).json({ message: 'Resume file not found' });
+    }
+
+    const update = { activeResumeFileId: resumeFile._id };
+    if (setAsDefault === true) {
+      update.defaultResumeFileId = resumeFile._id;
+    }
+    await User.findByIdAndUpdate(req.user._id, update);
+    await invalidateResumeDependents(req.user._id);
+
+    res.json({
+      message: setAsDefault ? 'Active and default resume updated' : 'Active resume updated',
+      fileId: resumeFile._id
+    });
+  } catch (error) {
+    console.error('Set active resume error:', sanitizeClientMessage(error, 'Server Error'));
+    respondResumeError(res, error, 'Server Error');
+  }
+};
+
+const memoryRateLimitMap = new Map();
+
+const parsePreviewResume = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Rate Limiting: 10 requests per 10 minutes
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+    const rateLimitKey = `rate_limit:parse_resume:${ip}`;
+    const {
+      isRedisCacheEnabled,
+      getCacheJson,
+      setCacheJson
+    } = require('../../core/cache/redisCacheService');
+
+    if (isRedisCacheEnabled()) {
+      const current = await getCacheJson(rateLimitKey);
+      if (current && current.count >= 10) {
+        await fs.unlink(req.file.path).catch(() => {});
+        return res
+          .status(429)
+          .json({ message: 'Too many resume parse requests. Try again in 10 minutes.' });
+      }
+      const nextCount = (current?.count || 0) + 1;
+      await setCacheJson(rateLimitKey, { count: nextCount }, 600); // 10 minutes TTL
+    } else {
+      const now = Date.now();
+      const windowStart = now - 10 * 60 * 1000;
+      const history = memoryRateLimitMap.get(ip) || [];
+      const recent = history.filter((timestamp) => timestamp > windowStart);
+      if (recent.length >= 10) {
+        await fs.unlink(req.file.path).catch(() => {});
+        return res
+          .status(429)
+          .json({ message: 'Too many resume parse requests. Try again in 10 minutes.' });
+      }
+      recent.push(now);
+      memoryRateLimitMap.set(ip, recent);
+    }
+
+    // Validate file signature (first 5 bytes must be %PDF-)
+    const fsDirect = require('node:fs');
+    const fileHandle = fsDirect.readFileSync(req.file.path);
+    if (fileHandle.slice(0, 5).toString('ascii') !== '%PDF-') {
+      await fs.unlink(req.file.path).catch(() => {});
+      return res.status(400).json({ message: 'Only valid PDF files are allowed' });
+    }
+
+    let text = await extractTextFromPDF(req.file.path);
+    if (text.length > 50000) text = text.substring(0, 50000);
+    requireReadableContent(text);
+    const previewResume = await createPreviewResume(
+      text,
+      req.user?._id ? `account:${req.user._id}` : `guest:${req.ip}`
+    );
+
+    await fs.unlink(req.file.path).catch(() => {});
+    return res.json(previewResume);
+  } catch (error) {
+    if (req.file?.path) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    console.error('Preview resume parsing failed'); // DO NOT log raw resume text
+    return respondResumeError(res, error, 'Failed to parse PDF resume');
+  }
+};
+
+module.exports = {
+  uploadResume,
+  analyzeResumeFile,
+  getResumeAnalysis,
+  getResumeAnalysisByUserId,
+  downloadResumeGuide,
+  getResumeFiles,
+  getActiveResumeContext,
+  setActiveResume,
+  parsePreviewResume,
+  __test: {
+    sanitizeClientMessage,
+    parseResumeFileId,
+    canReadResumeAnalysisForUser,
+    invalidateResumeDependents,
+    validateResumeUploadMetadata
+  }
+};

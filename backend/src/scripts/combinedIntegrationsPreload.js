@@ -1,17 +1,23 @@
 'use strict';
 // Acceptance-only preload: actual application routes and integration controls are unchanged.
 for (const [modulePath, name] of [
-  ['../services/emailRetryQueueService', 'startEmailRetryWorker'],
-  ['../services/jobSourceSyncService', 'startJobSourceSyncWorker'],
-  ['../services/newsService', 'startNewsIngestionScheduler'],
-  ['../services/weeklyReportService', 'startWeeklyReportScheduler'],
-  ['../services/interviewQuestionIngestionService', 'startInterviewQuestionIngestionScheduler'],
-  ['../services/interviewQuestionMaintenanceService', 'startInterviewQuestionMaintenanceScheduler']
+  ['../core/messaging/emailRetryQueueService', 'startEmailRetryWorker'],
+  ['../modules/jobs/services/jobSourceSyncService', 'startJobSourceSyncWorker'],
+  ['../modules/news/services/newsService', 'startNewsIngestionScheduler'],
+  ['../modules/weekly-reports/services/weeklyReportService', 'startWeeklyReportScheduler'],
+  [
+    '../modules/interview-prep/services/interviewQuestionIngestionService',
+    'startInterviewQuestionIngestionScheduler'
+  ],
+  [
+    '../modules/interview-prep/services/interviewQuestionMaintenanceService',
+    'startInterviewQuestionMaintenanceScheduler'
+  ]
 ])
   require(modulePath)[name] = () => {};
 const axios = require('axios');
 require('mongoose').connection.on('connected', async () => {
-  const user = await require('../models/user')
+  const user = await require('../modules/auth/models/user')
     .findOne({ email: 'combined-acceptance@invalid.test' })
     .select('+password')
     .lean();

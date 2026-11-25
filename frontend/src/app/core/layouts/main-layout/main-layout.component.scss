@@ -1,0 +1,110 @@
+@use '../../../shared/styles/developer-ui' as developer;
+
+.dashboard-shell {
+  --sidebar-expanded-width: 260px;
+  --sidebar-collapsed-width: 72px;
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-main);
+}
+
+.shell-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 210;
+}
+
+.shell-body {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--sidebar-expanded-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-main);
+  transition: margin-left var(--transition-base);
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
+
+  &.sidebar-closed {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+
+  &.shell-body--mobile,
+  &.shell-body--mobile.sidebar-closed {
+    margin-left: 0;
+  }
+}
+
+.main-content {
+  scroll-margin-top: var(--navbar-height);
+  flex: 1;
+  container-type: inline-size;
+  margin-top: var(--navbar-height);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: clamp(20px, 2.5vw, 36px);
+  min-width: 0;
+  background: var(--bg-main);
+
+  @media (max-width: 768px) {
+    padding: 16px 14px;
+  }
+
+  @media (max-width: 420px) {
+    padding: 12px 10px;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: var(--radius-full);
+    &:hover {
+      background: var(--text-muted);
+    }
+  }
+}
+
+.dashboard-shell.developer-workspace,
+.dashboard-shell.recruiter-workspace {
+  @include developer.tokens;
+  .main-content {
+    padding: var(--dev-workspace-padding);
+
+    @media (max-width: 640px) {
+      padding: 14px 12px;
+    }
+
+    @media (max-width: 400px) {
+      padding: 12px 10px;
+    }
+  }
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 500;
+  transform: translateY(-150%);
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--color-primary-text);
+  &:focus {
+    transform: translateY(0);
+    outline: 2px solid var(--color-primary);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-body {
+    transition: none;
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "scope": "P1.1A.1 only",
+  "branch": "fix/P1-project",
+  "integrationTarget": "not applicable",
+  "baseline": "P1.1A staged changes preserved; no staging, commits, pushes or deployments performed",
+  "cause": {
+    "listener": "PID 20732 owned port 5000 and started 2026-11-21 17:06:00 Asia/Karachi. Internal jobRoutes.js was updated at 18:01:24. A second index.js process was not the port-5000 listener.",
+    "internal": "Authenticated GET /api/jobs/internal hit the stale server's external /:id handler with id=internal. HTTP 404 JSON: Job details are no longer available. The cached job may have expired; refresh Jobs Hub and try again.",
+    "options": "Authenticated GET /api/jobs/internal/options had no route in the stale process. HTTP 404 HTML: Cannot GET /api/jobs/internal/options.",
+    "history": "Authenticated GET /api/jobs/internal/applications had no route in the stale process. HTTP 404 HTML: Cannot GET /api/jobs/internal/applications.",
+    "reproduction": "All three authenticated 404 responses were reproduced at http://localhost:4200 and directly at http://localhost:5000. Anonymous requests returned 401 because authentication precedes route matching, which alone cannot detect missing authenticated routes.",
+    "fix": "Replaced only the verified stale listener with node index.js --api-only from D:/Developer-Portfolio-Analyzer/backend. Current development API-only startup logs confirmed port 5000 and disabled background workers. No route, schema, environment or checked-in proxy configuration changed. The original process's working directory was not independently observable; the replacement's checkout and working directory are explicit."
+  },
+  "pathTrace": "JobApplicationsService -> environment.apiBaseUrl (browser origin + /api) -> Angular serve configured proxy.conf.json /api target http://localhost:5000 -> backend/index.js app.use('/api/jobs', jobroute) -> protect/validation/rate limit -> internal routes registered before /:id -> jobApplicationController",
+  "afterRestart": [
+    { "url": "http://localhost:4200/api/jobs/internal", "status": 200, "body": { "jobs": [] } },
+    {
+      "url": "http://localhost:4200/api/jobs/internal/options",
+      "status": 200,
+      "verified": "resumes=[], portfolio and portfolioHash keys present"
+    },
+    {
+      "url": "http://localhost:4200/api/jobs/internal/applications",
+      "status": 200,
+      "body": { "applications": [] }
+    },
+    { "url": "http://localhost:5000/api/jobs/internal", "status": 200, "body": { "jobs": [] } },
+    {
+      "url": "http://localhost:5000/api/jobs/internal/options",
+      "status": 200,
+      "verified": "resumes=[], portfolio and portfolioHash keys present"
+    },
+    {
+      "url": "http://localhost:5000/api/jobs/internal/applications",
+      "status": 200,
+      "body": { "applications": [] }
+    }
+  ],
+  "uiCorrection": "Removed forkJoin coupling. Discovery, options and history each have independent loading/loaded/error flags, cancellation of prior requests, successful empty states and dedicated retries. Submission errors remain separate. A failed or pending history request cannot render the no-applications message. Successful jobs/history remain usable for viewing when another collection fails. Applying requires loaded jobs, options and history plus explicit consent.",
+  "realVerification": {
+    "evidence": "backend/verification/jobs-hub/p1.1a.1-real-smoke.json",
+    "screenshot": "frontend/verification/jobs-hub/p1.1a.1-real-developer.png",
+    "servers": "Actual backend/index.js --api-only at localhost:5011 and Angular CLI serve at localhost:4211, launched from this checkout; temporary Angular proxy targets port 5011. Disposable MongoDB replica set and filesystem PDF, no API interceptions or mocked storage/notifications.",
+    "results": "All three empty collections 200 with a valid Developer JWT, 401 without auth and 403 for Recruiter JWT. Recruiter creates job 201, publishes 200; actual Developer Angular component chooses resume and consents, submits 201; recruiter lists applicants 200, downloads matching PDF bytes 200 and changes status 200; Developer component refresh shows reviewing.",
+    "backendLogs": "Actual API-only startup and request logs retained in the real-smoke JSON. Original stale terminal output was not available; its actual HTTP bodies and process timestamps establish diagnosis.",
+    "tests": "Affected API integration: 9 passed. Affected Angular component tests: 6 passed. Installed tsc --noEmit and ngc --noEmit: passed. Changed-file Prettier write/check, script node --check and staged/unstaged Git whitespace checks passed.",
+    "cleanup": "Task-owned servers stopped, fixture PDF and temporary proxy removed by exact path; disposable MongoDB stopped and its 453 temporary files removed by the existing verified fixture. No source files moved/deleted. Essential JSON evidence and screenshot retained."
+  },
+  "reproduce": {
+    "fullSmoke": "From repository root: node backend/src/scripts/smokeDirectApplications.cjs. Requires installed MongoDB and Playwright resolvable by Node (NODE_PATH may point to the existing bundled runtime), plus installed Chrome; DIRECT_BROWSER_CHANNEL can select another installed Playwright channel. DIRECT_API_PORT and DIRECT_UI_PORT default to 5011/4211 and must be unused.",
+    "existingServerCheck": "Set DIRECT_SMOKE_TOKEN to a valid local Developer JWT, optionally DIRECT_SMOKE_ORIGIN (default http://localhost:4200), then run node backend/src/scripts/smokeDirectApplications.cjs --check-running. It checks authenticated collection status and shape, never logs the token, and fails on stale/missing routes before UI acceptance.",
+    "normalStartup": "Run node index.js --api-only from backend for a development server with background workers disabled. Restart after backend route changes; an already-running plain node index.js does not reload modules."
+  },
+  "changedFiles": [
+    "frontend/src/app/shared/components/direct-applications/internal-jobs.component.ts",
+    "frontend/src/app/shared/components/direct-applications/internal-jobs.component.html",
+    "frontend/src/app/shared/components/direct-applications/direct-applications.spec.ts"
+  ],
+  "addedFiles": [
+    "backend/src/scripts/smokeDirectApplications.cjs",
+    "backend/verification/jobs-hub/p1.1a.1-diagnosis.json",
+    "backend/verification/jobs-hub/p1.1a.1-real-smoke.json",
+    "frontend/verification/jobs-hub/p1.1a.1-real-developer.png"
+  ],
+  "remainingIssues": [
+    "Plain Node startup still requires an explicit restart after backend source changes; the authenticated smoke check detects a stale listener.",
+    "The real browser run verified Developer submission/status UI; recruiter publication/list/PDF/status were verified through the same actual Angular proxy/backend APIs, not a separate recruiter browser click-through.",
+    "No full suites, production build, broad browser/theme matrix, live provider/B2 tests or production mutations. Existing P1.1A limits remain unchanged."
+  ]
+}

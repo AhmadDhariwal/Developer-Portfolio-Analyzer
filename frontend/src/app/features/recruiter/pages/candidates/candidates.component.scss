@@ -1,0 +1,165 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+.hub-page {
+  @include recruiter.page-shell;
+}
+
+.page-header {
+  @include recruiter.canvas-header;
+}
+
+.page-header__copy {
+  @include recruiter.header-copy;
+}
+
+.page-header__eyebrow {
+  @include recruiter.eyebrow;
+}
+
+.page-header__actions {
+  @include recruiter.header-actions;
+}
+
+.count-pill {
+  @include recruiter.status-pill('neutral');
+}
+
+.btn-primary {
+  @include recruiter.btn-primary;
+}
+
+.btn-secondary {
+  @include recruiter.btn-secondary;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.banner--error {
+  @include recruiter.banner-error;
+}
+
+.banner--success {
+  @include recruiter.banner-success;
+}
+
+.metric-grid {
+  @include recruiter.metric-grid(195px);
+}
+
+.filter-panel {
+  @include recruiter.card-surface(18px);
+  overflow: visible;
+}
+
+.compare-tray {
+  @include recruiter.card-surface(12px 16px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-border);
+}
+
+.compare-tray__items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.compare-tray__label {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.compare-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+
+  button {
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0 2px;
+    font-size: 15px;
+    line-height: 1;
+
+    &:hover {
+      color: var(--color-danger-text);
+    }
+  }
+}
+
+.compare-tray__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-grid {
+  @include recruiter.card-grid(320px);
+}
+
+.pager {
+  @include recruiter.pager-bar;
+}
+
+.pager__summary {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pager__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.pager__btn {
+  padding: 6px 12px;
+  border-radius: var(--dev-radius-control, 6px);
+  border: 1px solid var(--border-color);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+  }
+
+  &.is-active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled, 0.5);
+    cursor: not-allowed;
+  }
+}

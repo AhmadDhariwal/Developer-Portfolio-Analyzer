@@ -1,0 +1,11 @@
+{
+  "issue": "github",
+  "exitCode": 1,
+  "testFiles": ["github/githubFreshnessMongo.integration.test.js"],
+  "productionDataUsed": false,
+  "counts": ["# tests 1", "# pass 0", "# fail 1", "# skipped 0", "# duration_ms 12897.1592"],
+  "failures": [
+    "not ok 1 - real HTTP/auth/Mongo: saved reads never sync and accepted revisions survive failures"
+  ],
+  "cleanup": "Suite-owned disposable Mongo cleanup; see TAP and suite evidence"
+}

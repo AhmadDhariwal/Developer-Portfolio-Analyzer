@@ -1,6 +1,9 @@
 const path = require('node:path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
-const { validateEnv } = require('./src/config/env');
+require('dotenv').config({
+  path: path.resolve(__dirname, '.env'),
+  quiet: true,
+});
+const { validateEnv } = require('./src/core/config/env');
 const env = validateEnv();
 const localApiOnly = process.argv.includes('--api-only');
 if (localApiOnly && env.NODE_ENV !== 'development') {
@@ -10,60 +13,79 @@ if (localApiOnly && env.NODE_ENV !== 'development') {
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const connectDB = require('./src/config/db');
-const logger = require('./src/utils/logger');
-const requestLogPath = require('./src/utils/requestLogPath');
-const authroute = require('./src/routes/auth.routes');
-const githubroute = require('./src/routes/github.routes');
-const resumroute = require('./src/routes/resume.routes');
-const analysisroute = require('./src/routes/analysis.routes');
-const dashboardroute = require('./src/routes/dashboard.routes');
-const skillgaproute = require('./src/routes/skillgap.routes');
-const recommendationsroute = require('./src/routes/recommendations.routes');
-const profileroute = require('./src/routes/profile.routes');
-const courseroute = require('./src/routes/courseRoutes');
-const jobroute = require('./src/routes/jobRoutes');
-const notificationroute = require('./src/routes/notification.routes');
-const auditroute = require('./src/routes/audit.routes');
-const workflowroute = require('./src/routes/workflow.routes');
-const aiversionsroute = require('./src/routes/aiversions.routes');
-const tenantroute = require('./src/routes/tenant.routes');
-const skillgraphroute = require('./src/routes/skillgraph.routes');
-const integrationsroute = require('./src/routes/integrations.routes');
-const scenarioroute = require('./src/routes/scenarioSimulator.routes');
-const publicProfileroute = require('./src/routes/publicProfile.routes');
-const recruiterroute = require('./src/routes/recruiter.routes');
-const recruiterHubRoute = require('./src/routes/recruiter-hub/recruiterHubRoutes');
-const adminroute = require('./src/routes/admin.routes');
-const adminConsoleroute = require('./src/routes/adminConsole.routes');
-const weeklyReportroute = require('./src/routes/weeklyReport.routes');
-const interviewPreproute = require('./src/routes/interviewPrep.routes');
-const careerSprintroute = require('./src/routes/careerSprint.routes');
-const newsroute = require('./src/routes/newsRoutes');
+const connectDB = require('./src/core/config/db');
+const logger = require('./src/core/observability/logger');
+const requestLogPath = require('./src/core/observability/requestLogPath');
+const authroute = require('./src/modules/auth/auth.routes');
+const githubroute = require('./src/modules/github/github.routes');
+const resumroute = require('./src/modules/resume/resume.routes');
+const analysisroute = require('./src/modules/workflows/analysis.routes');
+const dashboardroute = require('./src/modules/dashboard/dashboard.routes');
+const skillgaproute = require('./src/modules/skill-gap/skillgap.routes');
+const recommendationsroute = require('./src/modules/recommendations/recommendations.routes');
+const profileroute = require('./src/modules/profile/profile.routes');
+const courseroute = require('./src/modules/courses/courseRoutes');
+const jobroute = require('./src/modules/jobs/jobRoutes');
+const notificationroute = require('./src/modules/notifications/notification.routes');
+const auditroute = require('./src/modules/admin/routes/audit.routes');
+const workflowroute = require('./src/modules/workflows/workflow.routes');
+const aiversionsroute = require('./src/modules/super-admin/routes/aiversions.routes');
+const tenantroute = require('./src/modules/admin/routes/tenant.routes');
+const skillgraphroute = require('./src/modules/skill-gap/skillgraph.routes');
+const integrationsroute = require('./src/modules/integrations/integrations.routes');
+const scenarioroute = require('./src/modules/scenario-simulator/scenarioSimulator.routes');
+const publicProfileroute = require('./src/modules/public-portfolio/publicProfile.routes');
+const recruiterroute = require('./src/modules/recruiter/routes/recruiter.routes');
+const recruiterHubRoute = require('./src/modules/recruiter/routes/hub/recruiterHubRoutes');
+const adminroute = require('./src/modules/admin/routes/admin.routes');
+const adminConsoleroute = require('./src/modules/admin/routes/adminConsole.routes');
+const weeklyReportroute = require('./src/modules/weekly-reports/weeklyReport.routes');
+const interviewPreproute = require('./src/modules/interview-prep/interviewPrep.routes');
+const careerSprintroute = require('./src/modules/career-sprint/careerSprint.routes');
+const newsroute = require('./src/modules/news/newsRoutes');
 const {
   startNewsIngestionScheduler,
   stopNewsIngestionScheduler,
-} = require('./src/services/newsService');
-const supportroute = require('./src/routes/support.routes');
-const previewroute = require('./src/routes/preview.routes');
-const { auditLogMiddleware } = require('./src/middleware/auditLogMiddleware');
-const { requestContextMiddleware } = require('./src/middleware/requestContextMiddleware');
-const { globalRateLimiter } = require('./src/middleware/securityMiddleware');
-const { metricsMiddleware, metricsHandler } = require('./src/services/metricsService');
-const { initTracing, shutdownTracing } = require('./src/services/tracingService');
-const superAdminRoutes = require('./src/routes/super-admin.routes');
-const { startEmailRetryWorker } = require('./src/services/emailRetryQueueService');
-const { startIntegrationSyncWorker } = require('./src/services/integrationSyncService');
-const { startJobSourceSyncWorker } = require('./src/services/jobSourceSyncService');
-const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
-const { initRedisCache, closeRedisCache } = require('./src/services/redisCacheService');
+} = require('./src/modules/news/services/newsService');
+const supportroute = require('./src/modules/support/support.routes');
+const previewroute = require('./src/modules/workflows/preview.routes');
+const { auditLogMiddleware } = require('./src/core/middleware/auditLogMiddleware');
+const { requestContextMiddleware } = require('./src/core/middleware/requestContextMiddleware');
+const { globalRateLimiter } = require('./src/core/middleware/securityMiddleware');
+const { metricsMiddleware, metricsHandler } = require('./src/core/observability/metricsService');
+const { initTracing, shutdownTracing } = require('./src/core/observability/tracingService');
+const superAdminRoutes = require('./src/modules/super-admin/routes/super-admin.routes');
+const {
+  startEmailRetryWorker,
+  stopEmailRetryWorker,
+} = require('./src/core/messaging/emailRetryQueueService');
+const {
+  startIntegrationSyncWorker,
+  stopIntegrationSyncWorker,
+} = require('./src/modules/integrations/services/integrationSyncService');
+const {
+  startJobSourceSyncWorker,
+  stopJobSourceSyncWorker,
+} = require('./src/modules/jobs/services/jobSourceSyncService');
+const {
+  startWeeklyReportScheduler,
+  stopWeeklyReportScheduler,
+} = require('./src/modules/weekly-reports/services/weeklyReportService');
+const { initRedisCache, closeRedisCache } = require('./src/core/cache/redisCacheService');
 const {
   startInterviewQuestionIngestionScheduler,
-} = require('./src/services/interviewQuestionIngestionService');
+  stopInterviewQuestionIngestionScheduler,
+} = require('./src/modules/interview-prep/services/interviewQuestionIngestionService');
 const {
   startInterviewQuestionMaintenanceScheduler,
-} = require('./src/services/interviewQuestionMaintenanceService');
-const { getSettingsSnapshotSync, getSettings } = require('./src/services/platformSettingsService');
+  stopInterviewQuestionMaintenanceScheduler,
+} = require('./src/modules/interview-prep/services/interviewQuestionMaintenanceService');
+const {
+  getSettingsSnapshotSync,
+  getSettings,
+  startSettingsSynchronization,
+  stopSettingsSynchronization,
+} = require('./src/modules/super-admin/services/platformSettingsService');
 
 const app = express();
 const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
@@ -120,10 +142,21 @@ app.use(
   }),
 );
 app.use(cors());
+app.use(async (_req, res, next) => {
+  try {
+    await getSettings();
+    return next();
+  } catch {
+    return res.status(503).json({ message: 'Platform settings are temporarily unavailable.' });
+  }
+});
 app.use(globalRateLimiter);
 app.use(requestContextMiddleware);
 app.use(
-  express.json({ limit: '100kb', verify: require('./src/middleware/integrationWebhookBody') }),
+  express.json({
+    limit: '100kb',
+    verify: require('./src/modules/integrations/middleware/integrationWebhookBody'),
+  }),
 );
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
@@ -139,20 +172,20 @@ app.use((req, res, next) => {
     if (path.startsWith('/api/auth')) return next();
     if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads')) return next();
 
-    return res
-      .status(503)
-      .json({ message: 'Platform is under maintenance. Please try again later.' });
+    return res.status(503).json({
+      message: 'Platform is under maintenance. Please try again later.',
+    });
   } catch {
-    return next();
+    return res.status(503).json({ message: 'Platform settings are temporarily unavailable.' });
   }
 });
-require('./src/services/b2ObjectStorageService').configuration();
+require('./src/core/storage/b2ObjectStorageService').configuration();
 // Serve uploads with cache control to prevent stale avatar issues
 app.use(
   '/uploads',
-  require('./src/middleware/storedImageMiddleware').storedImage,
-  require('./src/middleware/publicUploadAccess'),
-  express.static(require('./src/services/publicImageStorageService').root()),
+  require('./src/core/middleware/storedImageMiddleware').storedImage,
+  require('./src/core/middleware/publicUploadAccess'),
+  express.static(require('./src/core/storage/publicImageStorageService').root()),
 );
 app.use(metricsMiddleware);
 if (shouldLogRequests) {
@@ -238,26 +271,60 @@ const initializeRedisAtStartup = async () => {
   }
 };
 
+let server;
+let shutdownPromise;
+const workerStops = [];
+const startWorker = (start, stop) => {
+  if (start() !== null) workerStops.push(stop);
+};
+const closeResources = async () => {
+  await Promise.allSettled([closeRedisCache(), shutdownTracing()]);
+  await require('mongoose').disconnect();
+};
+const startupCancelled = async () => {
+  if (!shutdownPromise) return false;
+  stopSettingsSynchronization();
+  await closeResources();
+  return true;
+};
+
 const startServer = async () => {
   await connectDB();
+  if (await startupCancelled()) return;
   await initializeRedisAtStartup();
+  if (await startupCancelled()) return;
+  let retention;
+  let courses;
+  if (!localApiOnly) {
+    retention = require('./src/modules/notifications/services/notificationRetentionService');
+    if (process.env.COURSES_MAINTENANCE_ENABLED !== 'false') {
+      courses = require('./src/modules/courses/services/courseCatalogMaintenanceService');
+    }
+    await initTracing();
+    if (await startupCancelled()) return;
+  }
+  await startSettingsSynchronization();
+  if (await startupCancelled()) return;
 
-  app.listen(PORT, localApiOnly ? 'localhost' : undefined, () => {
+  server = app.listen(PORT, localApiOnly ? 'localhost' : undefined, () => {
     logger.info('server started', { port: PORT });
     if (localApiOnly) {
       logger.info('development API-only mode: loopback listener; background workers disabled.');
       return;
     }
-    require('./src/services/notificationRetentionService').start();
-    startEmailRetryWorker();
-    startIntegrationSyncWorker();
-    startJobSourceSyncWorker();
-    startNewsIngestionScheduler();
-    require('./src/services/courseCatalogMaintenanceService').start();
-    initTracing();
-    if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api') startWeeklyReportScheduler();
-    startInterviewQuestionIngestionScheduler();
-    startInterviewQuestionMaintenanceScheduler();
+    startWorker(retention.start, retention.stop);
+    startWorker(startEmailRetryWorker, stopEmailRetryWorker);
+    startWorker(startIntegrationSyncWorker, stopIntegrationSyncWorker);
+    startWorker(startJobSourceSyncWorker, stopJobSourceSyncWorker);
+    startWorker(startNewsIngestionScheduler, stopNewsIngestionScheduler);
+    if (courses) startWorker(courses.start, courses.stop);
+    if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api')
+      startWorker(startWeeklyReportScheduler, stopWeeklyReportScheduler);
+    startWorker(startInterviewQuestionIngestionScheduler, stopInterviewQuestionIngestionScheduler);
+    startWorker(
+      startInterviewQuestionMaintenanceScheduler,
+      stopInterviewQuestionMaintenanceScheduler,
+    );
     getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
@@ -267,21 +334,8 @@ const startServer = async () => {
     } else {
       logger.info('GitHub token detected; using authenticated API quota.');
     }
-    // Jobs Hub source startup validation
-    const { getIntegrationSecretsSync } = require('./src/services/platformSettingsService');
-    const integrations = getIntegrationSecretsSync();
-    const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
-
-    const jsearchConfigured =
-      integrations?.jobsEnabled !== false &&
-      Boolean(rapidApiKey && rapidApiKey !== 'your_rapidapi_key');
-    const joobleConfigured = Boolean(String(process.env.JOOBLE_API_KEY || '').trim());
-    const adzunaConfigured = Boolean(
-      String(process.env.ADZUNA_APP_ID || '').trim() &&
-      String(process.env.ADZUNA_APP_KEY || '').trim(),
-    );
     // Jobs Hub cache health startup check
-    const { getCacheHealth } = require('./src/services/jobService');
+    const { getCacheHealth } = require('./src/modules/jobs/services/jobService');
     getCacheHealth()
       .then((health) => {
         console.log(
@@ -297,19 +351,51 @@ const startServer = async () => {
   });
 };
 
-startServer().catch((error) => {
-  logger.error('server startup failed', { error: error?.message || 'Unknown startup error' });
+startServer().catch(async (error) => {
+  logger.error('server startup failed', {
+    error: error?.message || 'Unknown startup error',
+  });
   process.exitCode = 1;
+  await shutdown();
 });
 
 const shutdown = () => {
-  require('./src/services/notificationRetentionService').stop();
-  require('./src/services/notificationStreamService')
-    .stop()
-    .catch(() => {});
-  stopNewsIngestionScheduler();
-  require('./src/services/courseCatalogMaintenanceService').stop();
-  Promise.allSettled([closeRedisCache(), shutdownTracing()]);
+  if (shutdownPromise) return shutdownPromise;
+  stopSettingsSynchronization();
+  // Shutdown must not refresh policy settings after synchronization/storage stop.
+  const deadline = setTimeout(() => {
+    console.error(
+      'shutdown deadline exceeded; unfinished jobs retain their durable recovery leases',
+    );
+    server?.closeAllConnections();
+    process.exit(1);
+  }, 15000);
+  deadline.unref();
+  shutdownPromise = (async () => {
+    const listenerClosed = new Promise((resolve) => {
+      if (!server) return resolve();
+      server.close(resolve);
+      server.closeIdleConnections();
+    });
+    const drains = workerStops.splice(0).map((stop) => Promise.resolve().then(stop));
+    drains.push(require('./src/modules/notifications/services/notificationStreamService').stop());
+    const results = await Promise.allSettled([listenerClosed, ...drains]);
+    if (results.some((result) => result.status === 'rejected')) {
+      console.error('worker drain failed; shutdown deadline remains active');
+      process.exitCode = 1;
+      return;
+    }
+    try {
+      await closeResources();
+    } catch {
+      console.error('resource shutdown failed; shutdown deadline remains active');
+      process.exitCode = 1;
+      return;
+    }
+    clearTimeout(deadline);
+    console.info('server shutdown completed');
+  })();
+  return shutdownPromise;
 };
 
 process.on('SIGTERM', shutdown);

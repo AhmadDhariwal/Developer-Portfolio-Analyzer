@@ -175,14 +175,14 @@ async function main() {
   let server;
   try {
     await mongoose.connect(runtime.uri, { autoIndex: false });
-    const User = require('../models/user');
-    const Notification = require('../models/notification');
+    const User = require('../modules/auth/models/user');
+    const Notification = require('../modules/notifications/models/notification');
     for (const Model of [
       User,
       Notification,
-      require('../models/notificationReceipt'),
-      require('../models/notificationState'),
-      require('../models/membership')
+      require('../modules/notifications/models/notificationReceipt'),
+      require('../modules/notifications/models/notificationState'),
+      require('../modules/admin/models/membership')
     ]) {
       await Model.createCollection();
       await Model.createIndexes();
@@ -203,8 +203,8 @@ async function main() {
       isConfigured: true,
       stats: { developerScore: 60, reposAnalyzed: 1, skillsDetected: 3 }
     };
-    const token = require('../utils/authSessionToken').sign(owner, '1h');
-    const { createNotification } = require('../services/notificationService');
+    const token = require('../modules/auth/utils/authSessionToken').sign(owner, '1h');
+    const { createNotification } = require('../modules/notifications/services/notificationService');
     for (const [index, type, title, message] of [
       [1, 'profile_update', 'Profile settings updated', 'Your notification preferences are saved.'],
       [
@@ -242,7 +242,7 @@ async function main() {
     }
     const app = express();
     app.use(express.json());
-    app.use('/api/notifications', require('../routes/notification.routes'));
+    app.use('/api/notifications', require('../modules/notifications/notification.routes'));
     app.use('/api', (req, res) => {
       if (req.path === '/profile/me') return res.json(user);
       return res.json({
@@ -364,7 +364,7 @@ async function main() {
     assert.equal(
       await Notification.countDocuments({
         userId: owner._id,
-        ...require('../services/notificationRetentionService').visibleFilter()
+        ...require('../modules/notifications/services/notificationRetentionService').visibleFilter()
       }),
       3
     );
@@ -441,7 +441,7 @@ async function main() {
     results.checks.push('search, empty state, explicit error and retry PASS');
     if (retentionBrowser) {
       await expect(page.getByText('Expired synthetic activity', { exact: true })).toHaveCount(0);
-      const receipts = require('../models/notificationReceipt');
+      const receipts = require('../modules/notifications/models/notificationReceipt');
       const beforeReceipts = await receipts.countDocuments({ userId: owner._id });
       await page
         .locator('.hero-actions')
@@ -559,7 +559,7 @@ async function main() {
     assert.equal(results.errors.length, 0, 'Browser runtime errors');
   } finally {
     await browser?.close();
-    await require('../services/notificationStreamService').stop();
+    await require('../modules/notifications/services/notificationStreamService').stop();
     if (server) {
       server.closeAllConnections();
       await new Promise((resolve) => server.close(resolve));

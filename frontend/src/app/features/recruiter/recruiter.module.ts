@@ -1,8 +1,51 @@
 import { NgModule } from '@angular/core';
-
-import { RecruiterHubModule } from '../recruiter-hub/recruiter-hub.module';
+import { JobApplicantsComponent } from '../../shared/components/direct-applications/job-applicants.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
+import { RecruiterHubRoutingModule } from './recruiter-hub-routing.module';
+import { RecruiterHubSharedModule } from './recruiter-hub-shared.module';
+import { RecruiterHubService } from './services/recruiter-hub.service';
+import { CandidateService } from './services/candidate.service';
+import { RecruiterJobService } from './services/recruiter-job.service';
+import { RecruiterMatchService } from './services/recruiter-match.service';
+import { RecruiterDashboardComponent } from './pages/recruiter-dashboard/recruiter-dashboard.component';
+import { CandidatesComponent } from './pages/candidates/candidates.component';
+import { CandidateDetailsComponent } from './pages/candidate-details/candidate-details.component';
+import { JobsComponent } from './pages/jobs/jobs.component';
+import { JobDetailsComponent } from './pages/job-details/job-details.component';
+import { MatchesComponent } from './pages/matches/matches.component';
+import { ShortlistsComponent } from './pages/shortlists/shortlists.component';
+import { ComparisonComponent } from './pages/comparison/comparison.component';
+import { RecruiterAnalyticsComponent } from './pages/recruiter-analytics/recruiter-analytics.component';
+import { RecruiterActivityLogsComponent } from './pages/activity-logs/activity-logs.component';
+import { RecruiterProfileComponent } from './pages/recruiter-profile/recruiter-profile.component';
 
 @NgModule({
-  imports: [RecruiterHubModule]
+  declarations: [
+    RecruiterDashboardComponent,
+    CandidatesComponent,
+    CandidateDetailsComponent,
+    JobsComponent,
+    JobDetailsComponent,
+    MatchesComponent,
+    ShortlistsComponent,
+    ComparisonComponent,
+    RecruiterAnalyticsComponent,
+    RecruiterActivityLogsComponent,
+    RecruiterProfileComponent,
+  ],
+  imports: [
+    JobApplicantsComponent,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SearchableSelectComponent,
+    ConfirmDialogComponent,
+    RecruiterHubSharedModule,
+    RecruiterHubRoutingModule,
+  ],
+  providers: [RecruiterHubService, CandidateService, RecruiterJobService, RecruiterMatchService],
 })
 export class RecruiterModule {}

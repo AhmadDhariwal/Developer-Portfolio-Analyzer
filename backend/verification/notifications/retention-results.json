@@ -18,18 +18,18 @@
   },
   "multiWorker": [
     {
+      "busy": true,
+      "deletedCount": 0
+    },
+    {
       "deletedCount": 100,
       "examined": 100,
       "owners": 1
-    },
-    {
-      "busy": true,
-      "deletedCount": 0
     }
   ],
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 97,
+    "temporaryFilesRemoved": 98,
     "productionDataUsed": false
   }
 }

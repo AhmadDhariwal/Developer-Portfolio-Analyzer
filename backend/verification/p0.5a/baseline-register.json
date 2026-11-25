@@ -1,0 +1,207 @@
+{
+  "task": "DPA P0.5A",
+  "branch": "fix/P1-project",
+  "integrationTarget": "not applicable",
+  "preflight": "Authorized source/current branch verified. Six pre-existing staged P0.4.2 files preserved; task changes left unstaged. No PR, commits, pushes or deployment.",
+  "sourceEvidenceReviewed": [
+    "FINAL-PROJECT-ACCEPTANCE.md",
+    "backend/verification/architecture/infrastructure-p02-report.json",
+    "backend/verification/architecture/infrastructure-p02-broad-final.json",
+    "backend/verification/architecture/infrastructure-p02-regressions-final.json",
+    "backend/verification/architecture/infrastructure-p02-acceptance-resumed.json",
+    "frontend/verification/p0.4.1-validation.json",
+    "frontend/verification/p0.4.2-validation.json"
+  ],
+  "register": [
+    {
+      "issue": "SharedEmptyState Light/System-Light contrast",
+      "classification": "actual application defect",
+      "status": "fixed",
+      "rootCause": "Translucent dark panel lowered Light-theme description contrast to 2.87:1; inherited page-local text tokens could also conflict.",
+      "change": "Use shared opaque secondary surface and root-resolved compatibility text tokens; semantic icon tokens.",
+      "verification": "Description 6.10:1 Light/System-Light and 7.06:1 Dark/System-Dark; normal/compact variants and page-local text overrides covered. Seven compiled-style tests and 10 component/theme specs pass."
+    },
+    {
+      "issue": "Resume missing PDF fixtures",
+      "classification": "test fixture/configuration",
+      "status": "fixed",
+      "rootCause": "Only authored expected.json and .gitattributes were present; all eight generated PDF fixtures absent despite historical report claims. System Python also lacks generator dependencies.",
+      "change": "Run existing generator with bundled Python/reportlab/pypdf/Pillow and system Arial. Expected facts and generator unchanged. Keep generated PDFs, hashes and two rendered previews.",
+      "verification": "8/8 original Resume production/parser tests pass; existing two-worker integration passes 1/1 separately.",
+      "evidence": [
+        "resume/summary.json",
+        "resume-mongo-local-disk/summary.json",
+        "resume-fixtures/provenance.json"
+      ]
+    },
+    {
+      "issue": "Notifications recovery",
+      "classification": "test fixture/configuration",
+      "status": "fixed",
+      "rootCause": "Test worker disables command buffering but enables automatic collection creation. Explicit mongoose.disconnect/connect starts model init against a closed Mongo client, caching MongoNotConnectedError and returning inbox HTTP 503 after reconnect. Parent fixture already creates required collections/indexes.",
+      "change": "Disable autoCreate in test-worker initial and reconnect connections. Add explicit HTTP 503 during outage and HTTP 200 after recovery assertions; preserve existing committed-notification assertion. No product transaction/security code changed.",
+      "verification": "Smallest recovery reproduction failed before and passes after; full directly affected file 15/15 passes.",
+      "evidence": [
+        "notifications-recovery-diagnostic/results.tap",
+        "notifications-recovery-fixed/summary.json",
+        "notifications-final/summary.json"
+      ]
+    },
+    {
+      "issue": "GitHub first-save freshness regression",
+      "classification": "timing/flakiness requiring investigation; currently no longer reproducible under controlled prerequisites",
+      "status": "pre-existing / not reproduced",
+      "rootCause": "Historical report records cold Mongo first-save/index-lock timeout; current branch already waits for model initialization before transaction. This task initially hit sandbox startup failure and C: insufficient disk; D: disposable run passed the original test including no overlapping DDL assertion. Historical loaded-run timeout cause is not claimed proven.",
+      "change": "No application changes. Verification runner stores task-owned Mongo data on D:.",
+      "verification": "1/1 original HTTP/auth/Mongo freshness regression passes; no test deadlines weakened.",
+      "evidence": [
+        "github/results.tap",
+        "github-unsandboxed/results.tap",
+        "github-local-disk/summary.json"
+      ]
+    },
+    {
+      "issue": "Interview Prep query rejection/custom timeout",
+      "classification": "previously resolved / no longer reproducible",
+      "status": "pre-existing / resolved before P0.5A",
+      "rootCause": "Current branch already rejects bracketed simple-parser query keys and explicitly configures/verifies the custom AI deadline. Earlier report assertion mismatches are stale. Historical cold limiter storage pressure remains a load observation, not reproduced here.",
+      "change": "No application or test changes; no limiter/transaction/timeout weakening.",
+      "verification": "10/10 original isolated Mongo critical-path checks pass.",
+      "evidence": ["interview-local-disk/summary.json"]
+    },
+    {
+      "issue": "Recommendations cache/performance regression",
+      "classification": "timing/flakiness; no longer reproducible in focused run",
+      "status": "pre-existing / not reproduced",
+      "rootCause": "Historical broad-load timing failure; current focused run passes unchanged targets. No new deterministic defect established.",
+      "change": "No application or assertion changes.",
+      "verification": "2/2 pass. p95 cold 362.55ms (<5000), Redis/Mongo 147.01ms (<250), memory 33.71ms (<50). Concurrent delta: GitHub 0, AI 1, signals 1, persistence 2.",
+      "evidence": ["recommendations/summary.json", "recommendations/measurements.json"]
+    },
+    {
+      "issue": "Courses Mongo regression",
+      "classification": "test fixture/configuration",
+      "status": "pre-existing / no longer reproduced in isolation",
+      "rootCause": "Historical default run used populated local aianalyzer catalog (147 seeded YouTube records) although assertion required an empty catalog.",
+      "change": "Use a new empty disposable replica set; preserve existing data and assertions.",
+      "verification": "9/9 original Mongo/JWT checks pass.",
+      "evidence": ["courses-local-disk/summary.json"]
+    },
+    {
+      "issue": "Three Angular build budget warnings",
+      "classification": "pre-existing nonblocking build warnings",
+      "status": "pre-existing / unchanged",
+      "rootCause": "Retained production build reports initial 4.07 MB vs warning 4 MB (hard error 5 MB), public portfolio styles 49.97 kB vs warning 48 kB, Developer Jobs styles 54.35 kB vs warning 48 kB (both hard error 64 kB). Eager standalone Developer/Public imports and large nested component styles are visible in source.",
+      "change": "No optimization was sufficiently low-risk within defect closure: splitting routes/imports or altering scoped styles needs loading/visual verification. No budgets raised and no functionality/styles removed.",
+      "verification": "Assessed retained successful build, angular.json thresholds, current route imports and component styles; no expensive production rebuild for an unrelated optimization."
+    },
+    {
+      "issue": "Default test-host prerequisites",
+      "classification": "infrastructure/prerequisite",
+      "status": "environment-blocked for default C: storage; targeted runs unblocked on D:",
+      "rootCause": "C: free space was below MongoDB minimum 524288000 bytes for index builds; native sandbox launcher also became unavailable. D: had about 86 GB free.",
+      "change": "Task runner uses unique task-owned disposable databases and temporary storage on D:, with approved local process execution. No host/user data deleted and no disk threshold bypassed.",
+      "verification": "All six targeted areas executed; every disposable Mongo stopped and task-owned database files cleaned by existing verified fixture cleanup."
+    },
+    {
+      "issue": "Production and external acceptance prerequisites",
+      "classification": "infrastructure/prerequisite outside P0.5A",
+      "status": "environment-blocked / not evaluated here",
+      "rootCause": "Existing final acceptance report leaves external Upstash/live-news and provider acceptance incomplete; P0.1/P0.2 require replica-set/majority availability and shared coordination/index readiness. Existing local news .env duplicate-block and Career Sprint isolated-URI prerequisites are outside these six targeted cases.",
+      "change": "No production DB/index/legacy repair, deployment, external credentials, .env, schemas or API changes.",
+      "verification": "Prior P0.2 acceptance-resumed 51/51 evidence retained, not rerun because production security/cache/shutdown code was not changed. Production readiness is not inferred from disposable tests."
+    }
+  ],
+  "changedSourceFiles": [
+    "D:/Developer-Portfolio-Analyzer/backend/src/scripts/verifyP05ABaseline.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/notificationWorker.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/notifications/notificationsProduction.test.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/resume/resumeProduction.test.js",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/resume/resumeProductionMongo.test.js",
+    "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/empty-state/empty-state.component.scss",
+    "D:/Developer-Portfolio-Analyzer/frontend/scripts/admin-theme-tokens.test.cjs"
+  ],
+  "addedFixtureFiles": [
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/columns.pdf",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/corrupt.pdf",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/empty.pdf",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/encrypted.pdf",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/layout-shift.pdf",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/page-limit.pdf",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/scanned.pdf",
+    "D:/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/standard.pdf"
+  ],
+  "testOnlyChanges": "Resume tests accept RESUME_VERIFICATION_DIRECTORY to retain new evidence without overwriting historical reports. Reusable runner selects one issue, prevents evidence overwrite, supplies disposable database URIs and disables external Redis. Notifications fixture change owns only test worker initialization.",
+  "finalValidation": {
+    "backend": "46 passing selected backend tests: GitHub 1, Interview Prep 10, Notifications 15, Recommendations 2, Courses 9, Resume parser/production 8 and Mongo workers 1. This excludes diagnostic failures, duplicate reruns and parent-count inflation from the isolated two-test recovery probe.",
+    "frontend": "10 passing component/theme specs; 7 passing compiled-style checks.",
+    "typescript": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json passed.",
+    "syntax": "node --check on all five changed backend JS files and frontend/scripts/admin-theme-tokens.test.cjs passed.",
+    "formatting": "Changed frontend files: configured installed Prettier --write then --check. Backend JS: same installed formatter with --single-quote --trailing-comma none --print-width 100 for both write/check. Generated evidence JSON formatted explicitly. Binary fixtures/assets not reformatted.",
+    "whitespace": "git diff --check and git diff --cached --check passed.",
+    "notRun": [
+      "complete frontend/backend suites",
+      "large Playwright matrices",
+      "fresh production build",
+      "production DB/index/legacy operations"
+    ]
+  },
+  "cleanup": {
+    "movedFiles": [],
+    "deletedRepositoryFiles": [],
+    "temporarySourceDiagnostics": "Removed; notificationController.js has zero task diff.",
+    "disposableMongo": "All task-owned Mongo processes stopped and their verified temporary database files cleaned by existing fixture. No Mongo data directories remain under evidence root.",
+    "retainedArtifacts": "Initial failures, focused diagnostic and final TAP/JSON evidence are intentional provenance, not disposable logs; all eight fixture PDFs and two essential previews retained."
+  },
+  "p05bReadiness": {
+    "canBeginControlledNonProductionWork": true,
+    "productionReleaseApproved": false,
+    "conditions": [
+      "P0.5B must be separately requested/scoped; not started here.",
+      "Use isolated Mongo replica sets and a sufficiently sized temporary volume; do not run default integration suites against seeded/live databases.",
+      "Retain historical loaded-run timing observations for a bounded future reliability investigation; focused passes do not establish broad-load absence.",
+      "Production replica/majority/shared Redis/index readiness and external live-provider acceptance remain separate required release gates.",
+      "Do not create production indexes or perform legacy repairs as part of this baseline task."
+    ]
+  },
+  "retainedEvidenceFiles": [
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/courses-local-disk/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/courses-local-disk/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/github/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/github/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/github-local-disk/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/github-local-disk/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/github-unsandboxed/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/github-unsandboxed/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/interview/startup-failure.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/interview-local-disk/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/interview-local-disk/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/interview-unsandboxed/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/interview-unsandboxed/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-final/integration-results.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-final/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-final/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-local-disk/integration-results.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-local-disk/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-local-disk/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-recovery-diagnostic/integration-results.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-recovery-diagnostic/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-recovery-diagnostic/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-recovery-fixed/integration-results.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-recovery-fixed/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/notifications-recovery-fixed/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/recommendations/measurements.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/recommendations/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/recommendations/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume/extraction-accuracy.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume-fixtures/columns.png",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume-fixtures/provenance.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume-fixtures/standard.png",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume-mongo-local-disk/mongo-acceptance.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume-mongo-local-disk/results.tap",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/resume-mongo-local-disk/summary.json",
+    "D:/Developer-Portfolio-Analyzer/backend/verification/p0.5a/baseline-register.json"
+  ]
+}

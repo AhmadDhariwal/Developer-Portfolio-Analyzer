@@ -1,0 +1,228 @@
+{
+  "at": "2026-11-15T20:48:58.774Z",
+  "synthetic": false,
+  "policy": {
+    "operation": "interview-custom-qa",
+    "providerPriority": [
+      "groq",
+      "gemini",
+      "openai",
+      "anthropic",
+      "xai"
+    ],
+    "totalMs": 20000,
+    "timeoutMs": 18000,
+    "providerTimeoutMs": 5000,
+    "maxAttempts": 4
+  },
+  "request": {
+    "skill": "system-design",
+    "question": "How would you design a Netflix-like streaming service with bounded regional failover and CDN origin protection?"
+  },
+  "first": {
+    "status": 200,
+    "durationMs": 3737,
+    "response": {
+      "question": "How would you design a Netflix-like streaming service with bounded regional failover and CDN origin protection?",
+      "answer": "Short answer: Use a multi‑region microservice backend with a primary‑secondary origin, DNS‑based regional routing, and CDN edge caching with signed URLs and origin shields. Key points: - Region‑aware request routing via Anycast DNS and health‑checked load balancers - Origin Shield in CDN to protect backend storage and reduce cache miss storms - Bounded failover using active‑passive replication and eventual consistency for user state Explanation: The design separates content ingestion, metadata services, and playback delivery, places the video assets in durable object storage behind a protected origin, and leverages a CDN with edge caching and signed URLs; regional routing directs users to the nearest healthy region, and a bounded failover mechanism promotes a standby region only when the primary region is unhealthy, preserving continuity while limiting cross‑region traffic. Example: {\\n \"request\": {\\n \"method\": \"GET\",\\n \"url\": \"https://cdn.example.com/vid/12345.m3u8?token=abc\",\\n \"headers\": {\\n \"X-Region\": \"us-east-1\"\\n }\\n },\\n \"flow\": [\\n \"DNS resolves to Anycast IP of nearest edge\",\\n \"Edge checks signed URL, forwards to Origin Shield in us-east-1\",\\n \"If us-east-1 health check fails, DNS TTL forces re‑resolve to us-west-2 standby\",\\n \"Origin Shield pulls segment from S3 bucket, returns to edge, caches\"\\n ]\\n} Real-world use case: A global video‑on‑demand platform that must keep playback available during a data‑center outage while preventing direct access to the origin storage from the internet. Common mistakes: - Relying on a single CDN provider without an origin shield, exposing storage to DDoS - Using synchronous replication across regions, causing high latency and cascade failures Interview tip: Focus on how regional DNS routing, health checks, and CDN origin shields work together to isolate failures and protect the storage backend. This is an illustrative educational architecture using public concepts, not a verified description of any named company internal implementation. Problem definition: Provide on‑demand video streaming globally with low latency, high availability, and protection of backend storage against abuse and overload. Functional requirements: User authentication, content catalog lookup, playback URL generation, adaptive bitrate streaming, region‑aware availability, analytics collection. Non-functional requirements: 99.9%+ uptime, sub‑second start‑up latency, regional failover bounded to <5 seconds, data durability, security of assets, cost‑effective bandwidth usage. High-level architecture: Clients → Anycast DNS → Regional Edge Load Balancer → CDN Edge → CDN Origin Shield → Object Storage (e.g., S3) and Metadata Services (microservices) in multiple regions. Components and responsibilities: DNS routing service, regional API gateways, auth service, catalog service, playback service, DRM signer, CDN with edge cache, Origin Shield, storage layer, monitoring/alerting. Database design: Metadata stored in a globally replicated NoSQL store (e.g., DynamoDB Global Tables) for fast reads; user state in a regional relational DB with async replication for failover; asset files in immutable object storage. API design: REST/GraphQL endpoints: /auth, /catalog, /playback?videoId=, returning signed HLS/DASH URLs; APIs are region‑scoped via request header or DNS region. Data flow: Client requests playback → DNS resolves to nearest region → API gateway authenticates → playback service signs URL → CDN edge validates signature → if cache miss, Origin Shield fetches from storage → response streams to client. Caching: Edge caches adaptive bitrate segments with TTL based on manifest version; Origin Shield caches hot assets to reduce storage read load; metadata cached in regional in‑memory stores (Redis). Scalability: Horizontal scaling of microservices behind auto‑scaling groups; CDN scales elastically; object storage scales automatically; region addition is a matter of provisioning another replica set. Load balancing: Anycast DNS with geo‑routing, regional L7 load balancers distribute traffic across service instances; health checks trigger failover to standby region. Reliability: Active‑passive region pairs, health‑checked failover, circuit breakers, graceful degradation (serve lower bitrate), data replication with quorum writes. Security: Signed URLs with short expiration, DRM integration, TLS everywhere, IAM policies on storage, origin shield restricts direct internet access, WAF for edge. Trade-offs: Active‑passive replication reduces write latency but increases failover time; multiple CDNs improve resilience but add cost; tighter cache TTL improves freshness but raises origin load. Potential bottlenecks: Origin Shield cache miss spikes during new releases, DNS TTL causing slow failover, database write contention on user state during peak sessions.",
+      "answerSections": {
+        "shortAnswer": "Use a multi‑region microservice backend with a primary‑secondary origin, DNS‑based regional routing, and CDN edge caching with signed URLs and origin shields.",
+        "summary": "Use a multi‑region microservice backend with a primary‑secondary origin, DNS‑based regional routing, and CDN edge caching with signed URLs and origin shields.",
+        "explanation": "The design separates content ingestion, metadata services, and playback delivery, places the video assets in durable object storage behind a protected origin, and leverages a CDN with edge caching and signed URLs; regional routing directs users to the nearest healthy region, and a bounded failover mechanism promotes a standby region only when the primary region is unhealthy, preserving continuity while limiting cross‑region traffic.",
+        "keyPoints": [
+          "Region‑aware request routing via Anycast DNS and health‑checked load balancers",
+          "Origin Shield in CDN to protect backend storage and reduce cache miss storms",
+          "Bounded failover using active‑passive replication and eventual consistency for user state"
+        ],
+        "bulletPoints": [
+          "Region‑aware request routing via Anycast DNS and health‑checked load balancers",
+          "Origin Shield in CDN to protect backend storage and reduce cache miss storms",
+          "Bounded failover using active‑passive replication and eventual consistency for user state"
+        ],
+        "example": "{\\n  \"request\": {\\n    \"method\": \"GET\",\\n    \"url\": \"https://cdn.example.com/vid/12345.m3u8?token=abc\",\\n    \"headers\": {\\n      \"X-Region\": \"us-east-1\"\\n    }\\n  },\\n  \"flow\": [\\n    \"DNS resolves to Anycast IP of nearest edge\",\\n    \"Edge checks signed URL, forwards to Origin Shield in us-east-1\",\\n    \"If us-east-1 health check fails, DNS TTL forces re‑resolve to us-west-2 standby\",\\n    \"Origin Shield pulls segment from S3 bucket, returns to edge, caches\"\\n  ]\\n}",
+        "codeExample": "{\\n  \"request\": {\\n    \"method\": \"GET\",\\n    \"url\": \"https://cdn.example.com/vid/12345.m3u8?token=abc\",\\n    \"headers\": {\\n      \"X-Region\": \"us-east-1\"\\n    }\\n  },\\n  \"flow\": [\\n    \"DNS resolves to Anycast IP of nearest edge\",\\n    \"Edge checks signed URL, forwards to Origin Shield in us-east-1\",\\n    \"If us-east-1 health check fails, DNS TTL forces re‑resolve to us-west-2 standby\",\\n    \"Origin Shield pulls segment from S3 bucket, returns to edge, caches\"\\n  ]\\n}",
+        "realWorldUseCase": "A global video‑on‑demand platform that must keep playback available during a data‑center outage while preventing direct access to the origin storage from the internet.",
+        "realWorldContext": "A global video‑on‑demand platform that must keep playback available during a data‑center outage while preventing direct access to the origin storage from the internet.",
+        "commonMistakes": [
+          "Relying on a single CDN provider without an origin shield, exposing storage to DDoS",
+          "Using synchronous replication across regions, causing high latency and cascade failures"
+        ],
+        "interviewTip": "Focus on how regional DNS routing, health checks, and CDN origin shields work together to isolate failures and protect the storage backend.",
+        "systemDesign": {
+          "problemDefinition": "Provide on‑demand video streaming globally with low latency, high availability, and protection of backend storage against abuse and overload.",
+          "functionalRequirements": "User authentication, content catalog lookup, playback URL generation, adaptive bitrate streaming, region‑aware availability, analytics collection.",
+          "nonFunctionalRequirements": "99.9%+ uptime, sub‑second start‑up latency, regional failover bounded to <5 seconds, data durability, security of assets, cost‑effective bandwidth usage.",
+          "highLevelArchitecture": "Clients → Anycast DNS → Regional Edge Load Balancer → CDN Edge → CDN Origin Shield → Object Storage (e.g., S3) and Metadata Services (microservices) in multiple regions.",
+          "components": "DNS routing service, regional API gateways, auth service, catalog service, playback service, DRM signer, CDN with edge cache, Origin Shield, storage layer, monitoring/alerting.",
+          "databaseDesign": "Metadata stored in a globally replicated NoSQL store (e.g., DynamoDB Global Tables) for fast reads; user state in a regional relational DB with async replication for failover; asset files in immutable object storage.",
+          "apiDesign": "REST/GraphQL endpoints: /auth, /catalog, /playback?videoId=, returning signed HLS/DASH URLs; APIs are region‑scoped via request header or DNS region.",
+          "dataFlow": "Client requests playback → DNS resolves to nearest region → API gateway authenticates → playback service signs URL → CDN edge validates signature → if cache miss, Origin Shield fetches from storage → response streams to client.",
+          "caching": "Edge caches adaptive bitrate segments with TTL based on manifest version; Origin Shield caches hot assets to reduce storage read load; metadata cached in regional in‑memory stores (Redis).",
+          "scalability": "Horizontal scaling of microservices behind auto‑scaling groups; CDN scales elastically; object storage scales automatically; region addition is a matter of provisioning another replica set.",
+          "loadBalancing": "Anycast DNS with geo‑routing, regional L7 load balancers distribute traffic across service instances; health checks trigger failover to standby region.",
+          "reliability": "Active‑passive region pairs, health‑checked failover, circuit breakers, graceful degradation (serve lower bitrate), data replication with quorum writes.",
+          "security": "Signed URLs with short expiration, DRM integration, TLS everywhere, IAM policies on storage, origin shield restricts direct internet access, WAF for edge.",
+          "tradeOffs": "Active‑passive replication reduces write latency but increases failover time; multiple CDNs improve resilience but add cost; tighter cache TTL improves freshness but raises origin load.",
+          "bottlenecks": "Origin Shield cache miss spikes during new releases, DNS TTL causing slow failover, database write contention on user state during peak sessions."
+        },
+        "scopeNote": "This is an illustrative educational architecture using public concepts, not a verified description of any named company internal implementation."
+      },
+      "sourceMeta": {
+        "mode": "custom-question",
+        "verificationStatus": "unverified",
+        "generatedAt": "2026-11-15T20:49:02.596Z",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b"
+      },
+      "difficulty": "senior",
+      "tags": [
+        "system-design",
+        "user_asked",
+        "technology"
+      ],
+      "topicKey": "system-design",
+      "topicType": "technology",
+      "sourceType": "ai_generated",
+      "sourceLabel": "AI-generated answer · Unverified",
+      "generationStatus": "generated",
+      "generatedAt": "2026-11-15T20:49:02.596Z",
+      "confidenceScore": 0.83,
+      "relevanceScore": 0.81,
+      "category": "system-design",
+      "qualityScore": 80,
+      "answerFormat": "structured",
+      "isEnriched": true,
+      "_id": null,
+      "sessionId": "6afa1abe08e19caa54112ec4",
+      "stored": true,
+      "verificationStatus": "unverified",
+      "duplicate": false,
+      "fromCache": false,
+      "performance": {
+        "memoryCacheMs": 0.03,
+        "redisMs": 4.829,
+        "mongoExactMs": 14.652,
+        "similarityMs": 7.764,
+        "seedMs": 12.984,
+        "aiMs": 3384.636,
+        "validationMs": 5,
+        "persistenceMs": 34.55,
+        "totalMs": 3483.612,
+        "counts": {
+          "memory": 0,
+          "redis": 0,
+          "mongo": 1,
+          "similarity": 1,
+          "seed": 1,
+          "ai": 1,
+          "persistence": 1
+        }
+      }
+    }
+  },
+  "refresh": {
+    "status": 200,
+    "durationMs": 34,
+    "response": {
+      "question": "How would you design a Netflix-like streaming service with bounded regional failover and CDN origin protection?",
+      "answer": "Short answer: Use a multi‑region microservice backend with a primary‑secondary origin, DNS‑based regional routing, and CDN edge caching with signed URLs and origin shields. Key points: - Region‑aware request routing via Anycast DNS and health‑checked load balancers - Origin Shield in CDN to protect backend storage and reduce cache miss storms - Bounded failover using active‑passive replication and eventual consistency for user state Explanation: The design separates content ingestion, metadata services, and playback delivery, places the video assets in durable object storage behind a protected origin, and leverages a CDN with edge caching and signed URLs; regional routing directs users to the nearest healthy region, and a bounded failover mechanism promotes a standby region only when the primary region is unhealthy, preserving continuity while limiting cross‑region traffic. Example: {\\n \"request\": {\\n \"method\": \"GET\",\\n \"url\": \"https://cdn.example.com/vid/12345.m3u8?token=abc\",\\n \"headers\": {\\n \"X-Region\": \"us-east-1\"\\n }\\n },\\n \"flow\": [\\n \"DNS resolves to Anycast IP of nearest edge\",\\n \"Edge checks signed URL, forwards to Origin Shield in us-east-1\",\\n \"If us-east-1 health check fails, DNS TTL forces re‑resolve to us-west-2 standby\",\\n \"Origin Shield pulls segment from S3 bucket, returns to edge, caches\"\\n ]\\n} Real-world use case: A global video‑on‑demand platform that must keep playback available during a data‑center outage while preventing direct access to the origin storage from the internet. Common mistakes: - Relying on a single CDN provider without an origin shield, exposing storage to DDoS - Using synchronous replication across regions, causing high latency and cascade failures Interview tip: Focus on how regional DNS routing, health checks, and CDN origin shields work together to isolate failures and protect the storage backend. This is an illustrative educational architecture using public concepts, not a verified description of any named company internal implementation. Problem definition: Provide on‑demand video streaming globally with low latency, high availability, and protection of backend storage against abuse and overload. Functional requirements: User authentication, content catalog lookup, playback URL generation, adaptive bitrate streaming, region‑aware availability, analytics collection. Non-functional requirements: 99.9%+ uptime, sub‑second start‑up latency, regional failover bounded to <5 seconds, data durability, security of assets, cost‑effective bandwidth usage. High-level architecture: Clients → Anycast DNS → Regional Edge Load Balancer → CDN Edge → CDN Origin Shield → Object Storage (e.g., S3) and Metadata Services (microservices) in multiple regions. Components and responsibilities: DNS routing service, regional API gateways, auth service, catalog service, playback service, DRM signer, CDN with edge cache, Origin Shield, storage layer, monitoring/alerting. Database design: Metadata stored in a globally replicated NoSQL store (e.g., DynamoDB Global Tables) for fast reads; user state in a regional relational DB with async replication for failover; asset files in immutable object storage. API design: REST/GraphQL endpoints: /auth, /catalog, /playback?videoId=, returning signed HLS/DASH URLs; APIs are region‑scoped via request header or DNS region. Data flow: Client requests playback → DNS resolves to nearest region → API gateway authenticates → playback service signs URL → CDN edge validates signature → if cache miss, Origin Shield fetches from storage → response streams to client. Caching: Edge caches adaptive bitrate segments with TTL based on manifest version; Origin Shield caches hot assets to reduce storage read load; metadata cached in regional in‑memory stores (Redis). Scalability: Horizontal scaling of microservices behind auto‑scaling groups; CDN scales elastically; object storage scales automatically; region addition is a matter of provisioning another replica set. Load balancing: Anycast DNS with geo‑routing, regional L7 load balancers distribute traffic across service instances; health checks trigger failover to standby region. Reliability: Active‑passive region pairs, health‑checked failover, circuit breakers, graceful degradation (serve lower bitrate), data replication with quorum writes. Security: Signed URLs with short expiration, DRM integration, TLS everywhere, IAM policies on storage, origin shield restricts direct internet access, WAF for edge. Trade-offs: Active‑passive replication reduces write latency but increases failover time; multiple CDNs improve resilience but add cost; tighter cache TTL improves freshness but raises origin load. Potential bottlenecks: Origin Shield cache miss spikes during new releases, DNS TTL causing slow failover, database write contention on user state during peak sessions.",
+      "answerSections": {
+        "shortAnswer": "Use a multi‑region microservice backend with a primary‑secondary origin, DNS‑based regional routing, and CDN edge caching with signed URLs and origin shields.",
+        "summary": "Use a multi‑region microservice backend with a primary‑secondary origin, DNS‑based regional routing, and CDN edge caching with signed URLs and origin shields.",
+        "explanation": "The design separates content ingestion, metadata services, and playback delivery, places the video assets in durable object storage behind a protected origin, and leverages a CDN with edge caching and signed URLs; regional routing directs users to the nearest healthy region, and a bounded failover mechanism promotes a standby region only when the primary region is unhealthy, preserving continuity while limiting cross‑region traffic.",
+        "keyPoints": [
+          "Region‑aware request routing via Anycast DNS and health‑checked load balancers",
+          "Origin Shield in CDN to protect backend storage and reduce cache miss storms",
+          "Bounded failover using active‑passive replication and eventual consistency for user state"
+        ],
+        "bulletPoints": [
+          "Region‑aware request routing via Anycast DNS and health‑checked load balancers",
+          "Origin Shield in CDN to protect backend storage and reduce cache miss storms",
+          "Bounded failover using active‑passive replication and eventual consistency for user state"
+        ],
+        "example": "{\\n  \"request\": {\\n    \"method\": \"GET\",\\n    \"url\": \"https://cdn.example.com/vid/12345.m3u8?token=abc\",\\n    \"headers\": {\\n      \"X-Region\": \"us-east-1\"\\n    }\\n  },\\n  \"flow\": [\\n    \"DNS resolves to Anycast IP of nearest edge\",\\n    \"Edge checks signed URL, forwards to Origin Shield in us-east-1\",\\n    \"If us-east-1 health check fails, DNS TTL forces re‑resolve to us-west-2 standby\",\\n    \"Origin Shield pulls segment from S3 bucket, returns to edge, caches\"\\n  ]\\n}",
+        "codeExample": "{\\n  \"request\": {\\n    \"method\": \"GET\",\\n    \"url\": \"https://cdn.example.com/vid/12345.m3u8?token=abc\",\\n    \"headers\": {\\n      \"X-Region\": \"us-east-1\"\\n    }\\n  },\\n  \"flow\": [\\n    \"DNS resolves to Anycast IP of nearest edge\",\\n    \"Edge checks signed URL, forwards to Origin Shield in us-east-1\",\\n    \"If us-east-1 health check fails, DNS TTL forces re‑resolve to us-west-2 standby\",\\n    \"Origin Shield pulls segment from S3 bucket, returns to edge, caches\"\\n  ]\\n}",
+        "realWorldUseCase": "A global video‑on‑demand platform that must keep playback available during a data‑center outage while preventing direct access to the origin storage from the internet.",
+        "realWorldContext": "A global video‑on‑demand platform that must keep playback available during a data‑center outage while preventing direct access to the origin storage from the internet.",
+        "commonMistakes": [
+          "Relying on a single CDN provider without an origin shield, exposing storage to DDoS",
+          "Using synchronous replication across regions, causing high latency and cascade failures"
+        ],
+        "interviewTip": "Focus on how regional DNS routing, health checks, and CDN origin shields work together to isolate failures and protect the storage backend.",
+        "systemDesign": {
+          "problemDefinition": "Provide on‑demand video streaming globally with low latency, high availability, and protection of backend storage against abuse and overload.",
+          "functionalRequirements": "User authentication, content catalog lookup, playback URL generation, adaptive bitrate streaming, region‑aware availability, analytics collection.",
+          "nonFunctionalRequirements": "99.9%+ uptime, sub‑second start‑up latency, regional failover bounded to <5 seconds, data durability, security of assets, cost‑effective bandwidth usage.",
+          "highLevelArchitecture": "Clients → Anycast DNS → Regional Edge Load Balancer → CDN Edge → CDN Origin Shield → Object Storage (e.g., S3) and Metadata Services (microservices) in multiple regions.",
+          "components": "DNS routing service, regional API gateways, auth service, catalog service, playback service, DRM signer, CDN with edge cache, Origin Shield, storage layer, monitoring/alerting.",
+          "databaseDesign": "Metadata stored in a globally replicated NoSQL store (e.g., DynamoDB Global Tables) for fast reads; user state in a regional relational DB with async replication for failover; asset files in immutable object storage.",
+          "apiDesign": "REST/GraphQL endpoints: /auth, /catalog, /playback?videoId=, returning signed HLS/DASH URLs; APIs are region‑scoped via request header or DNS region.",
+          "dataFlow": "Client requests playback → DNS resolves to nearest region → API gateway authenticates → playback service signs URL → CDN edge validates signature → if cache miss, Origin Shield fetches from storage → response streams to client.",
+          "caching": "Edge caches adaptive bitrate segments with TTL based on manifest version; Origin Shield caches hot assets to reduce storage read load; metadata cached in regional in‑memory stores (Redis).",
+          "scalability": "Horizontal scaling of microservices behind auto‑scaling groups; CDN scales elastically; object storage scales automatically; region addition is a matter of provisioning another replica set.",
+          "loadBalancing": "Anycast DNS with geo‑routing, regional L7 load balancers distribute traffic across service instances; health checks trigger failover to standby region.",
+          "reliability": "Active‑passive region pairs, health‑checked failover, circuit breakers, graceful degradation (serve lower bitrate), data replication with quorum writes.",
+          "security": "Signed URLs with short expiration, DRM integration, TLS everywhere, IAM policies on storage, origin shield restricts direct internet access, WAF for edge.",
+          "tradeOffs": "Active‑passive replication reduces write latency but increases failover time; multiple CDNs improve resilience but add cost; tighter cache TTL improves freshness but raises origin load.",
+          "bottlenecks": "Origin Shield cache miss spikes during new releases, DNS TTL causing slow failover, database write contention on user state during peak sessions."
+        },
+        "scopeNote": "This is an illustrative educational architecture using public concepts, not a verified description of any named company internal implementation."
+      },
+      "sourceMeta": {
+        "mode": "custom-question",
+        "verificationStatus": "unverified",
+        "generatedAt": "2026-11-15T20:49:02.596Z",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b"
+      },
+      "difficulty": "senior",
+      "tags": [
+        "system-design",
+        "user_asked",
+        "technology"
+      ],
+      "topicKey": "system-design",
+      "topicType": "technology",
+      "sourceType": "ai_generated",
+      "sourceLabel": "Cache / AI-generated answer · Unverified",
+      "generationStatus": "generated",
+      "generatedAt": "2026-11-15T20:49:02.596Z",
+      "confidenceScore": 0.83,
+      "relevanceScore": 0.81,
+      "category": "system-design",
+      "qualityScore": 80,
+      "answerFormat": "structured",
+      "isEnriched": true,
+      "_id": null,
+      "sessionId": "6afa1abe08e19caa54112ec4",
+      "stored": true,
+      "verificationStatus": "unverified",
+      "duplicate": false,
+      "fromCache": true,
+      "cacheLayer": "memory",
+      "performance": {
+        "memoryCacheMs": 0.019,
+        "redisMs": 1.881,
+        "mongoExactMs": 0,
+        "similarityMs": 0,
+        "seedMs": 0,
+        "aiMs": 0,
+        "validationMs": 0,
+        "persistenceMs": 0,
+        "totalMs": 2.267,
+        "counts": {
+          "memory": 1,
+          "redis": 0,
+          "mongo": 0,
+          "similarity": 0,
+          "seed": 0,
+          "ai": 0,
+          "persistence": 0
+        }
+      }
+    }
+  },
+  "ownerMatched": true,
+  "privateKind": "custom",
+  "passed": true
+}

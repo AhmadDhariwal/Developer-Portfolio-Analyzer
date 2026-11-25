@@ -1,0 +1,63 @@
+{
+  "generator": "backend/scripts/generate-resume-fixtures.js",
+  "generatorSha256": "46dd472ee8a45eda8fd2324a7f391ec4e0288bb0e307a902395f708b34556649",
+  "runtime": "Bundled Python: C:/Users/Ahmad/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe",
+  "dependencies": {
+    "reportlab": "4.4.9",
+    "pypdf": "6.10.0",
+    "Pillow": "12.3.0"
+  },
+  "font": "C:/Windows/Fonts/arial.ttf",
+  "fontSha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+  "expectedFacts": "backend/src/tests/fixtures/resume/expected.json",
+  "expectedFactsSha256": "62bd168735c85b6875d96f82328e5572b9bc2fd3b050ffb97170f41d16e80e0e",
+  "expectedFactsModified": false,
+  "provenance": "Existing synthetic generator and independent authored expectations used without alteration. Encrypted PDF encryption metadata may vary across generations; semantic reproducibility is validated by the original tests.",
+  "files": [
+    {
+      "path": "backend/src/tests/fixtures/resume/columns.pdf",
+      "bytes": 42873,
+      "sha256": "afc7751932945abcf1e5e38cdf75051930368eb6699a3133d846a65d21d3cc22"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/corrupt.pdf",
+      "bytes": 34,
+      "sha256": "83e1caf5b18318069dd1598bb856ef327389b574ededc4fc63901167594ff9db"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/empty.pdf",
+      "bytes": 1298,
+      "sha256": "d90f5c0ad72a67341295f79c67274f934f38c68518de29fc6f62b39f541629cf"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/encrypted.pdf",
+      "bytes": 42889,
+      "sha256": "87f97be9ad144e9d02b7f0f467f7ab5edc95a28e2f1adc77450193d79de65937"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/layout-shift.pdf",
+      "bytes": 42859,
+      "sha256": "1d3a6c942e67080084f19255779bedc23166ab286aba990016fb4ce4bb25de6b"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/page-limit.pdf",
+      "bytes": 20933,
+      "sha256": "55cf59525050c43125e3002083c0384eee69adc72ff3253ecc571b0f18f4365e"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/scanned.pdf",
+      "bytes": 3855,
+      "sha256": "9265102a2f761adfd3a8ac84f369f940e8e9eea3351d443766e6bec6e4e7f0ed"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/standard.pdf",
+      "bytes": 42859,
+      "sha256": "b48f3e1eb6e11577cdb2014ce8f1663241b53890dfd74b07acc6b5649af1f287"
+    }
+  ],
+  "visualVerification": [
+    "backend/verification/p0.5a/resume-fixtures/standard.png",
+    "backend/verification/p0.5a/resume-fixtures/columns.png"
+  ],
+  "result": "Both first-page renders inspected: Unicode name, content and column separation are legible; original eight parser tests passed."
+}

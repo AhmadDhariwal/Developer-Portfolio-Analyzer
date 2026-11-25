@@ -1,0 +1,412 @@
+<section class="hub-page">
+  <div class="banner banner--info" *ngIf="isOnboarding">
+    <strong>Onboarding step:</strong> Complete your recruiter personal details and sourcing
+    preferences to finish joining {{ organizationName || 'your organization' }}.
+  </div>
+
+  <header class="page-header">
+    <div class="identity-cluster">
+      <div class="identity-avatar">
+        <img
+          *ngIf="profile?.avatar && !avatarLoadError; else initialsAvatar"
+          [src]="profile?.avatar"
+          [alt]="profile?.name || 'Recruiter'"
+          (error)="onAvatarError()"
+        />
+        <ng-template #initialsAvatar>
+          <span>{{ (profile?.name || 'R').charAt(0).toUpperCase() }}</span>
+        </ng-template>
+      </div>
+      <div class="page-header__copy">
+        <span class="page-header__eyebrow">Personal Details</span>
+        <h1>Recruiter Profile</h1>
+        <p>
+          Keep your recruiter identity, background, sourcing preferences, and organization alignment
+          up to date across the workspace.
+        </p>
+      </div>
+    </div>
+
+    <div class="hero-stats" *ngIf="profile">
+      <div class="hero-stat">
+        <span>Connected Org</span>
+        <strong>{{ organizationName || 'Organization pending' }}</strong>
+      </div>
+      <div class="hero-stat">
+        <span>Role</span>
+        <strong>{{ recruiterRoleLabel }}</strong>
+      </div>
+      <div class="hero-stat">
+        <span>Teams</span>
+        <strong>{{ connectedTeams.length }}</strong>
+      </div>
+    </div>
+  </header>
+
+  <section class="completion-card" *ngIf="profile && !loading">
+    <div class="completion-card__head">
+      <div>
+        <span class="completion-eyebrow">Profile Completion</span>
+        <strong>{{ completedStepsCount }} of {{ profileCompletionItems.length }} sections complete ({{ completionPercent }}%)</strong>
+      </div>
+      <div class="completion-pills">
+        <span
+          class="completion-pill"
+          *ngFor="let item of profileCompletionItems"
+          [class.completion-pill--done]="item.done"
+        >
+          {{ item.done ? '✓ ' : '' }}{{ item.label }}
+        </span>
+      </div>
+    </div>
+    <div class="completion-track" aria-hidden="true">
+      <i [style.width.%]="completionPercent"></i>
+    </div>
+  </section>
+
+  <app-ui-error-state
+    *ngIf="error && !profile && !loading"
+    title="Unable to load recruiter profile"
+    [message]="error"
+    (retry)="loadProfile()"
+  />
+
+  <div class="banner banner--error" *ngIf="error && profile">{{ error }}</div>
+  <div class="banner banner--success" *ngIf="notice">{{ notice }}</div>
+
+  <app-recruiter-loader *ngIf="loading" label="Loading recruiter profile..." variant="cards" [count]="3" />
+
+  <form
+    class="details-form"
+    *ngIf="!loading && profile"
+    [formGroup]="profileForm"
+    (ngSubmit)="save()"
+  >
+    <section class="panel">
+      <div class="panel__heading">
+        <div>
+          <span class="panel__eyebrow">Identity</span>
+          <h2>Core Recruiter Profile</h2>
+        </div>
+      </div>
+
+      <div class="panel__grid">
+        <div class="field">
+          <label for="profile-name">
+            <span>Name</span>
+            <span class="field__meta field__meta--required">*</span>
+          </label>
+          <input id="profile-name" formControlName="name" placeholder="Recruiter name" />
+          <small class="field__error" *ngIf="showControlError('name')">
+            {{ controlError('name', 'Name is required.') }}
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="profile-email">
+            <span>Email</span>
+            <span class="field__meta field__meta--required">Verified</span>
+          </label>
+          <input id="profile-email" formControlName="email" />
+        </div>
+
+        <div class="field">
+          <label for="profile-avatar">
+            <span>Avatar URL</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input id="profile-avatar" formControlName="avatar" placeholder="https://..." />
+        </div>
+
+        <div class="field">
+          <label for="profile-job-title">
+            <span>Job Title</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input
+            id="profile-job-title"
+            formControlName="jobTitle"
+            placeholder="Senior Technical Recruiter"
+          />
+          <small class="field__error" *ngIf="showControlError('jobTitle')">
+            {{ controlError('jobTitle', 'Enter a valid job title.') }}
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="profile-location">
+            <span>Location</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input id="profile-location" formControlName="location" placeholder="Karachi or Remote" />
+          <small class="field__error" *ngIf="showControlError('location')">
+            {{ controlError('location', 'Enter a valid location.') }}
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="profile-phone">
+            <span>Phone</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input id="profile-phone" formControlName="phoneNumber" placeholder="+92 ..." />
+        </div>
+
+        <div class="field">
+          <label for="profile-github">
+            <span>GitHub</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input id="profile-github" formControlName="githubUsername" placeholder="github username" />
+        </div>
+
+        <div class="field">
+          <label for="profile-linkedin">
+            <span>LinkedIn</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input id="profile-linkedin" formControlName="linkedin" placeholder="linkedin.com/in/..." />
+        </div>
+
+        <div class="field field--wide">
+          <label for="profile-website">
+            <span>Website</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input
+            id="profile-website"
+            formControlName="website"
+            placeholder="https://your-company-profile.com"
+          />
+          <small class="field__error" *ngIf="showControlError('website')">
+            {{ controlError('website', 'Enter a valid website value.') }}
+          </small>
+        </div>
+
+        <div class="field field--wide">
+          <label for="profile-bio">
+            <span>Bio</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <textarea id="profile-bio" formControlName="bio" placeholder="Short recruiter bio"></textarea>
+          <small class="field__error" *ngIf="showControlError('bio')">
+            {{ controlError('bio', 'Enter a shorter bio.') }}
+          </small>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__heading">
+        <div>
+          <span class="panel__eyebrow">Background</span>
+          <h2>Professional Background</h2>
+        </div>
+      </div>
+
+      <div class="panel__grid">
+        <div class="field">
+          <label for="profile-education">
+            <span>Education</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input
+            id="profile-education"
+            formControlName="education"
+            placeholder="MBA HRM, BS Computer Science"
+          />
+          <small class="field__error" *ngIf="showControlError('education')">
+            {{ controlError('education', 'Enter a shorter education value.') }}
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="profile-years">
+            <span>Experience (years)</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <input
+            id="profile-years"
+            type="number"
+            min="0"
+            max="50"
+            formControlName="yearsOfExperience"
+            placeholder="6"
+          />
+          <small class="field__error" *ngIf="showControlError('yearsOfExperience')">
+            {{ controlError('yearsOfExperience', 'Enter experience between 0 and 50 years.') }}
+          </small>
+        </div>
+
+        <div class="field field--wide">
+          <label for="profile-experience-summary">
+            <span>Experience Summary</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <textarea
+            id="profile-experience-summary"
+            formControlName="experienceSummary"
+            placeholder="Summarize recruiting experience, hiring domains, and recent impact."
+          ></textarea>
+          <small class="field__error" *ngIf="showControlError('experienceSummary')">
+            {{ controlError('experienceSummary', 'Experience summary is too long.') }}
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="profile-certifications">
+            <span>Certificates</span>
+            <span class="field__meta">Comma-separated</span>
+          </label>
+          <input
+            id="profile-certifications"
+            formControlName="certifications"
+            placeholder="LinkedIn Recruiter, AIRS, SHRM"
+          />
+        </div>
+
+        <div class="field">
+          <label for="profile-specialties">
+            <span>Specialties</span>
+            <span class="field__meta">Comma-separated</span>
+          </label>
+          <input
+            id="profile-specialties"
+            formControlName="specialties"
+            placeholder="Engineering hiring, executive search"
+          />
+        </div>
+
+        <div class="field">
+          <label for="profile-tools">
+            <span>Tools &amp; Platforms</span>
+            <span class="field__meta">Comma-separated</span>
+          </label>
+          <input
+            id="profile-tools"
+            formControlName="toolsAndPlatforms"
+            placeholder="DevInsight Hub, Greenhouse, Lever"
+          />
+        </div>
+
+        <div class="field">
+          <label for="profile-languages">
+            <span>Languages</span>
+            <span class="field__meta">Comma-separated</span>
+          </label>
+          <input id="profile-languages" formControlName="languages" placeholder="English, Urdu" />
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__heading">
+        <div>
+          <span class="panel__eyebrow">Sourcing</span>
+          <h2>Recruiting Preferences</h2>
+        </div>
+      </div>
+
+      <div class="panel__grid">
+        <div class="field">
+          <label for="profile-stacks">
+            <span>Preferred Stacks</span>
+            <span class="field__meta">Comma-separated</span>
+          </label>
+          <input
+            id="profile-stacks"
+            formControlName="preferredStacks"
+            placeholder="Backend, Frontend, DevOps"
+          />
+        </div>
+
+        <div class="field">
+          <label for="profile-locations">
+            <span>Preferred Locations</span>
+            <span class="field__meta">Comma-separated</span>
+          </label>
+          <input
+            id="profile-locations"
+            formControlName="preferredLocations"
+            placeholder="Remote, Lahore, Karachi"
+          />
+        </div>
+
+        <div class="field field--wide">
+          <label for="profile-job-types">
+            <span>Preferred Job Types</span>
+            <span class="field__meta">Comma-separated</span>
+          </label>
+          <input
+            id="profile-job-types"
+            formControlName="preferredJobTypes"
+            placeholder="Full-time, Contract"
+          />
+        </div>
+
+        <div class="field field--wide">
+          <label for="profile-note-template">
+            <span>Default Note Template</span>
+            <span class="field__meta">Optional</span>
+          </label>
+          <textarea
+            id="profile-note-template"
+            formControlName="noteTemplate"
+            placeholder="Quick outreach note template"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label class="checkbox-label" for="profile-activity-digest">
+          <input id="profile-activity-digest" formControlName="activityDigest" type="checkbox" />
+          <span class="checkbox-copy">
+            <strong>Send recruiter activity digest</strong>
+            <small>Receive summaries of candidate evaluations and shortlist pipeline changes.</small>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__heading">
+        <div>
+          <span class="panel__eyebrow">RBAC</span>
+          <h2>Organization &amp; Access</h2>
+          <p class="panel__copy">
+            This recruiter is scoped to the organization below through role-based access controls.
+          </p>
+        </div>
+      </div>
+
+      <div class="org-grid">
+        <article class="org-card">
+          <span class="org-card__label">Organization</span>
+          <strong>{{ organizationName || 'No organization linked' }}</strong>
+          <small>Primary organization connected through recruiter access.</small>
+        </article>
+
+        <article class="org-card">
+          <span class="org-card__label">Assigned Role</span>
+          <strong>{{ recruiterRoleLabel }}</strong>
+          <small>Scoped to recruiter workflows under the organization RBAC system.</small>
+        </article>
+
+        <article class="org-card">
+          <span class="org-card__label">Team Access</span>
+          <strong>{{ connectedTeams.length ? connectedTeams.join(', ') : 'Organization-wide' }}</strong>
+          <small>Active recruiter memberships visible to admin and access checks.</small>
+        </article>
+      </div>
+    </section>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="discardChanges()" [disabled]="saving">
+        Discard Changes
+      </button>
+      <button type="submit" class="btn-primary" [disabled]="isSubmitDisabled">
+        {{ saving ? 'Saving...' : 'Save Personal Details' }}
+      </button>
+    </div>
+  </form>
+</section>

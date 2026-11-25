@@ -1,0 +1,72 @@
+{
+  "defaultResumeMatched": true,
+  "ownedGithubRevision": "2026-11-18T14:19:36.649Z",
+  "skillGapGithubRevision": "2026-11-18T14:20:31.475Z",
+  "coverageReason": "required_evidence_unknown",
+  "unknownRequired": [
+    "API Versioning",
+    "Accessibility",
+    "CI/CD",
+    "Caching Strategies",
+    "Cloud Basics",
+    "Deployment",
+    "Design Patterns",
+    "Docker",
+    "Documentation",
+    "Monitoring and Observability",
+    "Node.js",
+    "Performance Optimization",
+    "REST APIs",
+    "SQL",
+    "Scalability Patterns",
+    "Security Basics",
+    "System Design",
+    "Testing"
+  ],
+  "detected": [
+    {
+      "name": "React",
+      "status": "CLAIMED_ONLY"
+    },
+    {
+      "name": "TypeScript",
+      "status": "PARTIAL"
+    }
+  ],
+  "missing": [],
+  "acceptedLanguageBytes": {
+    "JavaScript": 11706615,
+    "TypeScript": 6728422,
+    "SCSS": 3753679,
+    "HTML": 4349801,
+    "Python": 4911,
+    "Batchfile": 237
+  },
+  "languageComparison": "Exact equality across accepted GitHub response, byte-based calculation and Dashboard summary",
+  "resumeInputs": [
+    71,
+    81,
+    56,
+    50
+  ],
+  "impactInputs": [
+    25,
+    25,
+    100,
+    39
+  ],
+  "accountPortfolioArchives": 3,
+  "archivesWithRule": 0,
+  "matchingHandlers": [
+    "summary",
+    "skills",
+    "contributions",
+    "languages"
+  ],
+  "monitoredHandlerCommands": {
+    "find": 28,
+    "aggregate": 5,
+    "createIndexes": 5
+  },
+  "indexRequestDiagnosis": "A disposable reproduction confirmed module initialization requests five scenario simulation indexes. Whether the account database created any index is unknown."
+}

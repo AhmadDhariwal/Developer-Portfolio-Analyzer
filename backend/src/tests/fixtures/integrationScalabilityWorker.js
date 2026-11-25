@@ -8,9 +8,9 @@ if (
   )
 )
   throw Error('Disposable endpoint required');
-const governance = require('../../services/integrationGovernanceService');
-const snapshots = require('../../services/integrationPublicSnapshotService');
-const { getAdapter } = require('../../services/integrations');
+const governance = require('../../modules/integrations/services/integrationGovernanceService');
+const snapshots = require('../../modules/integrations/services/integrationPublicSnapshotService');
+const { getAdapter } = require('../../modules/integrations/services/adapters');
 const captured = JSON.parse(
   fs.readFileSync(
     path.resolve(__dirname, '../../../verification/integrations/real-provider-live-followup.json')
@@ -23,7 +23,7 @@ let calls = 0,
   conflicts = 0,
   commands = 0;
 const durations = [];
-require('../../services/redisCacheService').getRedisCacheClient = () => {
+require('../../core/cache/redisCacheService').getRedisCacheClient = () => {
   redisCommands++;
   throw Error('Optional Redis unavailable');
 };
@@ -51,7 +51,7 @@ mongoose
     client.on('commandFailed', (event) => {
       if (event.failure?.code === 112) conflicts++;
     });
-    await require('../../services/integrationMongoGovernanceService').initialize();
+    await require('../../modules/integrations/services/integrationMongoGovernanceService').initialize();
     await snapshots.initialize();
     process.send({ ready: true });
   })

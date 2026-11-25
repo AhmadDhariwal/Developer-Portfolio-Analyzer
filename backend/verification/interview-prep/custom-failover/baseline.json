@@ -1,0 +1,11 @@
+{
+  "branch": "fix/bug-01",
+  "target": "not applicable",
+  "staged": ":100644 100644 ba75962a e076a421 M\tfrontend/src/app/pages/interview-prep/interview-prep.component.html\n:100644 100644 ba1e7a02 af929e4d M\tfrontend/src/app/pages/interview-prep/interview-prep.component.scss\n:100644 100644 f8748be5 84839083 M\tfrontend/src/app/pages/interview-prep/interview-prep.component.spec.ts\n:100644 100644 795fd359 c437feda M\tfrontend/src/app/pages/interview-prep/interview-prep.component.ts\n",
+  "plan": [
+    "Trace runtime and preserve staged UI work",
+    "Implement central Custom Q&A policy and shared failover/error handling",
+    "Test mocked and single controlled live request",
+    "Format explicit files, verify build/types and finalize cleanup/report"
+  ]
+}

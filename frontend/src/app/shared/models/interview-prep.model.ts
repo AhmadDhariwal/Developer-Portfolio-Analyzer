@@ -10,6 +10,8 @@ export interface InterviewAnswerSections {
   realWorldContext?: string;
   commonMistakes?: string[];
   interviewTip?: string;
+  scopeNote?: string;
+  systemDesign?: Record<string, string>;
 }
 
 export interface InterviewQuestion {
@@ -32,7 +34,16 @@ export interface InterviewQuestion {
   sourceType?: string;
   originalSourceType?: string;
   sourceLabel?: string;
-  sourceMeta?: { url?: string; verificationStatus?: string; seedVersion?: string };
+  sourceMeta?: {
+    mode?: string;
+    answerQuality?: { version?: number };
+    url?: string;
+    verificationStatus?: string;
+    seedVersion?: string;
+    generatedAt?: string;
+  };
+  generatedAt?: string;
+  generationStatus?: string;
   verificationStatus?: string;
   qualityScore?: number;
   confidenceScore?: number;

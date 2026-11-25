@@ -1,0 +1,26 @@
+const express = require('express');
+const router = express.Router();
+const { analyzeSkillGap } = require('./skillgapcontroller');
+const { optionalProtect } = require('../../core/middleware/authmiddleware');
+const { admit } = require('./middleware/skillGapAdmission');
+
+const markSkillGapRouteStart = (req, _res, next) => {
+  req.skillGapRouteStartedAt = Date.now();
+  next();
+};
+
+const markSkillGapAuthComplete = (req, _res, next) => {
+  req.skillGapAuthCompletedAt = Date.now();
+  next();
+};
+
+router.post(
+  '/skill-gap',
+  markSkillGapRouteStart,
+  optionalProtect,
+  markSkillGapAuthComplete,
+  admit,
+  analyzeSkillGap
+);
+
+module.exports = router;

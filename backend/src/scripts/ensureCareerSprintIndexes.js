@@ -4,7 +4,7 @@
  * Idempotent Career Sprint index ensure.
  * Safe to re-run against existing data.
  */
-const CareerSprint = require('../models/careerSprint');
+const CareerSprint = require('../modules/career-sprint/models/careerSprint');
 
 const REQUIRED_INDEXES = [
   {

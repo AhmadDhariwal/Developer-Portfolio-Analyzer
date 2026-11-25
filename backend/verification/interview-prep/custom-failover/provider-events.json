@@ -1,0 +1,64 @@
+[
+  {
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_skipped",
+    "requestId": "8405230d-9a58-4140-bae9-c03a58c39f3d",
+    "operation": "interview-custom-qa",
+    "provider": "xai",
+    "reason": "missing_key"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "requestId": "8405230d-9a58-4140-bae9-c03a58c39f3d",
+    "operation": "interview-custom-qa",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "attempt": 1,
+    "configuredTimeoutMs": 5000,
+    "remainingMs": 17914,
+    "circuitState": "closed"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_success",
+    "requestId": "8405230d-9a58-4140-bae9-c03a58c39f3d",
+    "operation": "interview-custom-qa",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "attempt": 1,
+    "remainingMs": 14636,
+    "latencyMs": 3295,
+    "outcome": "success"
+  },
+  {
+    "scope": "AIService",
+    "event": "ai_request_complete",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "durationMs": 3339
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  }
+]

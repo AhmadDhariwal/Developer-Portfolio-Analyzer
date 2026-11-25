@@ -1,0 +1,276 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+.hub-page {
+  @include recruiter.page-shell;
+}
+
+.page-header {
+  @include recruiter.canvas-header;
+}
+
+.page-header__copy {
+  @include recruiter.header-copy;
+}
+
+.page-header__eyebrow {
+  @include recruiter.eyebrow;
+}
+
+.page-header__actions {
+  @include recruiter.header-actions;
+}
+
+.count-pill {
+  @include recruiter.status-pill('neutral');
+}
+
+.btn-primary {
+  @include recruiter.btn-primary;
+}
+
+.btn-secondary {
+  @include recruiter.btn-secondary;
+}
+
+.banner--error {
+  @include recruiter.banner-error;
+}
+
+.banner--success {
+  @include recruiter.banner-success;
+}
+
+.metric-grid {
+  @include recruiter.metric-grid(195px);
+}
+
+.ratio-card {
+  @include recruiter.card-surface(16px 20px);
+  display: grid;
+  gap: 10px;
+}
+
+.ratio-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+
+  strong {
+    color: var(--text-primary);
+    font-size: 13.5px;
+    font-weight: 700;
+  }
+
+  span {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.ratio-bar {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-tertiary);
+}
+
+.ratio-seg {
+  display: block;
+  height: 100%;
+  transition: width 0.25s ease;
+
+  &--open {
+    background: var(--color-success);
+  }
+
+  &--draft {
+    background: var(--color-warning);
+  }
+
+  &--closed {
+    background: var(--text-muted);
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.segmented-tabs {
+  @include recruiter.segmented-tabs;
+}
+
+.toolbar__search {
+  flex: 1 1 260px;
+  max-width: 380px;
+
+  input {
+    @include recruiter.field-control;
+    min-height: 38px;
+  }
+}
+
+.job-editor {
+  @include recruiter.card-surface(22px);
+  display: grid;
+  gap: 18px;
+}
+
+.job-editor__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+}
+
+.job-editor__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 14px;
+}
+
+.sharing-controls {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 16px;
+  margin: 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--dev-radius-surface, 8px);
+  color: var(--text-primary);
+  background: var(--surface-secondary);
+
+  label,
+  legend {
+    @include recruiter.field-label;
+  }
+
+  legend {
+    padding: 2px 8px;
+    border-radius: var(--dev-radius-control, 6px);
+    background: var(--surface-card);
+    border: 1px solid var(--border-color);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  select {
+    @include recruiter.field-control;
+  }
+
+  .sharing-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+
+    input[type='checkbox'] {
+      width: 17px;
+      height: 17px;
+      margin-top: 2px;
+      accent-color: var(--color-primary);
+      flex-shrink: 0;
+    }
+  }
+
+  .sharing-hint {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+  }
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+
+  label {
+    @include recruiter.field-label;
+  }
+
+  input,
+  select,
+  textarea {
+    @include recruiter.field-control;
+  }
+
+  textarea {
+    min-height: 112px;
+    resize: vertical;
+  }
+}
+
+.field--wide {
+  grid-column: 1 / -1;
+}
+
+.field__meta {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+
+  &--required {
+    color: var(--color-danger-text);
+  }
+}
+
+.field__error {
+  color: var(--color-danger-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-color);
+}
+
+.card-grid {
+  @include recruiter.card-grid(320px);
+}
+
+@media (max-width: 640px) {
+  .toolbar__search {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .form-actions {
+    justify-content: stretch;
+
+    button {
+      flex: 1 1 140px;
+    }
+  }
+}

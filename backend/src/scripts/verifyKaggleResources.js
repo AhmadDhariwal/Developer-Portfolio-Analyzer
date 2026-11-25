@@ -2,9 +2,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
-const cache = require('../services/redisCacheService');
-const governance = require('../services/integrationGovernanceService');
-const resources = require('../services/integrations/kaggleResources');
+const cache = require('../core/cache/redisCacheService');
+const governance = require('../modules/integrations/services/integrationGovernanceService');
+const resources = require('../modules/integrations/services/adapters/kaggleResources');
 
 async function main() {
   const name =

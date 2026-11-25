@@ -1,0 +1,24 @@
+{
+  "suite": "interview-diagnostic",
+  "code": 1,
+  "results": [
+    "✖ Interview Prep isolated Mongo critical paths (11554.5687ms)",
+    "ℹ tests 10",
+    "ℹ pass 8",
+    "ℹ fail 2",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ duration_ms 14437.2987",
+    "✖ failing tests:",
+    "✖ authenticated API contracts, input rejection, practice fallback, and canonical personalization (1987.8926ms)"
+  ],
+  "diagnostics": [
+    "503 response /search?topic=javascript&q=JavaScript {\"message\":\"Interview service is temporarily busy. Please retry.\"}",
+    "test at src\\tests\\interview-prep\\interviewPrepFinalization.integration.test.js:290:13",
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "      at TestContext.<anonymous> (C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\dpa-widget-regression-UStLmx\\backend\\src\\tests\\interview-prep\\interviewPrepFinalization.integration.test.js:344:16)",
+    "      at async TestContext.<anonymous> (C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\dpa-widget-regression-UStLmx\\backend\\src\\tests\\interview-prep\\interviewPrepFinalization.integration.test.js:290:5)",
+    "    actual: 503,",
+    "    expected: 200,"
+  ]
+}

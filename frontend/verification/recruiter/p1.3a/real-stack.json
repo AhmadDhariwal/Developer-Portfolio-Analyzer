@@ -1,0 +1,108 @@
+{
+  "status": "passed",
+  "branch": "fix/P1-project",
+  "apiMocks": false,
+  "frontendBuild": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\recruiter\\p1.3a-build-20261122\\browser",
+  "backendCheckout": "D:\\Developer-Portfolio-Analyzer\\backend",
+  "requests": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/jobs",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/matches/generate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/candidates?limit=24&sortBy=score-desc",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/matches?jobId=6b0338cd976ea0bef438625b",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/matches/6b0338ce9650409bc0f01dac/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/candidates?limit=24&sortBy=score-desc",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/matches?jobId=6b0338cd976ea0bef438625b",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/jobs/6b0338cd976ea0bef438625b",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/matches?jobId=6b0338cd976ea0bef438625b",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/jobs/6b0338cd976ea0bef438625b/applications",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/jobs/6b0338cd976ea0bef438625b/applications/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee/resume",
+      "status": 404
+    },
+    {
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/jobs/6b0338cd976ea0bef438625b/applications/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/candidates?minReadiness=0&sortBy=score-desc&page=1&limit=12",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/candidates?minReadiness=0&sortBy=score-desc&page=2&limit=12&cursor=%5Bsigned-position%5D",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:59814/api/recruiter-hub/candidates?search=Browser+candidate+24&minReadiness=0&sortBy=score-desc&page=1&limit=12",
+      "status": 200
+    }
+  ],
+  "checks": {
+    "evaluationSharedTrue": true,
+    "managerMutation": true,
+    "memberEvaluationReadOnly": true,
+    "privateApplicationsDenied": [404, 404, 404],
+    "discoveryPaginationAndFilter": true
+  },
+  "mongoCleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 331,
+    "productionDataUsed": false
+  },
+  "frontendBuildTemporary": true,
+  "frontendBuildRemovedAfterVerification": true
+}
