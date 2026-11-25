@@ -67,9 +67,9 @@ test('Support admission is Mongo-authoritative: ordering, 409/429/503, concurren
     });
     return u;
   };
-  const admin = await makeUser('admin');
-  admin.role = 'admin';
-  await admin.save();
+  const superAdmin = await makeUser('super-admin');
+  superAdmin.role = 'super_admin';
+  await superAdmin.save();
 
   t.after(async () => {
     redisCache.isRedisCacheEnabled = originals.enabled;
@@ -226,39 +226,27 @@ test('Support admission is Mongo-authoritative: ordering, 409/429/503, concurren
       const first = await supportService.updateTicketStatus(
         ticket._id,
         'in_progress',
-        admin._id,
-        admin.sessionRevision,
+        superAdmin._id,
+        superAdmin.sessionRevision,
         expected
       );
       assert.equal(first.status, 'in_progress');
 
       // Second update with the now-stale token must lose.
       await assert.rejects(
-        supportService.updateTicketStatus(
-          ticket._id,
-          'resolved',
-          admin._id,
-          admin.sessionRevision,
-          expected
-        ),
+        supportService.updateTicketStatus(ticket._id, 'resolved', superAdmin._id, superAdmin.sessionRevision, expected),
         (error) => error.status === 409 && /someone else/i.test(error.message)
       );
 
       // A repeat transition (back to a previously-used status) still notifies: unique key.
       const fresh = (await SupportTicket.findById(ticket._id).lean()).updatedAt;
-      await supportService.updateTicketStatus(
-        ticket._id,
-        'open',
-        admin._id,
-        admin.sessionRevision,
-        fresh
-      );
+      await supportService.updateTicketStatus(ticket._id, 'open', superAdmin._id, superAdmin.sessionRevision, fresh);
       const fresher = (await SupportTicket.findById(ticket._id).lean()).updatedAt;
       await supportService.updateTicketStatus(
         ticket._id,
         'in_progress',
-        admin._id,
-        admin.sessionRevision,
+        superAdmin._id,
+        superAdmin.sessionRevision,
         fresher
       );
 
@@ -292,7 +280,7 @@ test('Support admission is Mongo-authoritative: ordering, 409/429/503, concurren
       await supportService.addReply(user, ticket._id, 'a user reply');
       assert.equal(notifications.length, 0, 'a user reply fires no notification');
 
-      await supportService.adminAddReply(admin, ticket._id, 'an admin reply');
+      await supportService.adminAddReply(superAdmin, ticket._id, 'an admin reply');
       const replyNotifs = notifications.filter((n) =>
         String(n.dedupeKey).startsWith('support-reply-')
       );
@@ -393,15 +381,12 @@ test('Support admission is Mongo-authoritative: ordering, 409/429/503, concurren
         assert.equal(await SupportTicketDedupe.countDocuments({ userId: user._id }), 0);
         const ticket = await supportService.createTicket(user, payload('rollback mutations'));
         await assert.rejects(
-          failing.updateTicketStatus(ticket._id, 'resolved', admin._id),
+          failing.updateTicketStatus(ticket._id, 'resolved', superAdmin._id),
           /injected notification/
         );
         assert.equal((await SupportTicket.findById(ticket._id)).status, 'open');
         assert.equal((await SupportTicket.findById(ticket._id)).statusRevision, 0);
-        await assert.rejects(
-          failing.adminAddReply(admin, ticket._id, 'rollback reply'),
-          /injected notification/
-        );
+        await assert.rejects(failing.adminAddReply(superAdmin, ticket._id, 'rollback reply'), /injected notification/);
         assert.equal((await SupportTicket.findById(ticket._id)).replies.length, 0);
       } finally {
         notificationService.createNotification = capture;
@@ -410,35 +395,37 @@ test('Support admission is Mongo-authoritative: ordering, 409/429/503, concurren
     }
   );
 
-  await t.test(
-    'admin authorization, revoked sessions, and invalid status versions stay enforced',
-    async () => {
-      const user = await makeUser('authorization');
-      const ticket = await supportService.createTicket(user, payload('authorized mutations'));
-      await assert.rejects(
-        supportService.updateTicketStatus(ticket._id, 'resolved', user._id),
-        (e) => e.status === 403
-      );
-      await assert.rejects(
-        supportService.adminAddReply(user, ticket._id, 'forbidden'),
-        (e) => e.status === 403
-      );
-      await assert.rejects(
-        supportService.updateTicketStatus(ticket._id, 'resolved', admin._id, 99),
-        (e) => e.status === 401
-      );
-      await assert.rejects(
-        supportService.addReply({ _id: user._id, sessionRevision: 99 }, ticket._id, 'stale'),
-        (e) => e.status === 401
-      );
-      await assert.rejects(
-        supportService.updateTicketStatus(ticket._id, 'resolved', admin._id, 0, 'invalid'),
-        (e) => e.status === 400
-      );
-      assert.equal((await SupportTicket.findById(ticket._id)).status, 'open');
-      assert.equal((await SupportTicket.findById(ticket._id)).replies.length, 0);
-    }
-  );
+  await t.test('admin authorization, revoked sessions, and invalid status versions stay enforced', async () => {
+    const user = await makeUser('authorization');
+    const organizationAdmin = await makeUser('organization-admin');
+    organizationAdmin.role = 'admin';
+    await organizationAdmin.save();
+    const ticket = await supportService.createTicket(user, payload('authorized mutations'));
+    await assert.rejects(supportService.updateTicketStatus(ticket._id, 'resolved', user._id), (e) => e.status === 403);
+    await assert.rejects(supportService.adminAddReply(user, ticket._id, 'forbidden'), (e) => e.status === 403);
+    await assert.rejects(
+      supportService.updateTicketStatus(ticket._id, 'resolved', organizationAdmin._id),
+      (e) => e.status === 403
+    );
+    await assert.rejects(
+      supportService.adminAddReply(organizationAdmin, ticket._id, 'forbidden'),
+      (e) => e.status === 403
+    );
+    await assert.rejects(
+      supportService.updateTicketStatus(ticket._id, 'resolved', superAdmin._id, 99),
+      (e) => e.status === 401
+    );
+    await assert.rejects(
+      supportService.addReply({ _id: user._id, sessionRevision: 99 }, ticket._id, 'stale'),
+      (e) => e.status === 401
+    );
+    await assert.rejects(
+      supportService.updateTicketStatus(ticket._id, 'resolved', superAdmin._id, 0, 'invalid'),
+      (e) => e.status === 400
+    );
+    assert.equal((await SupportTicket.findById(ticket._id)).status, 'open');
+    assert.equal((await SupportTicket.findById(ticket._id)).replies.length, 0);
+  });
 
   await t.test(
     'admin search escapes regex and priority sorting preserves severity order',

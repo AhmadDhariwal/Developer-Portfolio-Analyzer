@@ -1,5 +1,6 @@
 const Membership = require('../models/membership');
 const Team = require('../models/team');
+const Organization = require('../models/organization');
 
 const ROLE_LEVEL = {
   member: 1,
@@ -28,7 +29,13 @@ const canManageRole = (actorRole, targetRole) => {
   return false;
 };
 
-const resolveOrganizationRole = async (userId, organizationId) => {
+const resolveOrganizationRole = async (userId, organizationId, session = null) => {
+  const organization = await Organization.findOne({ _id: organizationId, isSuspended: { $ne: true } })
+    .select('ownerId')
+    .session(session)
+    .lean();
+  if (!organization) return null;
+
   const direct = await Membership.findOne({
     userId,
     organizationId,
@@ -36,27 +43,27 @@ const resolveOrganizationRole = async (userId, organizationId) => {
     status: 'active'
   })
     .select('role')
+    .session(session)
     .lean();
 
   if (direct) return direct.role;
 
-  const teamMembership = await Membership.findOne({
-    userId,
-    organizationId,
-    teamId: { $ne: null },
-    status: 'active'
-  })
-    .sort({ updatedAt: -1 })
-    .select('role')
-    .lean();
-
-  return teamMembership?.role || null;
+  return String(organization.ownerId) === String(userId) ? 'admin' : null;
 };
 
 const resolveTeamRole = async (userId, teamId) => {
+  const team = await Team.findOne({ _id: teamId, isActive: { $ne: false } })
+    .select('organizationId')
+    .lean();
+  if (!team) return null;
+
+  const organization = await Organization.exists({ _id: team.organizationId, isSuspended: { $ne: true } });
+  if (!organization) return null;
+
   const teamMembership = await Membership.findOne({
     userId,
     teamId,
+    organizationId: team.organizationId,
     status: 'active'
   })
     .select('organizationId role')
@@ -69,9 +76,6 @@ const resolveTeamRole = async (userId, teamId) => {
       fromOrganization: false
     };
   }
-
-  const team = await Team.findById(teamId).select('organizationId').lean();
-  if (!team) return null;
 
   const orgRole = await resolveOrganizationRole(userId, team.organizationId);
   if (!orgRole) return null;

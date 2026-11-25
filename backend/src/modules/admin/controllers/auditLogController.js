@@ -37,6 +37,7 @@ const toInclusiveEndDate = (value) => {
 };
 
 const isObjectId = (value) => mongoose.Types.ObjectId.isValid(String(value || ''));
+const literalActorSearch = (value) => new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 const uniqueIds = (values = []) => Array.from(new Set(values.map((value) => String(value || '')).filter(Boolean)));
 const hasSensitiveKey = (key) => SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(String(key || '')));
 
@@ -244,7 +245,7 @@ const resolveRequestedActorIds = async ({ actorTerm, organizationId, allowedUser
     return [candidateId];
   }
 
-  const regex = new RegExp(actorTerm, 'i');
+  const regex = literalActorSearch(actorTerm);
   const query = {
     $or: [{ name: regex }, { email: regex }, { githubUsername: regex }]
   };
@@ -346,7 +347,7 @@ const loadSuperAdminActorScope = async ({ requesterId, organizationId, teamId, a
         userQuery._id = actorId;
       }
     } else {
-      const regex = new RegExp(actorTerm, 'i');
+      const regex = literalActorSearch(actorTerm);
       userQuery.$or = [{ name: regex }, { email: regex }, { githubUsername: regex }];
     }
   }
@@ -567,17 +568,19 @@ const authorizeDeleteAuditLog = async ({ log, organizationId, requesterId }) => 
     return { allowed: true };
   }
 
+  if (requesterRole === 'admin') return { allowed: true };
+
   if (!actorId) {
-    return requesterRole === 'admin'
-      ? { allowed: true }
-      : { allowed: false, message: 'Only admins can delete system activity logs.' };
+    return { allowed: false, message: 'Only admins can delete system activity logs.' };
   }
 
   const membership = await Membership.findOne({
     organizationId,
     userId: actorId,
     status: 'active'
-  }).select('role').lean();
+  })
+    .select('role')
+    .lean();
 
   if (!membership) {
     return { allowed: false, message: 'Actor does not belong to this organization.' };
@@ -596,6 +599,21 @@ const getAuditLogs = async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized.' });
     }
 
+    const { actor, from, to } = req.query;
+    const validDate = (value) =>
+      value === undefined ||
+      (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}(?:T.+)?$/.test(value) && Number.isFinite(Date.parse(value)));
+    if (
+      (actor !== undefined && (typeof actor !== 'string' || actor.length > 100)) ||
+      !validDate(from) ||
+      !validDate(to) ||
+      (from && to && new Date(from) > toInclusiveEndDate(to)) ||
+      [req.query.teamId, req.query.organizationId].some(
+        (value) => value && (typeof value !== 'string' || !isObjectId(value))
+      )
+    ) {
+      return res.status(400).json({ message: 'Invalid audit filters.' });
+    }
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
     const limit = Math.max(1, Math.min(MAX_LIMIT, Number.parseInt(req.query.limit, 10) || DEFAULT_LIMIT));
     const requesterId = String(req.user._id);
@@ -693,35 +711,46 @@ const getAuditLogs = async (req, res) => {
 
 const deleteAuditLog = async (req, res) => {
   try {
-    const log = await AuditLog.findById(req.params.id).lean();
+    if (!isObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Audit log id is invalid.' });
+    }
+    const requesterRole = normalizeUserRole(req.user?.role);
+    const isSuperAdmin = requesterRole === 'super_admin';
+    const organizationId = req.organizationId || req.user.organizationId;
+    const filter = { _id: req.params.id, deleted: { $ne: true } };
+    if (!isSuperAdmin) {
+      if (organizationId) filter.organizationId = organizationId;
+      else if (requesterRole !== 'admin') {
+        filter.organizationId = null;
+        filter.actor = req.user._id;
+      } else {
+        return res.status(403).json({ message: 'Organization context is required.' });
+      }
+    }
+    const log = await AuditLog.findOne(filter).lean();
     if (!log) {
       return res.status(404).json({ message: 'Audit log not found.' });
     }
 
-    if (log.deleted) {
-      return res.status(404).json({ message: 'Audit log already archived.' });
-    }
-
-    const requesterRole = normalizeUserRole(req.user?.role);
-    const organizationId = requesterRole === 'super_admin'
-      ? String(req.query.organizationId || log.organizationId || '').trim()
-      : String(req.organizationId || req.user.organizationId || log.organizationId || '').trim();
     const requesterId = String(req.user._id);
-    const authorization = await authorizeDeleteAuditLog({
-      log,
-      organizationId,
-      requesterId
-    });
+    const authorization = isSuperAdmin
+      ? { allowed: true }
+      : await authorizeDeleteAuditLog({
+          log,
+          organizationId,
+          requesterId
+        });
 
     if (!authorization.allowed) {
       return res.status(authorization.statusCode || 403).json({ message: authorization.message });
     }
 
     // Soft delete: mark as deleted instead of removing
-    await AuditLog.updateOne(
-      { _id: req.params.id },
+    const result = await AuditLog.updateOne(
+      { ...filter, organizationId: log.organizationId ?? null },
       { $set: { deleted: true, deletedAt: new Date() } }
     );
+    if (!result.matchedCount) return res.status(404).json({ message: 'Audit log not found.' });
     return res.json({ message: 'Audit log archived.' });
   } catch (error) {
     console.error('Delete audit log error:', error.message);

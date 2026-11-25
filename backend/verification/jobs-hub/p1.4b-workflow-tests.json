@@ -18,12 +18,12 @@
               "$and": [
                 {
                   "organizationId": {
-                    "$eq": "6b05624e8fe7d59d982ace02"
+                    "$eq": "6b06fd6e58eba4207f9add6f"
                   }
                 },
                 {
                   "recruiterId": {
-                    "$eq": "6b05624e8fe7d59d982acdff"
+                    "$eq": "6b06fd6e58eba4207f9add6c"
                   }
                 },
                 {
@@ -1696,13 +1696,13 @@
             "queryHash": "85C68B50",
             "planCacheShapeHash": "85C68B50",
             "planCacheKey": "2EB124EB",
-            "optimizationTimeMillis": 2172,
+            "optimizationTimeMillis": 1176,
             "maxIndexedOrSolutionsReached": false,
             "maxIndexedAndSolutionsReached": true,
             "maxScansToExplodeReached": false,
             "prunedSimilarIndexes": false,
             "winningPlan": {
-              "isCached": true,
+              "isCached": false,
               "stage": "SORT",
               "sortPattern": {
                 "updatedAt": -1,
@@ -3396,10 +3396,10 @@
                   "direction": "forward",
                   "indexBounds": {
                     "organizationId": [
-                      "[ObjectId('6b05624e8fe7d59d982ace02'), ObjectId('6b05624e8fe7d59d982ace02')]"
+                      "[ObjectId('6b06fd6e58eba4207f9add6f'), ObjectId('6b06fd6e58eba4207f9add6f')]"
                     ],
                     "recruiterId": [
-                      "[ObjectId('6b05624e8fe7d59d982acdff'), ObjectId('6b05624e8fe7d59d982acdff')]"
+                      "[ObjectId('6b06fd6e58eba4207f9add6c'), ObjectId('6b06fd6e58eba4207f9add6c')]"
                     ],
                     "jobId": [
                       "[ObjectId('000000000000000000000000'), ObjectId('ffffffffffffffffffffffff')]"
@@ -5091,7 +5091,7 @@
                       },
                       {
                         "recruiterId": {
-                          "$eq": "6b05624e8fe7d59d982acdff"
+                          "$eq": "6b06fd6e58eba4207f9add6c"
                         }
                       }
                     ]
@@ -5113,7 +5113,7 @@
                     "direction": "forward",
                     "indexBounds": {
                       "organizationId": [
-                        "[ObjectId('6b05624e8fe7d59d982ace02'), ObjectId('6b05624e8fe7d59d982ace02')]"
+                        "[ObjectId('6b06fd6e58eba4207f9add6f'), ObjectId('6b06fd6e58eba4207f9add6f')]"
                       ]
                     }
                   }
@@ -6791,12 +6791,12 @@
                       },
                       {
                         "organizationId": {
-                          "$eq": "6b05624e8fe7d59d982ace02"
+                          "$eq": "6b06fd6e58eba4207f9add6f"
                         }
                       },
                       {
                         "recruiterId": {
-                          "$eq": "6b05624e8fe7d59d982acdff"
+                          "$eq": "6b06fd6e58eba4207f9add6c"
                         }
                       }
                     ]
@@ -8496,12 +8496,12 @@
                       },
                       {
                         "organizationId": {
-                          "$eq": "6b05624e8fe7d59d982ace02"
+                          "$eq": "6b06fd6e58eba4207f9add6f"
                         }
                       },
                       {
                         "recruiterId": {
-                          "$eq": "6b05624e8fe7d59d982acdff"
+                          "$eq": "6b06fd6e58eba4207f9add6c"
                         }
                       }
                     ]
@@ -10194,7 +10194,7 @@
                       },
                       {
                         "organizationId": {
-                          "$eq": "6b05624e8fe7d59d982ace02"
+                          "$eq": "6b06fd6e58eba4207f9add6f"
                         }
                       }
                     ]
@@ -10220,7 +10220,7 @@
                     "direction": "forward",
                     "indexBounds": {
                       "recruiterId": [
-                        "[ObjectId('6b05624e8fe7d59d982acdff'), ObjectId('6b05624e8fe7d59d982acdff')]"
+                        "[ObjectId('6b06fd6e58eba4207f9add6c'), ObjectId('6b06fd6e58eba4207f9add6c')]"
                       ],
                       "candidateId": [
                         "[ObjectId('000000000000000000000000'), ObjectId('ffffffffffffffffffffffff')]"
@@ -11932,10 +11932,10 @@
                     "direction": "forward",
                     "indexBounds": {
                       "organizationId": [
-                        "[ObjectId('6b05624e8fe7d59d982ace02'), ObjectId('6b05624e8fe7d59d982ace02')]"
+                        "[ObjectId('6b06fd6e58eba4207f9add6f'), ObjectId('6b06fd6e58eba4207f9add6f')]"
                       ],
                       "recruiterId": [
-                        "[ObjectId('6b05624e8fe7d59d982acdff'), ObjectId('6b05624e8fe7d59d982acdff')]"
+                        "[ObjectId('6b06fd6e58eba4207f9add6c'), ObjectId('6b06fd6e58eba4207f9add6c')]"
                       ],
                       "updatedAt": [
                         "[MaxKey, MinKey]"
@@ -13623,7 +13623,7 @@
                       },
                       {
                         "organizationId": {
-                          "$eq": "6b05624e8fe7d59d982ace02"
+                          "$eq": "6b06fd6e58eba4207f9add6f"
                         }
                       }
                     ]
@@ -13645,7 +13645,7 @@
                     "direction": "forward",
                     "indexBounds": {
                       "recruiterId": [
-                        "[ObjectId('6b05624e8fe7d59d982acdff'), ObjectId('6b05624e8fe7d59d982acdff')]"
+                        "[ObjectId('6b06fd6e58eba4207f9add6c'), ObjectId('6b06fd6e58eba4207f9add6c')]"
                       ]
                     }
                   }
@@ -13656,20 +13656,20 @@
           "executionStats": {
             "executionSuccess": true,
             "nReturned": 133,
-            "executionTimeMillis": 2344,
+            "executionTimeMillis": 1296,
             "totalKeysExamined": 135,
             "totalDocsExamined": 135,
             "executionStages": {
-              "isCached": true,
+              "isCached": false,
               "stage": "SORT",
               "nReturned": 133,
-              "executionTimeMillisEstimate": 198,
+              "executionTimeMillisEstimate": 211,
               "works": 270,
               "advanced": 133,
               "needTime": 136,
               "needYield": 0,
-              "saveState": 107,
-              "restoreState": 106,
+              "saveState": 79,
+              "restoreState": 78,
               "isEOF": 1,
               "sortPattern": {
                 "updatedAt": -1,
@@ -15347,13 +15347,13 @@
                   ]
                 },
                 "nReturned": 133,
-                "executionTimeMillisEstimate": 198,
+                "executionTimeMillisEstimate": 211,
                 "works": 136,
                 "advanced": 133,
                 "needTime": 2,
                 "needYield": 0,
-                "saveState": 107,
-                "restoreState": 106,
+                "saveState": 79,
+                "restoreState": 78,
                 "isEOF": 1,
                 "docsExamined": 135,
                 "alreadyHasObj": 0,
@@ -15365,8 +15365,8 @@
                   "advanced": 135,
                   "needTime": 0,
                   "needYield": 0,
-                  "saveState": 107,
-                  "restoreState": 106,
+                  "saveState": 79,
+                  "restoreState": 78,
                   "isEOF": 1,
                   "keyPattern": {
                     "organizationId": 1,
@@ -15389,10 +15389,10 @@
                   "direction": "forward",
                   "indexBounds": {
                     "organizationId": [
-                      "[ObjectId('6b05624e8fe7d59d982ace02'), ObjectId('6b05624e8fe7d59d982ace02')]"
+                      "[ObjectId('6b06fd6e58eba4207f9add6f'), ObjectId('6b06fd6e58eba4207f9add6f')]"
                     ],
                     "recruiterId": [
-                      "[ObjectId('6b05624e8fe7d59d982acdff'), ObjectId('6b05624e8fe7d59d982acdff')]"
+                      "[ObjectId('6b06fd6e58eba4207f9add6c'), ObjectId('6b06fd6e58eba4207f9add6c')]"
                     ],
                     "jobId": [
                       "[ObjectId('000000000000000000000000'), ObjectId('ffffffffffffffffffffffff')]"
@@ -15411,7 +15411,7 @@
           }
         },
         "nReturned": 133,
-        "executionTimeMillisEstimate": 5
+        "executionTimeMillisEstimate": 8
       },
       {
         "$lookup": {
@@ -15423,8 +15423,8 @@
           "pipeline": [
             {
               "$match": {
-                "recruiterId": "6b05624e8fe7d59d982acdff",
-                "organizationId": "6b05624e8fe7d59d982ace02"
+                "recruiterId": "6b06fd6e58eba4207f9add6c",
+                "organizationId": "6b06fd6e58eba4207f9add6f"
               }
             },
             {
@@ -15444,7 +15444,7 @@
           "organizationId_1_recruiterId_1_updatedAt_-1"
         ],
         "nReturned": 133,
-        "executionTimeMillisEstimate": 66
+        "executionTimeMillisEstimate": 43
       },
       {
         "$lookup": {
@@ -15459,8 +15459,8 @@
           "pipeline": [
             {
               "$match": {
-                "recruiterId": "6b05624e8fe7d59d982acdff",
-                "organizationId": "6b05624e8fe7d59d982ace02",
+                "recruiterId": "6b06fd6e58eba4207f9add6c",
+                "organizationId": "6b06fd6e58eba4207f9add6f",
                 "consent.version": "direct-apply-v1",
                 "consent.sharePortfolio": {
                   "$type": "bool"
@@ -15521,7 +15521,7 @@
           "jobId_1_applicantId_1"
         ],
         "nReturned": 125,
-        "executionTimeMillisEstimate": 144
+        "executionTimeMillisEstimate": 104
       },
       {
         "$facet": {
@@ -15529,17 +15529,17 @@
             {
               "$internalFacetTeeConsumer": {},
               "nReturned": 125,
-              "executionTimeMillisEstimate": 144
+              "executionTimeMillisEstimate": 104
             },
             {
               "$skip": 120,
               "nReturned": 5,
-              "executionTimeMillisEstimate": 144
+              "executionTimeMillisEstimate": 104
             },
             {
               "$limit": 20,
               "nReturned": 5,
-              "executionTimeMillisEstimate": 144
+              "executionTimeMillisEstimate": 104
             }
           ],
           "count": [
@@ -15583,13 +15583,13 @@
           ]
         },
         "nReturned": 1,
-        "executionTimeMillisEstimate": 144
+        "executionTimeMillisEstimate": 104
       }
     ],
     "queryShapeHash": "93F635306302C3A3DF1F34B4FBBEC572ACED197423EFE4D2BD0221F60AA11956",
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 52840,
+      "port": 49671,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -15610,8 +15610,8 @@
       "pipeline": [
         {
           "$match": {
-            "recruiterId": "6b05624e8fe7d59d982acdff",
-            "organizationId": "6b05624e8fe7d59d982ace02",
+            "recruiterId": "6b06fd6e58eba4207f9add6c",
+            "organizationId": "6b06fd6e58eba4207f9add6f",
             "jobId": {
               "$type": "objectId"
             },
@@ -15638,8 +15638,8 @@
             "pipeline": [
               {
                 "$match": {
-                  "recruiterId": "6b05624e8fe7d59d982acdff",
-                  "organizationId": "6b05624e8fe7d59d982ace02"
+                  "recruiterId": "6b06fd6e58eba4207f9add6c",
+                  "organizationId": "6b06fd6e58eba4207f9add6f"
                 }
               },
               {
@@ -15666,8 +15666,8 @@
             "pipeline": [
               {
                 "$match": {
-                  "recruiterId": "6b05624e8fe7d59d982acdff",
-                  "organizationId": "6b05624e8fe7d59d982ace02",
+                  "recruiterId": "6b06fd6e58eba4207f9add6c",
+                  "organizationId": "6b06fd6e58eba4207f9add6f",
                   "consent.version": "direct-apply-v1",
                   "consent.sharePortfolio": {
                     "$type": "bool"
@@ -16851,7 +16851,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7711678088513323010"
+        "$timestamp": "7712130073691684865"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -16859,7 +16859,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7711678088513323010"
+      "$timestamp": "7712130073691684865"
     }
   },
   "cleanup": {

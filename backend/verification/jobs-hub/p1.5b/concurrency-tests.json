@@ -7,7 +7,7 @@
     "Session revision revoked after HTTP authentication but before the first fence returns 403; inactive membership returns 403; restored live policy restores exact totals.",
     {
       "persistentContention": {
-        "elapsedMs": 4047.2176000000036,
+        "elapsedMs": 3604.692600000002,
         "attempts": 64,
         "http": 503,
         "commit": "none"
@@ -18,7 +18,7 @@
   ],
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 339,
+    "temporaryFilesRemoved": 338,
     "productionDataUsed": false
   }
 }

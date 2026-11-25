@@ -401,7 +401,7 @@
       <div class="team-card__footer">
         <div class="team-card__score" [attr.data-score]="teamTone(team.performanceScore)">
           <span class="team-card__score-value">{{ team.performanceScore }}</span>
-          <span class="team-card__score-label">Team Score</span>
+          <span class="team-card__score-label">Team Activity Score</span>
         </div>
         <div class="team-card__date">
           <svg
@@ -437,7 +437,7 @@
           <th scope="col">Jobs</th>
           <th scope="col">Candidates</th>
           <th scope="col">Matches</th>
-          <th scope="col">Score</th>
+          <th scope="col">Activity Score</th>
           <th scope="col">Created</th>
           <th scope="col">Actions</th>
         </tr>
@@ -851,7 +851,7 @@
             </span>
           </div>
           <div class="drawer__kv-item">
-            <span class="drawer__kv-label">Team Score</span>
+            <span class="drawer__kv-label">Team Activity Score</span>
             <span
               class="drawer__kv-value drawer__kv-value--score"
               [attr.data-score]="teamTone(selectedTeam.performanceScore)"

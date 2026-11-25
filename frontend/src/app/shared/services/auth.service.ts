@@ -574,6 +574,7 @@ export class AuthService implements OnDestroy {
   canAccessUrl(url: string, user: SessionUser | null = this.getCurrentUser()): boolean {
     const target = String(url || '').trim();
     if (!target) return false;
+    if (/^\/invitations\/accept\/[a-zA-Z0-9_-]{24,128}$/.test(target)) return true;
 
     const role = normalizeRole(user?.role);
     if (role === 'super_admin') {

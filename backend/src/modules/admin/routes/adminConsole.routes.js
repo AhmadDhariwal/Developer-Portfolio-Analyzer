@@ -6,8 +6,10 @@
 const express = require('express');
 const router = express.Router();
 
-const { protect, authorizeRoles } = require('../../../core/middleware/authmiddleware');
+const { protect } = require('../../../core/middleware/authmiddleware');
 const { requireOrganizationContext } = require('../../../core/middleware/orgMiddleware');
+const requireAdminAccountRole = require('../middleware/requireAdminAccountRole');
+const { validateObjectIdParam } = require('../middleware/validateObjectIdParam');
 const {
   getConsoleOverview,
   getConsoleAnalytics,
@@ -26,7 +28,9 @@ const {
 
 // All routes: must be authenticated, must be admin role (not super_admin — they have their own module),
 // and must have a valid organization context.
-router.use(protect, authorizeRoles('admin'), requireOrganizationContext(['admin']));
+router.use(protect, requireAdminAccountRole, requireOrganizationContext(['admin']));
+router.param('id', validateObjectIdParam);
+router.param('recruiterId', validateObjectIdParam);
 
 router.get('/overview',     getConsoleOverview);
 router.get('/analytics',    getConsoleAnalytics);

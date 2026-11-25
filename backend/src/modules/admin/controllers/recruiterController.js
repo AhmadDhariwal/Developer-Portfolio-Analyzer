@@ -16,6 +16,7 @@ const {
   getRecruiterSettingsSync
 } = require('../../super-admin/services/platformSettingsService');
 const { validatePasswordAgainstPolicy } = require('../../auth/utils/passwordPolicy');
+const { createRecruiterLimitError, withOrganizationCapacityFence } = require('../services/teamCapacityService');
 
 const INVITATION_TTL_DAYS = 7;
 
@@ -27,9 +28,7 @@ const normalizePhone = (value) => String(value || '').trim();
 const normalizeLinkedIn = (value) => String(value || '').trim();
 const sanitizeText = (value) => String(value || '').trim();
 const average = (values = []) => {
-  const numeric = values
-    .map((value) => Number(value || 0))
-    .filter((value) => Number.isFinite(value));
+  const numeric = values.map((value) => Number(value || 0)).filter((value) => Number.isFinite(value));
   if (!numeric.length) return 0;
   return Math.round((numeric.reduce((sum, value) => sum + value, 0) / numeric.length) * 10) / 10;
 };
@@ -46,15 +45,12 @@ const formatAction = (value) =>
 const buildRecruiterProfileCompleted = (user = {}) => {
   const hasName = Boolean(String(user.name || '').trim());
   const hasPhone = Boolean(normalizePhone(user.phoneNumber));
-  const hasProfessionalLink = Boolean(
-    String(user.githubUsername || '').trim() || normalizeLinkedIn(user.linkedin)
-  );
+  const hasProfessionalLink = Boolean(String(user.githubUsername || '').trim() || normalizeLinkedIn(user.linkedin));
   const hasBasicInfo = Boolean(String(user.jobTitle || '').trim() || String(user.bio || '').trim());
   const hasBackground = Boolean(
     sanitizeText(user.recruiterDetails?.education) ||
     Number(user.recruiterDetails?.yearsOfExperience || 0) > 0 ||
-    (Array.isArray(user.recruiterDetails?.certifications) &&
-      user.recruiterDetails.certifications.length > 0)
+    (Array.isArray(user.recruiterDetails?.certifications) && user.recruiterDetails.certifications.length > 0)
   );
   return hasName && hasPhone && hasProfessionalLink && hasBasicInfo && hasBackground;
 };
@@ -75,20 +71,14 @@ const sanitizeRecruiter = (user, teams = [], organization = null, metrics = {}) 
   bio: user.bio || '',
   recruiterDetails: {
     education: sanitizeText(user.recruiterDetails?.education),
-    certifications: Array.isArray(user.recruiterDetails?.certifications)
-      ? user.recruiterDetails.certifications
-      : [],
+    certifications: Array.isArray(user.recruiterDetails?.certifications) ? user.recruiterDetails.certifications : [],
     yearsOfExperience: Number(user.recruiterDetails?.yearsOfExperience || 0),
     experienceSummary: sanitizeText(user.recruiterDetails?.experienceSummary),
-    specialties: Array.isArray(user.recruiterDetails?.specialties)
-      ? user.recruiterDetails.specialties
-      : [],
+    specialties: Array.isArray(user.recruiterDetails?.specialties) ? user.recruiterDetails.specialties : [],
     toolsAndPlatforms: Array.isArray(user.recruiterDetails?.toolsAndPlatforms)
       ? user.recruiterDetails.toolsAndPlatforms
       : [],
-    languages: Array.isArray(user.recruiterDetails?.languages)
-      ? user.recruiterDetails.languages
-      : []
+    languages: Array.isArray(user.recruiterDetails?.languages) ? user.recruiterDetails.languages : []
   },
   isActive: user.isActive !== false,
   profileCompleted: buildRecruiterProfileCompleted(user),
@@ -169,7 +159,7 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
     })
       .select('_id recruiterId status createdAt updatedAt')
       .lean(),
-    AuditLog.find({ organizationId, actor: { $in: recruiterIds } })
+    AuditLog.find({ organizationId, actor: { $in: recruiterIds }, deleted: { $ne: true } })
       .select('_id actor action method route statusCode timestamp')
       .sort({ timestamp: -1 })
       .limit(Math.max(recruiterIds.length * 30, 120))
@@ -228,20 +218,12 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
     const recruiterMatches = matchesByRecruiter.get(recruiterId) || [];
     const recruiterShortlists = shortlistsByRecruiter.get(recruiterId) || [];
     const recruiterLogs = logsByRecruiter.get(recruiterId) || [];
-    const viewedCount = recruiterLogs.filter(
-      (log) => log.action === 'RECRUITER_CANDIDATE_VIEWED'
-    ).length;
-    const analyzedCount = recruiterLogs.filter(
-      (log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED'
-    ).length;
-    const aiUsageCount = recruiterLogs.filter((log) =>
-      /ANALYZED|MATCH/.test(String(log.action || ''))
-    ).length;
+    const viewedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_VIEWED').length;
+    const analyzedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED').length;
+    const aiUsageCount = recruiterLogs.filter((log) => /ANALYZED|MATCH/.test(String(log.action || ''))).length;
     const activeJobs = recruiterJobs.filter((job) => String(job.status || '') === 'open').length;
     const shortlistedCount = recruiterShortlists.length;
-    const shortlistedMatches = recruiterMatches.filter(
-      (match) => String(match.status || '') === 'shortlisted'
-    ).length;
+    const shortlistedMatches = recruiterMatches.filter((match) => String(match.status || '') === 'shortlisted').length;
     const activityScore = clamp(
       viewedCount * 2 +
         analyzedCount * 5 +
@@ -265,11 +247,7 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
     );
     const teamContribution = clamp(
       Math.round(
-        average([
-          (recruiterJobs.length / maxJobs) * 100,
-          (recruiterMatches.length / maxMatches) * 100,
-          activityScore
-        ])
+        average([(recruiterJobs.length / maxJobs) * 100, (recruiterMatches.length / maxMatches) * 100, activityScore])
       )
     );
     const profileCompletion = buildRecruiterProfileCompleted(recruiter)
@@ -278,9 +256,7 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
           [
             Boolean(String(recruiter.name || '').trim()),
             Boolean(normalizePhone(recruiter.phoneNumber)),
-            Boolean(
-              String(recruiter.githubUsername || '').trim() || normalizeLinkedIn(recruiter.linkedin)
-            ),
+            Boolean(String(recruiter.githubUsername || '').trim() || normalizeLinkedIn(recruiter.linkedin)),
             Boolean(String(recruiter.jobTitle || '').trim() || String(recruiter.bio || '').trim()),
             Boolean(
               sanitizeText(recruiter.recruiterDetails?.education) ||
@@ -340,9 +316,7 @@ const getRecruiters = async (req, res) => {
       recruiters.map((recruiter) => recruiter._id)
     );
     const metricsMap = await buildRecruiterMetricsMap(req.organizationId, recruiters, teamMap);
-    const organizationPayload = organization?._id
-      ? { _id: organization._id, name: organization.name || '' }
-      : null;
+    const organizationPayload = organization?._id ? { _id: organization._id, name: organization.name || '' } : null;
 
     return res.status(200).json({
       recruiters: recruiters.map((recruiter) =>
@@ -364,9 +338,7 @@ const inviteRecruiter = async (req, res) => {
   try {
     const recruiterSettings = getRecruiterSettingsSync();
     if (recruiterSettings.enableRecruiterAccess === false) {
-      return res
-        .status(403)
-        .json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
+      return res.status(403).json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
     }
 
     const name = String(req.body?.name || '').trim();
@@ -377,7 +349,7 @@ const inviteRecruiter = async (req, res) => {
     }
 
     const organizationSettings = getOrganizationSettingsSync();
-    const [existingUser, existingPendingInvite, organization, recruiterCount] = await Promise.all([
+    const [existingUser, existingPendingInvite, organization] = await Promise.all([
       User.findOne({ email }).lean(),
       Invitation.findOne({
         email,
@@ -387,27 +359,11 @@ const inviteRecruiter = async (req, res) => {
         status: 'pending',
         expiresAt: { $gt: new Date() }
       }).lean(),
-      Organization.findById(req.organizationId).select('name').lean(),
-      User.countDocuments({
-        role: 'recruiter',
-        organizationId: req.organizationId,
-        isActive: { $ne: false }
-      })
+      Organization.findById(req.organizationId).select('name').lean()
     ]);
 
-    if (recruiterCount >= Number(organizationSettings.recruiterLimitPerOrg || 5)) {
-      return res.status(400).json({
-        message: `Recruiter limit (${organizationSettings.recruiterLimitPerOrg}) reached for this organization.`
-      });
-    }
-
-    if (
-      existingUser?.organizationId &&
-      String(existingUser.organizationId) !== String(req.organizationId)
-    ) {
-      return res
-        .status(403)
-        .json({ message: 'This email is already assigned to another organization.' });
+    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
+      return res.status(403).json({ message: 'This email is already assigned to another organization.' });
     }
 
     if (existingUser?.role === 'recruiter' && existingUser.isActive !== false) {
@@ -415,9 +371,7 @@ const inviteRecruiter = async (req, res) => {
     }
 
     if (existingPendingInvite) {
-      return res
-        .status(409)
-        .json({ message: 'An active recruiter invitation already exists for this email.' });
+      return res.status(409).json({ message: 'An active recruiter invitation already exists for this email.' });
     }
 
     let team = null;
@@ -434,16 +388,51 @@ const inviteRecruiter = async (req, res) => {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000);
 
-    const invitation = await Invitation.create({
-      name,
-      email,
-      role: 'recruiter',
+    const invitation = await withOrganizationCapacityFence({
       organizationId: req.organizationId,
-      teamId: team ? team._id : null,
-      invitedBy: req.user._id,
-      status: 'pending',
-      token,
-      expiresAt
+      mutate: async (session, organizationId) => {
+        const recruiterCount = await User.countDocuments({
+          role: 'recruiter',
+          organizationId,
+          isActive: { $ne: false }
+        }).session(session);
+        const recruiterLimit = Number(organizationSettings.recruiterLimitPerOrg || 5);
+        if (recruiterCount >= recruiterLimit) throw createRecruiterLimitError(recruiterLimit);
+
+        const pendingInvite = await Invitation.findOne({
+          email,
+          organizationId,
+          teamId: team?._id || null,
+          role: 'recruiter',
+          status: 'pending',
+          expiresAt: { $gt: new Date() }
+        })
+          .session(session)
+          .lean();
+        if (pendingInvite) {
+          throw Object.assign(new Error('An active recruiter invitation already exists for this email.'), {
+            status: 409
+          });
+        }
+
+        const [createdInvitation] = await Invitation.create(
+          [
+            {
+              name,
+              email,
+              role: 'recruiter',
+              organizationId,
+              teamId: team ? team._id : null,
+              invitedBy: req.user._id,
+              status: 'pending',
+              token,
+              expiresAt
+            }
+          ],
+          { session }
+        );
+        return createdInvitation;
+      }
     });
 
     const frontendBase = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
@@ -480,6 +469,7 @@ const inviteRecruiter = async (req, res) => {
       }
     });
   } catch (error) {
+    if (error?.status) return res.status(error.status).json({ message: error.message });
     console.error('Admin invite recruiter error:', error.message);
     return res.status(500).json({ message: 'Failed to invite recruiter.' });
   }
@@ -498,49 +488,44 @@ const validateDirectRecruiterInput = ({ name, email, password }) => {
   return null;
 };
 
-const upsertDirectRecruiterRecord = async ({
-  existingUser,
-  organizationId,
-  name,
-  email,
-  password
-}) => {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
+const upsertDirectRecruiterRecord = async ({ existingUser, organizationId, name, email, passwordHash, session }) => {
   if (existingUser) {
-    const recruiter = await User.findById(existingUser._id);
+    const recruiter = await User.findById(existingUser._id).session(session);
     recruiter.name = name;
     recruiter.email = email;
-    recruiter.password = hashedPassword;
+    recruiter.password = passwordHash;
     recruiter.role = 'recruiter';
     recruiter.organizationId = organizationId;
     recruiter.isVerified = true;
     recruiter.isActive = true;
     recruiter.onboardingCompleted = true;
-    recruiter.activeCareerStack =
-      recruiter.activeCareerStack || recruiter.careerStack || 'Full Stack';
-    recruiter.activeExperienceLevel =
-      recruiter.activeExperienceLevel || recruiter.experienceLevel || 'Student';
-    await recruiter.save();
+    recruiter.activeCareerStack = recruiter.activeCareerStack || recruiter.careerStack || 'Full Stack';
+    recruiter.activeExperienceLevel = recruiter.activeExperienceLevel || recruiter.experienceLevel || 'Student';
+    await recruiter.save({ session });
     return recruiter;
   }
 
-  return User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role: 'recruiter',
-    organizationId,
-    isVerified: true,
-    isActive: true,
-    onboardingCompleted: true,
-    activeCareerStack: 'Full Stack',
-    activeExperienceLevel: 'Student'
-  });
+  const [recruiter] = await User.create(
+    [
+      {
+        name,
+        email,
+        password: passwordHash,
+        role: 'recruiter',
+        organizationId,
+        isVerified: true,
+        isActive: true,
+        onboardingCompleted: true,
+        activeCareerStack: 'Full Stack',
+        activeExperienceLevel: 'Student'
+      }
+    ],
+    { session }
+  );
+  return recruiter;
 };
 
-const upsertRecruiterMemberships = async ({ organizationId, recruiterId, teamId, invitedBy }) => {
+const upsertRecruiterMemberships = async ({ organizationId, recruiterId, teamId, invitedBy, session }) => {
   const orgMembership = await Membership.findOneAndUpdate(
     {
       organizationId,
@@ -555,7 +540,7 @@ const upsertRecruiterMemberships = async ({ organizationId, recruiterId, teamId,
         joinedAt: new Date()
       }
     },
-    { upsert: true, setDefaultsOnInsert: true, new: true }
+    { upsert: true, setDefaultsOnInsert: true, new: true, session }
   );
 
   const teamMembership = teamId
@@ -573,7 +558,7 @@ const upsertRecruiterMemberships = async ({ organizationId, recruiterId, teamId,
             joinedAt: new Date()
           }
         },
-        { upsert: true, setDefaultsOnInsert: true, new: true }
+        { upsert: true, setDefaultsOnInsert: true, new: true, session }
       )
     : null;
 
@@ -584,9 +569,7 @@ const addRecruiterDirect = async (req, res) => {
   try {
     const recruiterSettings = getRecruiterSettingsSync();
     if (recruiterSettings.enableRecruiterAccess === false) {
-      return res
-        .status(403)
-        .json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
+      return res.status(403).json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
     }
 
     const name = String(req.body?.name || '').trim();
@@ -600,19 +583,12 @@ const addRecruiterDirect = async (req, res) => {
     }
 
     const organizationSettings = getOrganizationSettingsSync();
-    const [existingUser, organization, team, recruiterCount] = await Promise.all([
+    const [existingUser, organization, team] = await Promise.all([
       User.findOne({ email }).lean(),
       Organization.findById(req.organizationId).select('name').lean(),
       teamId
-        ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true })
-            .select('_id name')
-            .lean()
-        : null,
-      User.countDocuments({
-        role: 'recruiter',
-        organizationId: req.organizationId,
-        isActive: { $ne: false }
-      })
+        ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true }).select('_id name').lean()
+        : null
     ]);
 
     if (!organization) {
@@ -623,60 +599,85 @@ const addRecruiterDirect = async (req, res) => {
       return res.status(404).json({ message: 'Team not found in this organization.' });
     }
 
-    if (
-      existingUser?.organizationId &&
-      String(existingUser.organizationId) !== String(req.organizationId)
-    ) {
-      return res
-        .status(403)
-        .json({ message: 'This email is already assigned to another organization.' });
-    }
-
-    if (
-      (!existingUser || String(existingUser.organizationId || '') === String(req.organizationId)) &&
-      recruiterCount >= Number(organizationSettings.recruiterLimitPerOrg || 5)
-    ) {
-      return res.status(400).json({
-        message: `Recruiter limit (${organizationSettings.recruiterLimitPerOrg}) reached for this organization.`
-      });
+    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
+      return res.status(403).json({ message: 'This email is already assigned to another organization.' });
     }
 
     const restrictedRole = String(existingUser?.role || '').toLowerCase();
     if (restrictedRole === 'admin' || restrictedRole === 'super_admin') {
-      return res
-        .status(409)
-        .json({ message: 'This email is already linked to a restricted account role.' });
+      return res.status(409).json({ message: 'This email is already linked to a restricted account role.' });
     }
 
-    const recruiter = await upsertDirectRecruiterRecord({
-      existingUser,
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+    const result = await withOrganizationCapacityFence({
       organizationId: req.organizationId,
-      name,
-      email,
-      password
-    });
+      mutate: async (session, organizationId) => {
+        const currentUser = await User.findOne({ email }).session(session).lean();
+        if (currentUser?.organizationId && String(currentUser.organizationId) !== String(organizationId)) {
+          throw Object.assign(new Error('This email is already assigned to another organization.'), { status: 403 });
+        }
 
-    const { orgMembership, teamMembership } = await upsertRecruiterMemberships({
-      organizationId: req.organizationId,
-      recruiterId: recruiter._id,
-      teamId: team ? team._id : null,
-      invitedBy: req.user?._id || null
-    });
+        const recruiterCount = await User.countDocuments({
+          role: 'recruiter',
+          organizationId,
+          isActive: { $ne: false }
+        }).session(session);
+        const recruiterLimit = Number(organizationSettings.recruiterLimitPerOrg || 5);
+        if (recruiterCount >= recruiterLimit) throw createRecruiterLimitError(recruiterLimit);
 
-    const createdRecruiter = await User.findById(recruiter._id)
-      .select(
-        '_id name email role organizationId githubUsername linkedin phoneNumber isActive jobTitle bio createdAt'
-      )
-      .lean();
+        const currentRole = String(currentUser?.role || '').toLowerCase();
+        if (currentRole === 'admin' || currentRole === 'super_admin') {
+          throw Object.assign(new Error('This email is already linked to a restricted account role.'), { status: 409 });
+        }
+
+        const currentTeam = teamId
+          ? await Team.findOne({ _id: teamId, organizationId, isActive: true }).session(session).lean()
+          : null;
+        if (teamId && !currentTeam)
+          throw Object.assign(new Error('Team not found in this organization.'), { status: 404 });
+
+        const recruiter = await upsertDirectRecruiterRecord({
+          existingUser: currentUser,
+          organizationId,
+          name,
+          email,
+          passwordHash,
+          session
+        });
+        const { orgMembership, teamMembership } = await upsertRecruiterMemberships({
+          organizationId,
+          recruiterId: recruiter._id,
+          teamId: currentTeam?._id || null,
+          invitedBy: req.user?._id || null,
+          session
+        });
+        const createdRecruiter = await User.findById(recruiter._id)
+          .select(
+            '_id name email role organizationId githubUsername linkedin phoneNumber isActive jobTitle bio createdAt'
+          )
+          .session(session)
+          .lean();
+
+        return {
+          createdRecruiter,
+          orgMembership,
+          teamMembership,
+          team: currentTeam ? { _id: currentTeam._id, name: currentTeam.name } : null
+        };
+      }
+    });
 
     return res.status(201).json({
       message: 'Recruiter created successfully.',
-      recruiter: sanitizeRecruiter(createdRecruiter),
-      membership: orgMembership,
-      teamMembership,
-      team: team ? { _id: team._id, name: team.name } : null
+      recruiter: sanitizeRecruiter(result.createdRecruiter),
+      membership: result.orgMembership,
+      teamMembership: result.teamMembership,
+      team: result.team
     });
   } catch (error) {
+    if (error?.status) return res.status(error.status).json({ message: error.message });
+    if (error?.code === 11000) return res.status(409).json({ message: 'Another account already uses this email.' });
     console.error('Admin direct recruiter create error:', error.message);
     return res.status(500).json({ message: 'Failed to create recruiter.' });
   }
@@ -743,26 +744,36 @@ const setRecruiterActive = async (req, res) => {
       return res.status(400).json({ message: 'isActive must be a boolean.' });
     }
 
-    const recruiter = await User.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        role: 'recruiter',
-        organizationId: req.organizationId
-      },
-      {
-        $set: {
-          isActive: req.body.isActive
-        }
-      },
-      { new: true }
-    );
+    const organizationSettings = getOrganizationSettingsSync();
+    const recruiter = await withOrganizationCapacityFence({
+      organizationId: req.organizationId,
+      mutate: async (session, organizationId) => {
+        const current = await User.findOne({
+          _id: req.params.id,
+          role: 'recruiter',
+          organizationId
+        }).session(session);
 
-    if (!recruiter) {
-      return res.status(404).json({ message: 'Recruiter not found.' });
-    }
+        if (!current) throw Object.assign(new Error('Recruiter not found.'), { status: 404 });
+        if (req.body.isActive && current.isActive === false) {
+          const activeRecruiters = await User.countDocuments({
+            role: 'recruiter',
+            organizationId,
+            isActive: { $ne: false }
+          }).session(session);
+          const recruiterLimit = Number(organizationSettings.recruiterLimitPerOrg || 5);
+          if (activeRecruiters >= recruiterLimit) throw createRecruiterLimitError(recruiterLimit);
+        }
+
+        current.isActive = req.body.isActive;
+        await current.save({ session });
+        return current;
+      }
+    });
 
     return res.status(200).json({ recruiter: sanitizeRecruiter(recruiter) });
   } catch (error) {
+    if (error?.status) return res.status(error.status).json({ message: error.message });
     console.error('Admin recruiter activation error:', error.message);
     return res.status(500).json({ message: 'Failed to update recruiter status.' });
   }

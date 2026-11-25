@@ -72,7 +72,7 @@
             type="text"
             [ngModel]="searchInput"
             (ngModelChange)="onSearchChange($event)"
-            placeholder="Search name, email, GitHub, stack, skills, or projects"
+            placeholder="Search name, GitHub, stack, skills, or projects"
           />
           <button type="button" class="search-clear" *ngIf="searchInput" (click)="clearSearch()" aria-label="Clear search">&times;</button>
         </div>
@@ -150,10 +150,6 @@
         </div>
 
         <div class="contact-grid">
-          <div class="contact-item">
-            <span class="contact-item__label">Email</span>
-            <strong [title]="dev.email">{{ dev.email }}</strong>
-          </div>
           <div class="contact-item" *ngIf="dev.githubUsername">
             <span class="contact-item__label">GitHub</span>
             <strong>@{{ dev.githubUsername }}</strong>
@@ -264,10 +260,6 @@
       <section class="drawer-section">
         <div class="drawer-section__title">Professional Snapshot</div>
         <div class="detail-grid">
-          <div>
-            <span class="detail-label">Email</span>
-            <strong>{{ dev.email }}</strong>
-          </div>
           <div>
             <span class="detail-label">Stack</span>
             <strong>{{ dev.stack || 'Not set' }}</strong>

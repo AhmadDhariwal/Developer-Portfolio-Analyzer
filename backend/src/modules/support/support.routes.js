@@ -11,9 +11,9 @@ router.delete('/tickets/:id', protect, supportController.deleteTicket);
 router.post('/tickets/:id/replies', protect, supportController.addReply);
 
 // Admin endpoints
-router.get('/admin/tickets', protect, authorizeRoles('admin', 'super_admin'), supportController.getAdminTickets);
-router.get('/admin/tickets/:id', protect, authorizeRoles('admin', 'super_admin'), supportController.getAdminTicketById);
-router.put('/admin/tickets/:id/status', protect, authorizeRoles('admin', 'super_admin'), supportController.updateTicketStatus);
-router.post('/admin/tickets/:id/replies', protect, authorizeRoles('admin', 'super_admin'), supportController.adminAddReply);
+router.get('/admin/tickets', protect, authorizeRoles('super_admin'), supportController.getAdminTickets);
+router.get('/admin/tickets/:id', protect, authorizeRoles('super_admin'), supportController.getAdminTicketById);
+router.put('/admin/tickets/:id/status', protect, authorizeRoles('super_admin'), supportController.updateTicketStatus);
+router.post('/admin/tickets/:id/replies', protect, authorizeRoles('super_admin'), supportController.adminAddReply);
 
 module.exports = router;

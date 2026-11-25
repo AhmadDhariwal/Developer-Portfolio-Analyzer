@@ -6,17 +6,16 @@ const {
 } = require('../../modules/admin/services/tenantService');
 
 const extractOrganizationId = (req) =>
-  req.params.organizationId || req.body.organizationId || req.query.organizationId;
+  req.params.organizationId || req.body?.organizationId || req.query.organizationId;
 
-const extractTeamId = (req) =>
-  req.params.teamId || req.body.teamId || req.query.teamId;
+const extractTeamId = (req) => req.params.teamId || req.body?.teamId || req.query.teamId;
 
 const requireOrganizationRole = (minRole = 'member') => {
   return async (req, res, next) => {
     try {
       const organizationId = extractOrganizationId(req);
-      if (!organizationId) {
-        return res.status(400).json({ message: 'organizationId is required.' });
+      if (typeof organizationId !== 'string' || !/^[a-f0-9]{24}$/i.test(organizationId)) {
+        return res.status(400).json({ message: 'organizationId is invalid.' });
       }
 
       const role = await resolveOrganizationRole(req.user._id, organizationId);
@@ -42,8 +41,8 @@ const requireTeamRole = (minRole = 'member') => {
   return async (req, res, next) => {
     try {
       const teamId = extractTeamId(req);
-      if (!teamId) {
-        return res.status(400).json({ message: 'teamId is required.' });
+      if (typeof teamId !== 'string' || !/^[a-f0-9]{24}$/i.test(teamId)) {
+        return res.status(400).json({ message: 'teamId is invalid.' });
       }
 
       const teamRole = await resolveTeamRole(req.user._id, teamId);

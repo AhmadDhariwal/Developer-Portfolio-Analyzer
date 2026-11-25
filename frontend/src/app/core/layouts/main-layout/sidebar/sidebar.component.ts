@@ -333,7 +333,7 @@ export class Sidebar implements OnInit {
     const role = this.currentRole;
     const isSuperAdmin = role === 'super_admin' || role === 'superadmin';
     const isRecruiter = role === 'recruiter' || this.tenantContext.snapshot.myRole === 'recruiter';
-    const isAdmin = role === 'admin' || this.tenantContext.snapshot.myRole === 'admin';
+    const isAdmin = role === 'admin';
 
     if (isAdmin) {
       this.openGroups.add('Admin Workspace');

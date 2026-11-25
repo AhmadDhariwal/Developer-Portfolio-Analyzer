@@ -46,7 +46,12 @@
 
       <div class="alert" *ngIf="error">{{ error }}</div>
 
-      <fieldset [disabled]="processing">
+      <button *ngIf="details.hasExistingAccount" class="btn btn--primary" type="button"
+              [disabled]="processing" (click)="acceptExistingAccount()">
+        {{ signedInRecipient ? 'Accept Invitation' : 'Sign In to Accept' }}
+      </button>
+
+      <fieldset *ngIf="!details.hasExistingAccount" [disabled]="processing">
 
         <!-- Row 1: Name + Phone (both required) -->
         <div class="row">
@@ -55,7 +60,7 @@
             <input id="g-name" type="text" [(ngModel)]="form.name"
                    name="name" placeholder="Your full name" />
           </div>
-          <div class="field">
+          <div class="field" *ngIf="details.role === 'recruiter'">
             <label for="g-phone">Phone Number <span class="req">*</span></label>
             <input id="g-phone" type="tel" [(ngModel)]="form.phoneNumber"
                    name="phoneNumber" placeholder="+1 555 000 0000" />
@@ -65,12 +70,11 @@
         <!-- Password -->
         <div class="field">
           <label for="g-password">
-            {{ details.hasExistingAccount ? 'New Password (optional)' : 'Set Password' }}
-            <span class="req" *ngIf="!details.hasExistingAccount">*</span>
+            Set Password <span class="req">*</span>
           </label>
           <input id="g-password" type="password" [(ngModel)]="form.password"
                  name="password"
-                 [placeholder]="details.hasExistingAccount ? 'Leave blank to keep current' : 'Min. 6 characters'" />
+                 autocomplete="new-password" />
         </div>
 
         <!-- Row 2: GitHub + LinkedIn (both optional) -->
@@ -95,7 +99,7 @@
 
       </fieldset>
 
-      <button class="btn btn--primary" (click)="submit()"
+      <button *ngIf="!details.hasExistingAccount" class="btn btn--primary" (click)="submit()"
               [disabled]="!isFormValid || processing">
         <span *ngIf="processing" class="spinner spinner--sm"></span>
         {{ processing ? 'Setting up…' : 'Complete Setup' }}
@@ -111,12 +115,13 @@
         </svg>
       </div>
       <h2 id="gate-title">Account Ready!</h2>
-      <p>
-        Your recruiter account for <strong>{{ details?.organizationName }}</strong> is set up.
+      <p *ngIf="details?.hasExistingAccount">Invitation accepted. Sign in again to start using your organization access.</p>
+      <p *ngIf="!details?.hasExistingAccount">
+        Your account for <strong>{{ details?.organizationName }}</strong> is set up.
         You are now signed in as <strong>{{ details?.email }}</strong>.
       </p>
       <button class="btn btn--primary" type="button" (click)="goToDashboard()">
-        Go to Dashboard →
+        {{ details?.hasExistingAccount ? 'Sign In' : 'Go to Dashboard →' }}
       </button>
     </ng-container>
 

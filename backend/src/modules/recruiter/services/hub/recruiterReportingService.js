@@ -20,23 +20,19 @@ const usageFilter = {
 const isRecruiterUsage = ({ action, route = '', statusCode }) =>
   statusCode >= 200 &&
   statusCode < 300 &&
-  ([CANDIDATE_ANALYZED, MATCH_GENERATED].includes(action) ||
-    LEGACY_MATCH.test(route) ||
-    LEGACY_RANK.test(route));
+  ([CANDIDATE_ANALYZED, MATCH_GENERATED].includes(action) || LEGACY_MATCH.test(route) || LEGACY_RANK.test(route));
 
-const aggregateUsage = async ({ organizationId, actorIds, since, previousSince, teamId }) => {
+const aggregateUsage = async ({ organizationId, actorIds, since, previousSince, teamId, visibleOnly }) => {
   const tenant = new mongoose.Types.ObjectId(organizationId);
   const scope = {
     organizationId: tenant,
     actor: { $in: actorIds },
     ...(teamId && { teamId: new mongoose.Types.ObjectId(teamId) }),
+    ...(visibleOnly && { deleted: { $ne: true } }),
     ...usageFilter
   };
   if (!since) {
-    return AuditLog.aggregate([
-      { $match: scope },
-      { $group: { _id: '$actor', count: { $sum: 1 } } }
-    ]);
+    return AuditLog.aggregate([{ $match: scope }, { $group: { _id: '$actor', count: { $sum: 1 } } }]);
   }
   const current = { $gte: ['$timestamp', since] };
   const previous = { $lt: ['$timestamp', since] };
@@ -69,12 +65,13 @@ const aggregateUsage = async ({ organizationId, actorIds, since, previousSince, 
   ]);
 };
 
-const listAnalyzedCandidates = async ({ organizationId, actorIds, since, stack, teamId }) => {
+const listAnalyzedCandidates = async ({ organizationId, actorIds, since, stack, teamId, visibleOnly }) => {
   const logs = await AuditLog.find({
     organizationId,
     actor: { $in: actorIds },
     action: CANDIDATE_ANALYZED,
     timestamp: { $gte: since },
+    ...(visibleOnly && { deleted: { $ne: true } }),
     ...(teamId && { teamId })
   })
     .sort({ timestamp: -1 })
