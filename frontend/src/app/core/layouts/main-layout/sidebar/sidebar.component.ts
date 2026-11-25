@@ -36,6 +36,7 @@ export class Sidebar implements OnInit {
   @Input() isOpen: boolean = false;
   @Input() isMobile: boolean = false;
   @Input() developerWorkspace: boolean = false;
+  @Input() recruiterWorkspace: boolean = false;
   @Output() collapse = new EventEmitter<void>();
 
   openGroups = new Set<string>(['Analysis', 'Growth', 'Opportunities', 'Insights', 'System']);
@@ -411,23 +412,14 @@ export class Sidebar implements OnInit {
                 `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`,
               ),
             },
-            {
-              label: 'Integrations',
-              route: '/app/integrations',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><line x1="10" y1="6.5" x2="14" y2="6.5"></line><line x1="17.5" y1="10" x2="17.5" y2="14"></line></svg>`,
-              ),
-            },
-            {
-              label: 'Profile',
-              route: '/app/profile',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
-              ),
-            },
           ],
         },
-      ];
+      ]
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => this.authService.canAccessUrl(item.route)),
+        }))
+        .filter((group) => group.items.length > 0);
       this.syncOpenGroupFromRoute();
       return;
     }
@@ -510,29 +502,6 @@ export class Sidebar implements OnInit {
             {
               label: 'Personal Details',
               route: '/app/recruiter/profile',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
-              ),
-            },
-          ],
-        },
-        {
-          label: 'Workspace',
-          route: '',
-          icon: this.trustSvg(
-            `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 20h8"></path><path d="M12 18v2"></path></svg>`,
-          ),
-          items: [
-            {
-              label: 'Integrations',
-              route: '/app/integrations',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><line x1="10" y1="6.5" x2="14" y2="6.5"></line><line x1="17.5" y1="10" x2="17.5" y2="14"></line></svg>`,
-              ),
-            },
-            {
-              label: 'My Profile',
-              route: '/app/profile',
               icon: this.trustSvg(
                 `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
               ),

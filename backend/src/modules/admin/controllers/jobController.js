@@ -143,6 +143,7 @@ const aiRankCandidates = async (req, res) => {
     let candidates = Array.isArray(inlineCandidates) ? inlineCandidates : [];
     if (!candidates.length) {
       const visibleCandidates = await listCandidates({
+        organizationId: req.organizationId,
         stack: String(job.stack || '').trim(),
         limit: 500
       });

@@ -1,0 +1,97 @@
+{
+  "scope": "P1.1B only: direct-application lifecycle and notifications; no ATS or P1.2 work",
+  "branch": "fix/P1-project",
+  "integrationTarget": "not applicable",
+  "baseline": "Pre-existing staged P1.1A.2 changes preserved. No staging, commits, pushes, deployments, production mutations, dependencies, queues, caches or workers added.",
+  "stateMachine": {
+    "initial": "submitted",
+    "recruiterTransitions": [
+      "submitted -> reviewing",
+      "submitted -> rejected",
+      "reviewing -> rejected"
+    ],
+    "applicantTransitions": ["submitted -> withdrawn", "reviewing -> withdrawn"],
+    "terminal": ["rejected", "withdrawn"],
+    "retryPolicy": "Repeat withdrawal by its applicant returns 200 with the existing withdrawn record, without another history entry or notification. Repeated or invalid recruiter transitions return 409; unsupported target/expected statuses return 400. Ownership failures return 404, role failures 403 and unauthenticated calls 401.",
+    "reapplication": "The existing deterministic job/applicant identity and unique secondary index remain. Resubmission returns the original application, including terminal status and original evidence; withdrawal never enables a second application.",
+    "staleIntent": "New UI mutations supply expectedStatus. A mismatch returns 409. The existing recruiter PATCH accepts legacy status-only requests for compatibility; those still validate against the current allowed state and perform an atomic compare-and-set, but cannot detect an unstated older client expectation."
+  },
+  "contracts": {
+    "withdrawal": "POST /api/jobs/internal/applications/:applicationId/withdraw { expectedStatus: submitted|reviewing } -> { application: ApplicantApplication }",
+    "recruiterStatus": "Existing PATCH /api/recruiter-hub/jobs/:id/applications/:applicationId retains { status } and adds optional expectedStatus; current UI supplies it.",
+    "timeline": "ApplicantApplication.timeline is an ordered array containing only { status, at }. It projects known public lifecycle states and excludes actor IDs, private history and internal notes. Recruiter APIs retain authorized private history and add the same safe timeline for rendering.",
+    "existingEndpoints": "Discovery, options, submitted evidence, application lists, submission and authenticated PDF routes retain existing contracts with additive status/timeline fields."
+  },
+  "coordination": {
+    "authority": "JobApplication remains authoritative. RecruiterShortlist and RecruiterMatch are untouched.",
+    "mutation": "Existing notificationTransactionService coordinates initialization and majority/snapshot MongoDB transactions. Actor fences reject inactive/deleted actors; recruiter changes also write-fence the exact owned organization/job. Application status compare-and-set, audit history append, notification receipt, notification row and inbox revision commit together.",
+    "rollback": "Notification persistence failure rolls back application creation or transition, history, receipts and inbox revisions. API failure can be safely retried. No post-commit best-effort write is used for new supported mutations.",
+    "privacy": "Existing owner/organization scope remains mandatory for recruiter evidence and transitions. Withdrawal filters the authenticated applicant ID and can proceed even after a job closes or is deleted. Submitted PDF bytes, hash/reference, consent and portfolio snapshot remain immutable and retained after withdrawal; withdrawal is not evidence deletion."
+  },
+  "notifications": {
+    "recipients": "Submission and withdrawal notify only the application’s owning recruiter. Recruiter reviewing/rejected changes notify only the applicant. Server-owned application references determine recipients; client payloads cannot select recipients or disclosure data.",
+    "idempotency": "Existing permanent event receipts (until=null) survive inbox deletion and transaction retries. Submission retains eventId application:<id>; later events use application:<id>:<status>. The acyclic state machine permits each target state at most once, so these identifiers are permanent per-event identities. No timestamps or process memory are used for deduplication.",
+    "payload": "Generic info notices contain only event wording and permitted static landing-page targets. No names, private PDF content, portfolio snapshots, resume hashes, credentials or unrelated candidate data enter notification content/meta.",
+    "navigation": "Fixed targets are /app/jobs?view=internal and /app/recruiter/jobs. Both inbox and navbar navigation validate the current role through the shared safe-target utility. Existing Angular route guards and authenticated owner-scoped collection/evidence APIs revalidate access. Notifications never carry direct PDF or unvalidated arbitrary resource URLs.",
+    "SSE": "The existing inbox revision and notificationStreamService watcher/reconcile mechanism observe committed notification changes. Streams carry reconcile hints/revisions, not application evidence. Existing reconnect/polling/session validation remain in force.",
+    "deliveryLimits": "Atomic persistence guarantees an inbox event for an active eligible recipient when the application transaction succeeds; it does not guarantee real-time network delivery, reading, email or push. Deleted/revoked recipients have no available inbox and are explicitly skipped while the application mutation remains durable. No notification backfill is attempted for historical P1.1A best-effort events."
+  },
+  "ui": {
+    "developer": "Current status and safe timeline in direct application history. Native accessible disclosure controls and a labelled inline confirmation warn withdrawal is final and reapplication unavailable. Busy states prevent competing refresh/mutations. Success updates the local row; a 409 refreshes history and displays the conflict outside the application drawer. Existing independent discovery/options/history error and empty states remain.",
+    "recruiter": "Status filters include withdrawn; terminal rows have no reviewing/rejection actions. Safe timelines are rendered. Status updates send the observed status, then refresh the list. Conflicts refresh current data and display a separate action error. Loading responses are version-checked to prevent obsolete job data replacing the current list.",
+    "navigationAndStyle": "Notification landing pages use existing role guards and theme tokens. Jobs Hub observes internal-tab query changes without altering external job tracking, matching or shortlists. Already-open history can be refreshed; no new application-specific live-update channel was introduced."
+  },
+  "changedFiles": [
+    "backend/src/modules/jobs/jobApplicationController.js",
+    "backend/src/modules/jobs/jobRoutes.js",
+    "backend/src/modules/jobs/models/jobApplication.js",
+    "backend/src/modules/jobs/services/jobApplicationService.js",
+    "backend/src/modules/notifications/services/notificationService.js",
+    "backend/src/tests/jobs/jobApplications.integration.test.js",
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.ts",
+    "frontend/src/app/features/developer/pages/jobs/jobs.component.ts",
+    "frontend/src/app/features/notifications/notifications.component.ts",
+    "frontend/src/app/shared/components/direct-applications/direct-applications.scss",
+    "frontend/src/app/shared/components/direct-applications/direct-applications.spec.ts",
+    "frontend/src/app/shared/components/direct-applications/internal-jobs.component.html",
+    "frontend/src/app/shared/components/direct-applications/internal-jobs.component.ts",
+    "frontend/src/app/shared/components/direct-applications/job-applicants.component.html",
+    "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+    "frontend/src/app/shared/services/job-applications.service.ts",
+    "frontend/src/app/shared/utils/notification-navigation.spec.ts",
+    "frontend/src/app/shared/utils/notification-navigation.ts"
+  ],
+  "addedEvidence": [
+    "backend/verification/jobs-hub/p1.1b-lifecycle.json",
+    "backend/verification/notifications/p1.1b/integration-results.json"
+  ],
+  "movedFiles": [],
+  "deletedFiles": [],
+  "validation": {
+    "status": "passed",
+    "backend": "12 application API/integration tests passed using disposable MongoDB and real notification persistence/SSE; no skips. Covers ownership, immutable evidence, unique-index-independent concurrent submission, transactional rollback for submission/status notification errors, five repeated withdrawals, stale status rejection, terminal mutation races, sanitized timeline, exact notification counts/recipients/targets, and actual SSE reconcile payload privacy.",
+    "notifications": "15 existing Notifications durability/SSE tests passed in isolated p1.1b verification infrastructure. Covers cross-process delivery, deduplication after deletion/restart, recipient authorization, preferences, revocation/expiry, recovery and bounded indexes. Evidence is retained separately from historical runs.",
+    "frontend": "39 specs passed across the final focused runs: 30 in five unchanged affected spec files plus all 9 direct-application component specs after correcting withdrawal conflict rendering. Coverage includes redesigned UI, notification navigation/inbox, Jobs request lifecycle and internal tab. No skipped specs.",
+    "quality": "Installed TypeScript --noEmit and Angular ngc --noEmit passed. Changed sources formatted in write mode and checked with the installed Prettier using the same per-file options. JavaScript syntax and staged/unstaged Git whitespace validation passed.",
+    "cleanup": "Disposable MongoDB fixtures and stream/HTTP workers shut down and remove verified task-owned temporary data. No task screenshots, traces, debug scripts or temporary logs were created. Essential notification integration evidence retained.",
+    "notRun": [
+      "Full project suites",
+      "Production build",
+      "Browser/theme matrix",
+      "Production migrations",
+      "Live external storage/provider tests"
+    ]
+  },
+  "futureP1_4Requirements": [
+    "Introduce an explicit nullable applicationId linkage on recruiter pipeline records only with approved migration and conflict handling; never infer a genuine application from a shortlist entry.",
+    "Validate the same canonical organization, job, applicant User ID and authorized job owner/team before creating links. Candidate cache IDs are not applicant ownership identities.",
+    "JobApplication must retain ownership of applicant-visible status, consent and submitted evidence. RecruiterShortlist owns internal recruiting organization; internal notes/stages must not flow automatically into applicant timelines or notifications.",
+    "Define explicit one-way or coordinated transition mappings, expected-state/version checks and durable event identities before any synchronization. Team collaboration requires explicit permission grants and ownership-transfer rules; this phase grants none."
+  ],
+  "remainingRisks": [
+    "Replica-set transactions are required. An unavailable notification store prevents committing new supported lifecycle mutations, rather than reporting partial success.",
+    "Inactive/deleted recipient inboxes are skipped; historical missing notices are not replayed. SSE is a reconciliation mechanism, not an acknowledgement or guaranteed real-time delivery system.",
+    "Existing list caps, evidence retention and no-reapplication policy remain. Withdrawal retains original submitted evidence for existing authorized owner access.",
+    "The optional expectedStatus field preserves legacy API compatibility; only callers supplying their expectation obtain stale-intent rejection in addition to ordinary atomic state validation."
+  ]
+}

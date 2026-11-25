@@ -1,44 +1,91 @@
 <article class="job-card">
   <div class="job-card__head">
-    <div>
+    <div class="job-card__title-wrap">
       <h3>{{ job?.title || 'Untitled job' }}</h3>
-      <p>{{ job?.location || 'Remote' }} | {{ job?.employmentType || 'full-time' }}</p>
+      <p>
+        <span *ngIf="job?.role">{{ job.role }} · </span>
+        {{ job?.location || 'Remote' }} · {{ job?.employmentType || 'full-time' }}
+      </p>
     </div>
     <span
       class="job-card__status"
       [class.job-card__status--draft]="job?.status === 'draft'"
       [class.job-card__status--closed]="job?.status === 'closed'"
-      >{{ job?.status || 'open' }}</span
     >
+      {{ job?.status || 'open' }}
+    </span>
   </div>
 
-  <p class="job-card__desc">{{ job?.description || 'No description available.' }}</p>
+  <div class="job-card__ownership">
+    <span class="ownership-pill">
+      Owner: {{ job?.owner?.name || 'Job owner' }}{{ job?.access?.isOwner ? ' (you)' : '' }}
+    </span>
+    <span class="ownership-pill" [class.ownership-pill--shared]="job?.teamShared">
+      {{
+        job?.teamShared
+          ? 'Shared team: ' + (job?.sharedTeam?.name || 'Unavailable')
+          : 'Private to owner'
+      }}
+    </span>
+  </div>
+  <p class="job-card__desc">{{ job?.description || 'No description provided yet.' }}</p>
 
   <div class="job-card__meta">
     <div>
-      <label>Stack</label><strong>{{ job?.stack || 'Generalist' }}</strong>
+      <label>Stack</label>
+      <strong>{{ job?.stack || 'Generalist' }}</strong>
     </div>
     <div>
-      <label>Experience</label><strong>{{ job?.minExperienceYears || 0 }}+ yrs</strong>
+      <label>Experience</label>
+      <strong>{{ job?.minExperienceYears || 0 }}+ yrs</strong>
     </div>
     <div>
-      <label>Required</label><strong>{{ (job?.requiredSkills || []).length }}</strong>
+      <label>Required</label>
+      <strong>{{ (job?.requiredSkills || []).length }} skills</strong>
     </div>
   </div>
 
-  <div class="job-card__skills">
-    <span *ngFor="let skill of (job?.requiredSkills || []).slice(0, 6)">{{ skill }}</span>
+  <div class="job-card__details" *ngIf="salaryLabel || job?.updatedAt">
+    <span class="job-card__salary" *ngIf="salaryLabel">{{ salaryLabel }}</span>
+    <span class="job-card__updated" *ngIf="job?.updatedAt">
+      Updated {{ job.updatedAt | date: 'MMM d, y' }}
+    </span>
+  </div>
+
+  <div class="job-card__skills" *ngIf="visibleSkills.length">
+    <span class="skill-chip" *ngFor="let skill of visibleSkills">{{ skill }}</span>
+    <span class="skill-chip skill-chip--more" *ngIf="extraSkillsCount > 0">
+      +{{ extraSkillsCount }} more
+    </span>
   </div>
 
   <div class="job-card__actions" *ngIf="!hideActions">
-    <button type="button" class="job-card__btn job-card__btn--ghost" (click)="view.emit(job)">
+    <button type="button" class="job-card__btn job-card__btn--secondary" (click)="view.emit(job)">
       View
     </button>
-    <button type="button" class="job-card__btn" (click)="edit.emit(job)">Edit</button>
-    <button type="button" class="job-card__btn job-card__btn--accent" (click)="archive.emit(job)">
-      {{ job?.status === 'closed' ? 'Archived' : 'Archive' }}
+    <button
+      *ngIf="job?.access?.edit"
+      type="button"
+      class="job-card__btn job-card__btn--primary"
+      (click)="edit.emit(job)"
+    >
+      Edit
     </button>
-    <button type="button" class="job-card__btn job-card__btn--danger" (click)="remove.emit(job)">
+    <button
+      type="button"
+      class="job-card__btn job-card__btn--secondary"
+      *ngIf="job?.access?.archive"
+      [disabled]="isClosed"
+      (click)="archive.emit(job)"
+    >
+      {{ isClosed ? 'Archived' : 'Archive' }}
+    </button>
+    <button
+      *ngIf="job?.access?.delete"
+      type="button"
+      class="job-card__btn job-card__btn--danger"
+      (click)="remove.emit(job)"
+    >
       Delete
     </button>
   </div>

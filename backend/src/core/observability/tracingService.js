@@ -3,6 +3,9 @@ const logger = require('./logger');
 let sdk = null;
 
 const initTracing = async () => {
+  if (String(process.env.OTEL_SDK_DISABLED || '').toLowerCase() === 'true') {
+    return;
+  }
   try {
     const { NodeSDK } = require('@opentelemetry/sdk-node');
     const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node');
@@ -23,8 +26,10 @@ const initTracing = async () => {
 
 const shutdownTracing = async () => {
   if (!sdk) return;
+  const active = sdk;
+  sdk = null;
   try {
-    await sdk.shutdown();
+    await active.shutdown();
     logger.info('OpenTelemetry tracing shutdown complete');
   } catch (error) {
     logger.error('OpenTelemetry shutdown failed', { reason: error.message });

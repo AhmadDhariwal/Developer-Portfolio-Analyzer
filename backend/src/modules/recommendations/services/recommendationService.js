@@ -110,7 +110,8 @@ const createStageTimer = () => {
   };
 };
 const recommendationInflight = new Map();
-const recommendationMemoryCache = new Map();
+const BoundedMemoryCache = require('../../../core/cache/boundedMemoryCache');
+const recommendationMemoryCache = new BoundedMemoryCache(256);
 const recommendationGithubSources = new Map();
 const recommendationRuntimeCounters = {
   pipelineExecutions: 0,
@@ -194,9 +195,14 @@ const readRecommendationMemory = (key) => {
 
 const writeRecommendationMemory = (key, payload, altKey = null) => {
   if (!key || !payload?.analysisData) return;
+  const expiresAt = Math.min(
+    Date.now() + RECOMMENDATION_MEMORY_TTL_MS,
+    new Date(payload.expiresAt ?? Date.now() + RECOMMENDATION_MEMORY_TTL_MS).getTime()
+  );
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) return;
   const entry = {
     ...payload,
-    expiresAt: Date.now() + RECOMMENDATION_MEMORY_TTL_MS
+    expiresAt
   };
   recommendationMemoryCache.set(key, entry);
   if (altKey) {
@@ -237,16 +243,15 @@ const ANALYSIS_CACHE_RESULT_FIELDS = {
 };
 const isCacheFresh = (cache) => {
   if (!cache) return false;
-  // Check explicit expiresAt if present on the cache document
-  if (cache.expiresAt) {
-    const expiresTimestamp = new Date(cache.expiresAt).getTime();
-    if (Number.isFinite(expiresTimestamp) && Date.now() > expiresTimestamp) return false;
-  }
-  // Fall back to updatedAt / createdAt with TTL
-  const updatedAt = cache.updatedAt || cache.createdAt;
-  if (!updatedAt) return false;
-  const timestamp = new Date(updatedAt).getTime();
-  return Number.isFinite(timestamp) && Date.now() - timestamp <= RECOMMENDATION_TTL_MS;
+  return Date.now() <= cacheDeadline(cache);
+};
+const cacheDeadline = (cache) => {
+  const timestamp = new Date(cache.updatedAt || cache.createdAt).getTime();
+  const explicit = new Date(cache.expiresAt).getTime();
+  return Math.min(
+    timestamp + RECOMMENDATION_TTL_MS,
+    cache.expiresAt && Number.isFinite(explicit) ? explicit : Infinity
+  );
 };
 
 const sortByPriorityImpact = (items = []) => engine.rank(items);
@@ -995,6 +1000,8 @@ const runRecommendationPipeline = async ({
   }
 
   let settleInflight;
+  if (recommendationInflight.size >= 64)
+    return res.status(503).json({ message: 'Recommendation capacity temporarily unavailable.' });
   const workPromise = new Promise((resolve, reject) => {
     settleInflight = { resolve, reject };
   });
@@ -1206,16 +1213,18 @@ const runRecommendationPipeline = async ({
       const previewCacheKey = `recommendations:preview:${engine.hash(cacheOwner)}:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${signalHash}:${RECOMMENDATION_ANALYSIS_VERSION}`;
 
       if (!forceRefresh) {
-        const redisCached = await stageTimer.measure('Redis', () =>
+        const redisMetadata = await stageTimer.measure('Redis', () =>
           withBudget(
             aiService.getSharedCache(
               isTemporaryMode ? previewCacheKey : resultCacheKey,
-              isTemporaryMode ? 'preview' : 'recommendations:result'
+              isTemporaryMode ? 'preview' : 'recommendations:result',
+              { withMetadata: true }
             ),
             RECOMMENDATION_REDIS_LOOKUP_BUDGET_MS,
             null
           )
         );
+        const redisCached = redisMetadata?.value || redisMetadata;
         if (
           redisCached?.analysisData &&
           isPersistableRecommendationResult(redisCached.analysisData)
@@ -1227,7 +1236,7 @@ const runRecommendationPipeline = async ({
               analysisData: redisCached.analysisData,
               updatedAt: redisCached.updatedAt || new Date(),
               signalHash,
-              expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+              expiresAt: new Date(redisMetadata?.expiresAt || Date.now())
             },
             sourceMemoryKey
           );
@@ -1261,17 +1270,20 @@ const runRecommendationPipeline = async ({
           isPersistableRecommendationResult(mongoCached?.analysisData)
         ) {
           recommendationRuntimeCounters.mongoHits += 1;
+          const sourceExpiresAt = cacheDeadline(mongoCached);
           writeRecommendationMemory(
             softMemoryKey,
             {
               analysisData: mongoCached.analysisData,
               updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date(),
               signalHash,
-              expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+              expiresAt: sourceExpiresAt
             },
             sourceMemoryKey
           );
           setImmediate(() => {
+            const remainingTtl = Math.floor((sourceExpiresAt - Date.now()) / 1000);
+            if (remainingTtl <= 0) return;
             aiService
               .setSharedCache(
                 resultCacheKey,
@@ -1279,7 +1291,7 @@ const runRecommendationPipeline = async ({
                   analysisData: mongoCached.analysisData,
                   updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date()
                 },
-                RECOMMENDATION_REDIS_TTL_SECONDS,
+                Math.min(RECOMMENDATION_REDIS_TTL_SECONDS, remainingTtl),
                 'recommendations:result'
               )
               .catch(() => {});
@@ -1324,6 +1336,7 @@ const runRecommendationPipeline = async ({
           writeRecommendationMemory(softMemoryKey, {
             analysisData: saved.result,
             updatedAt: saved.createdAt,
+            expiresAt: cacheDeadline(saved),
             signalHash
           });
           return normalizeRecommendationResponse({

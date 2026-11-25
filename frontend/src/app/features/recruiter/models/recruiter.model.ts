@@ -1,3 +1,25 @@
+export type CandidateFilters = {
+  search: string;
+  stack: string;
+  location: string;
+  skills: string;
+  minReadiness: number;
+  sortBy: string;
+  page: number;
+  limit: number;
+};
+
+export const DEFAULT_CANDIDATE_FILTERS: Readonly<CandidateFilters> = {
+  search: '',
+  stack: '',
+  location: '',
+  skills: '',
+  minReadiness: 0,
+  sortBy: 'score-desc',
+  page: 1,
+  limit: 12,
+};
+
 export interface RecruiterProfile {
   name: string;
   email: string;

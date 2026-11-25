@@ -1,0 +1,47 @@
+{
+  "phase": "P1.5A",
+  "status": "implemented and measured",
+  "rootCause": "Every scoped row executes an interpreted 64-round SHA-256 Mongo expression before the count facet. This CPU cost scales with the population, not page size. The key depends only on immutable ObjectId job/applicant values.",
+  "alternatives": [
+    {
+      "option": "Remove hash check or validate only a page",
+      "decision": "Rejected: forged records would affect totals; weakens accepted integrity."
+    },
+    {
+      "option": "Higher timeout or permanent positive-result cache",
+      "decision": "Rejected: hides cost or creates invalidation/revocation and mutation trust problems."
+    },
+    {
+      "option": "Persisted valid marker / schema / backfill",
+      "decision": "Not selected: requires full writer coverage, trusted proof semantics for legacy and direct database edits, rollout/backfill and independent verification. No schema or migration needed in selected design."
+    },
+    {
+      "option": "Mongo server-side JavaScript hashing",
+      "decision": "Rejected: adds scripting deployment dependency and deprecated operator surface."
+    },
+    {
+      "option": "Micro-optimize native expression",
+      "decision": "Retains interpreted per-row rounds and uncertain 1000-row performance; baseline kept for exact comparison."
+    },
+    {
+      "option": "Bounded request-local SHA-256 verification using existing Node crypto, then database joins/facet restricted by validated row IDs",
+      "decision": "Selected. Same digest algorithm; no persistent marker/cache, no schema, no backfill and no source-data duplication."
+    }
+  ],
+  "correctness": {
+    "trustBoundary": "Within existing owner/org/settings authorization transaction, stream only owned Shortlist _id/jobId/candidateId/applicationId tuples. Compute canonical SHA-256 with the lifecycle key generator; keep only matching row IDs. Mongo then rechecks owner/job/application/immutable tuple/original consent/status validity before exact counts and pagination. No source evidence or private names in the integrity pass. All operations use the same snapshot session.",
+    "writerCoverage": "No marker/writer change; service submissions, retained legacy links and raw malformed records are independently checked on every request. Forged valid-looking hashes fail even if stored via raw collection writes.",
+    "revocation": "Accepted actor/org/membership/settings and batched page Job/Application fences retained, including transaction retries. No cross-request authorization or identity cache.",
+    "compatibility": "API response/parameters, ordering, evidence/status authorities and five-second budget remain. Old native expression remains available for baseline/regression measurement; production supplies the validated ID allowlist.",
+    "boundedWork": "At most 10,001 tuples streamed in batches of 256 and at most 10,000 verified IDs retained. If the owner pool exceeds 10,000 tuples or the shared five-second validation/query deadline expires, fail explicitly with 503 and no truncated success/total. This capacity ceiling is documented, tested and not hidden as pagination.",
+    "migration": "None. No persisted fields, backfills, index operations, package changes or production mutations."
+  },
+  "validationPlan": [
+    "Compare exact baseline/current results on 261 and 1000 linked records with malformed rows, including plausible forged SHA keys.",
+    "Sequential isolated Mongo fixture; p50/p95 HTTP, explains, docs/keys examined, Node memory and timeouts; simultaneous read and mixed lifecycle workloads.",
+    "Focused privacy/ownership/consent/withdrawal/notification/public discovery/Analytics regressions, affected Angular tests and production build.",
+    "Targeted real Angular -> production Express routes -> disposable Mongo smoke, then formatting, cleanup, compiler/syntax/whitespace and baseline-index preservation checks."
+  ],
+  "refinement": "Initial measurements found database per-row lookups remained dominant at 1000 records. Extend the same bounded integrity pass with one batch owned-Job query and one batch owned-Application query for minimal tuples/consent/status. Reuse extracted accepted genuine/canonicalRow predicates, then pass fully validated shortlist IDs to a simple Mongo facet. Hydrate only the returned page with two batched view queries. All reads share the authorization snapshot and five-second validation/count budget; existing page fences remain. At most 10000 provisional rows and source maps are held, never submitted evidence. No persisted marker or source projection.",
+  "finalFlow": "Bounded minimal shortlist identity stream -> native Node SHA-256 -> batched original-owner Job/Application tuple+consent checks using accepted genuine/canonical predicates -> exact DB facet over validated IDs -> two page-only view hydrations -> retained access fences; one snapshot session throughout."
+}

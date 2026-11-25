@@ -1,0 +1,488 @@
+{
+  "phase": "P1.3B.1",
+  "date": "2026-11-23",
+  "status": "implemented_and_ready_for_independent_QA",
+  "workspaceRoot": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer",
+  "preflight": {
+    "requestedSourceBranch": "fix/P1-project",
+    "currentBranch": "fix/P1-project",
+    "verifiedSourceRef": "refs/heads/fix/P1-project",
+    "head": "f99f1d5ef94677fc6d1173f0fb0745cf885411eb",
+    "targetBranch": "not applicable; no branch integration or PR requested",
+    "initialWorkingTreeAndIndex": "clean",
+    "acceptedWork": "P0 through P1.3A present. Candidate discovery, all six sorts, advanced filters, exact counts, signed cursors, matching, shortlist and explicit shared evaluations retained.",
+    "existingP13B1": "No partial P1.3B.1 files were present when the continuation request was inspected. The interrupted-turn files were absent; no completed implementation was duplicated.",
+    "reportsReviewed": [
+      "backend/verification/jobs-hub/p1.3a-discovery.json",
+      "P1.3B preflight findings retained in this chat; backend/verification/jobs-hub/p1.3b-preflight.json was absent from this checkout and was not recreated or used to reject the C: workspace."
+    ],
+    "sourceWriterChanges": 0
+  },
+  "problem": "Complete eligible totals were already correct, but candidate averages, score/stack/experience distributions and skill supply were computed from only the first 240 discovery cards.",
+  "calculationFlow": {
+    "before": [
+      "P1.3A joins and scalar computation across the eligible population, exact total and bounded suggestions/positions.",
+      "Hydrate at most 240 cards, then compute candidate charts in Node.js from that incomplete pool."
+    ],
+    "after": [
+      "Reuse the unchanged P1.3A eligibility, selected-source precedence, default filtering and scalar expressions.",
+      "One full-population aggregation facets scalar summary, exact stack counts, exact counts for selected skill labels and at most 240 card IDs. No source histories or full candidate population are materialized in Node.js.",
+      "One bounded batch hydration reuses the existing mapper, merger, sanitizer and formatter for the same 240-card pool. Top Candidates remains five cards selected within that pool.",
+      "Existing recruiter-owned jobs/matches/shortlists/activity calculations remain; compatible meta describes exact candidate metrics and existing bounded views."
+    ]
+  },
+  "semantics": {
+    "candidateScore": "Number(readinessScore || score || 0); zero readiness deliberately falls back to the existing base score. All candidate scoring and six-weight matching expressions are unchanged.",
+    "average": "Arithmetic mean across every eligible candidate; original Math.round(mean * 10) / 10, including zero fallback. No MongoDB bankers rounding.",
+    "scoreBuckets": "Existing inclusive ranges: 90..100, 80..89.999, 70..79.999, 60..69.999, -Infinity..59.999. Historical decimal boundary gaps and HTTP Infinity-to-null metadata serialization retained.",
+    "experienceBuckets": "Existing half-open [0,2), [2,5), [5,8), [8,Infinity), with existing years fallback.",
+    "stackAndSkills": "Case-sensitive JavaScript Map semantics and exact String.trim whitespace, including BOM. Stable skill union follows resume, selected public profile and active legacy aliases. Counts per selected chart label are exact; skill label list remains six entries and stack list six entries.",
+    "tieOrder": "Discovery score-desc uses displayed readiness with null mapped to zero, then canonical User._id ascending. Count ties and supply-only skill selection preserve first encounter in that order; no tie behavior change.",
+    "demand": "Existing required plus preferred skill occurrences across all this recruiter's jobs, including draft/closed jobs; no new open-job-only meaning. The old misleading UI subtitle was corrected.",
+    "exact": [
+      "totalCandidates",
+      "avgCandidateScore",
+      "scoreDistribution",
+      "candidatesByStack",
+      "experienceDistribution",
+      "supplyVsDemand supply counts"
+    ],
+    "bounded": {
+      "topCandidates": "Same first 240 discovery cards; same analytics-score sort within that pool and first five returned. Explicit meta; never represented as a global ranking.",
+      "activity": "Existing maximum 500 recent audit events for viewed/analyzed/activity score and activity charts. Explicit meta and UI labels; match/job metrics retain their existing scope."
+    },
+    "api": "Existing metrics/charts/highlights/widgets fields and shapes preserved. Additive meta.candidatePopulation, meta.topCandidates and meta.activity. Existing optional summary-cache implementation retained; no cache introduced. Its content signature now includes the exact aggregates, so changes outside the old card pool cannot reuse obsolete candidate summaries."
+  },
+  "accuracy": {
+    "fixture": "5200 eligible candidates, two original organizations, five excluded privacy/activity/role cases, all six evidence/legacy collections, absent evidence, duplicate dated heads, newer private/public profiles and legacy aliases. A separate four-candidate zero/missing tie pool also verified.",
+    "method": "Independent complete authoritative-source reads and independent deterministic head selection in the test fixture. Reuse the authoritative JavaScript mapper for scoring, and independently calculate each former analytics reduction over the complete eligible cards. Runtime services never import this reference.",
+    "allAffectedMetricsEqual": true,
+    "exactTotal": 5200,
+    "exactAverage": 37.6,
+    "old240CardAverage": 67.4,
+    "rareTailSkill": {
+      "label": "Beyond240",
+      "exactSupply": 1,
+      "oldSampleSupply": 0
+    },
+    "evidence": "backend/verification/jobs-hub/p1.3b.1-analytics.json"
+  },
+  "security": {
+    "snapshot": "Candidate live-policy checks, complete aggregate and bounded card hydration share one read-only snapshot transaction. Current User consent/active developer eligibility and selected PublicProfile privacy/project visibility are enforced before all candidate metrics.",
+    "actor": "Required authenticated recruiter ID, current role/activity/organization, session revision, non-suspended organization, active direct membership when present, durable recruiter access enablement and visibility policy. Legacy User organization affiliation without a direct Membership retains the accepted P1.3A contract.",
+    "verified": {
+      "httpContract": true,
+      "liveConsentProfileActivityAndOrganization": true,
+      "actorMembershipSuspensionSettingsAndSession": true,
+      "queryBudgetFailsClosed": true
+    },
+    "noDisclosure": "HTTP tests reject private source-derived supply/stack contributions and foreign recruiter job demand, and confirm public cards contain no fixture email. Private JobApplication/PDF permissions and explicit evaluationShared grants remain covered by existing regressions.",
+    "timeBudget": "Existing 15000ms per aggregation. Query-budget exhaustion returns 503 without metrics; no sampled or partial success fallback.",
+    "scope": "Snapshot consistency per candidate read; no frozen cross-request snapshot or serialization against later consent writes is claimed. Existing job/match/activity reads remain separately scoped, not one global cross-module snapshot."
+  },
+  "compatibility": {
+    "discoveryStructuralComparisons": 24,
+    "hydrationPipeline": "Exactly identical to accepted HEAD",
+    "scoringExpressions": "Exactly identical across all tested sort/filter/cursor pipeline combinations",
+    "unicodeTrimCodepointsChecked": 65536,
+    "regressions": "Existing discovery API, matching, shortlist, collaboration, consent and ownership tests pass. No source writer, schema, dependency, projection, queue, worker or application-linkage change."
+  },
+  "performance": {
+    "environment": "Same disposable MongoDB 8.2.6 replica-set fixture and local C: machine for before/after; not comparable to the earlier D: machine or 8.2.2 historical baseline.",
+    "scope": "Candidate calculation only, same fixture/process/hardware; warm interleaved runs. Before metrics sample 240, after metrics exact 5200. No latency improvement claim.",
+    "samples": 3,
+    "oldSampleCalculationMedianMs": 1079,
+    "exactCalculationMedianMs": 1771,
+    "beforePlan": {
+      "serverVersion": "8.2.6",
+      "executionTimeMillis": 999,
+      "documentsExamined": 21772,
+      "keysExamined": 5204,
+      "joins": [
+        {
+          "collection": "integration_live_acceptance.candidates",
+          "strategy": "HashJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.weeklyreports",
+          "strategy": "HashJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.careersprints",
+          "strategy": "HashJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.publicprofiles",
+          "strategy": "HashJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.resumeanalyses",
+          "strategy": "HashJoin",
+          "index": "userId_1_analyzedAt_-1"
+        },
+        {
+          "collection": "integration_live_acceptance.analyses",
+          "strategy": "HashJoin",
+          "index": "userId_1_githubAnalysisVersion_1_updatedAt_-1"
+        }
+      ],
+      "indexes": [
+        "userId_1",
+        "userId_1_analyzedAt_-1",
+        "userId_1_githubAnalysisVersion_1_updatedAt_-1",
+        "isPublic_1"
+      ],
+      "stages": [
+        {
+          "stage": "$cursor",
+          "elapsedEstimateMs": 361
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 376
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 391
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 391
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 408
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 454
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 454
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 469
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 514
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 606
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 653
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 685
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 859
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 920
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 935
+        },
+        {
+          "stage": "$project",
+          "elapsedEstimateMs": 952
+        },
+        {
+          "stage": "$facet",
+          "elapsedEstimateMs": 984
+        }
+      ]
+    },
+    "afterPlan": {
+      "serverVersion": "8.2.6",
+      "executionTimeMillis": 1818,
+      "documentsExamined": 21769,
+      "keysExamined": 21769,
+      "joins": [
+        {
+          "collection": "integration_live_acceptance.candidates",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.weeklyreports",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.careersprints",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.publicprofiles",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.resumeanalyses",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1_analyzedAt_-1"
+        },
+        {
+          "collection": "integration_live_acceptance.analyses",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1_githubAnalysisVersion_1_updatedAt_-1"
+        }
+      ],
+      "indexes": [
+        "userId_1",
+        "userId_1_analyzedAt_-1",
+        "userId_1_githubAnalysisVersion_1_updatedAt_-1",
+        "isPublic_1"
+      ],
+      "stages": [
+        {
+          "stage": "$cursor",
+          "elapsedEstimateMs": 983
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1121
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1121
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1195
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 1195
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1211
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1211
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1227
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1275
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1385
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1413
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 1429
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1539
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 1587
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1604
+        },
+        {
+          "stage": "$project",
+          "elapsedEstimateMs": 1717
+        },
+        {
+          "stage": "$sort",
+          "elapsedEstimateMs": 1733,
+          "usedDisk": false,
+          "spills": 0
+        },
+        {
+          "stage": "$facet",
+          "elapsedEstimateMs": 1796
+        }
+      ]
+    },
+    "nodeMemory": {
+      "before": [
+        {
+          "durationMs": 981,
+          "rssBefore": 286674944,
+          "peakRss": 287109120,
+          "peakHeapDelta": 13299952,
+          "resultBytes": 348992
+        },
+        {
+          "durationMs": 1180,
+          "rssBefore": 287977472,
+          "peakRss": 290586624,
+          "peakHeapDelta": 13050920,
+          "resultBytes": 348992
+        },
+        {
+          "durationMs": 1079,
+          "rssBefore": 287354880,
+          "peakRss": 287571968,
+          "peakHeapDelta": 12858312,
+          "resultBytes": 348992
+        }
+      ],
+      "after": [
+        {
+          "durationMs": 1447,
+          "rssBefore": 287944704,
+          "peakRss": 287977472,
+          "peakHeapDelta": 12302344,
+          "resultBytes": 349039
+        },
+        {
+          "durationMs": 1923,
+          "rssBefore": 287227904,
+          "peakRss": 287346688,
+          "peakHeapDelta": 12177552,
+          "resultBytes": 349039
+        },
+        {
+          "durationMs": 1771,
+          "rssBefore": 287571968,
+          "peakRss": 289038336,
+          "peakHeapDelta": 12295304,
+          "resultBytes": 349039
+        }
+      ]
+    },
+    "serverAggregationMemory": {
+      "sortEstimatedBytes": 2886131,
+      "sortUsedDisk": false,
+      "sortSpills": 0,
+      "groupAccumulatorBytes": {
+        "summary": [2288],
+        "stacks": [3072],
+        "supply": [3320]
+      }
+    },
+    "interpretation": "Exact work costs more than the old 240-card chart sample. No latency or memory improvement claim and no p95/SLA claim from three runs. Returned population aggregate rows and card hydration are bounded; source-history work still scales with the complete population.",
+    "plans": "backend/verification/jobs-hub/p1.3b.1-query-plans.json",
+    "indexes": "No index additions, hints, syncIndexes, production index writes or migrations. All six after-plan equality joins use existing indexes; before uses measured hash joins. Simple collation is required to preserve exact JavaScript grouping keys."
+  },
+  "ui": {
+    "files": "Existing Analytics TypeScript/template only; existing style/theme files untouched.",
+    "behavior": "Shows exact eligible population coverage and explicitly bounded card/audit metrics. Existing eight charts and layout retained. Old payloads do not claim exactness. Loading/refresh, denied/error, retry and exact empty states are tested."
+  },
+  "validation": {
+    "focusedBackend": {
+      "tests": 42,
+      "passed": 41,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "Existing optional disposable Redis outage integration: RECRUITER_TEST_REDIS_URL not configured."
+    },
+    "postCleanupBackend": {
+      "tests": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "postCleanupAngular": {
+      "files": 4,
+      "passed": 25,
+      "failed": 0
+    },
+    "typeScript": "passed --noEmit -p frontend/tsconfig.app.json",
+    "angularCompilation": "passed ngc --noEmit -p frontend/tsconfig.app.json",
+    "angularBuild": {
+      "command": "npm run build -- --configuration development --output-path verification/recruiter/p1.3b.1-build-20261123 --delete-output-path=false",
+      "passed": true,
+      "seconds": 67.735
+    },
+    "backendSyntax": "All seven changed/added backend source/test files passed node --check.",
+    "warnings": "Existing Mongoose new-option deprecation notices and jsdom canvas-not-implemented notices; focused tests pass. Sandbox EACCES on localhost required approved execution outside the sandbox for disposable MongoDB only. Cold fixture DDL was initialized before settings startup; no runtime budget increased.",
+    "formatting": "Passed explicit-path Prettier --write followed by same-path --check for all ten changed source/test files; backend singleQuote/trailingComma none/printWidth100 and frontend .prettierrc. All four retained JSON artifacts also formatted and checked.",
+    "whitespace": "Passed git diff --check and git diff --cached --check, plus individual added-file Git whitespace validation. Index remains unchanged/empty."
+  },
+  "reproduce": {
+    "backend": "From backend, set RECRUITER_ANALYTICS_EVIDENCE=1; node --expose-gc --test --test-concurrency=1 src/tests/recruiter/candidateAnalytics.integration.test.js src/tests/recruiter/candidateDiscovery.integration.test.js src/tests/recruiter/candidateDiscoveryQuery.test.js src/tests/recruiter/candidateAssessment.test.js src/tests/recruiter/recruiterRankingEngine.test.js src/tests/recruiter/teamEvaluations.integration.test.js src/tests/recruiter/recruiterHttp.integration.test.js src/tests/recruiter/recruiterAcceptance.integration.test.js src/tests/recruiter/recruiterSummaryCache.test.js",
+    "mongodb": "Installed loopback mongod binary at the fixture default path, or INTEGRATION_TEST_MONGOD; replica-set support and local network permissions required. Never point these fixtures at production.",
+    "angular": "From frontend: npm test -- --watch=false --include=src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts --include=src/app/features/recruiter/pages/recruiter-pages.spec.ts --include=src/app/features/recruiter/pages/candidates/candidates.component.spec.ts --include=src/app/features/recruiter/components/candidate-filter-bar/candidate-filter-bar.component.spec.ts"
+  },
+  "files": {
+    "modified": [
+      "backend/src/modules/recruiter/services/hub/candidateDiscoveryService.js",
+      "backend/src/modules/recruiter/services/hub/recruiterAnalyticsService.js",
+      "backend/src/modules/recruiter/utils/hub/candidateDiscoveryPipeline.js",
+      "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.ts",
+      "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html"
+    ],
+    "added": [
+      "backend/src/modules/recruiter/services/hub/candidateAnalyticsService.js",
+      "backend/src/modules/recruiter/utils/hub/candidateAnalyticsPipeline.js",
+      "backend/src/tests/fixtures/recruiterAnalyticsFixture.js",
+      "backend/src/tests/recruiter/candidateAnalytics.integration.test.js",
+      "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts",
+      "backend/verification/jobs-hub/p1.3b.1-analytics.json",
+      "backend/verification/jobs-hub/p1.3b.1-query-plans.json",
+      "backend/verification/jobs-hub/p1.3b.1-cleanup.json",
+      "backend/verification/jobs-hub/p1.3b.1-implementation.json"
+    ],
+    "moved": [],
+    "deletedAcceptedFiles": [],
+    "deletedTemporaryBuildFiles": {
+      "count": 231,
+      "exactInventory": "backend/verification/jobs-hub/p1.3b.1-cleanup.json"
+    }
+  },
+  "risksAndRecommendation": [
+    "Full population source-history joins and scalar computation remain proportional to eligible data/history volume; exceptionally large histories can hit document, aggregation-memory or time limits.",
+    "Facet memory limits are not removed by allowDiskUse. With fewer than six demanded labels, the supply facet must group distinct eligible skills before selecting the existing six labels.",
+    "Existing recruiter-owned job/match collections and audit-based KPI definitions are intentionally retained; candidate hydration is bounded but this is not a full scalability redesign of those separate analytics inputs.",
+    "No production-load, concurrency SLA or full browser/theme matrix was performed. Independent QA should exercise representative production-shaped histories and workload.",
+    "Defer the assessment projection. This fixture meets the existing operation budget using authoritative data, while a projection still requires broad writer coverage and transactional ownership. Reconsider only when measured production latency/history growth justifies that complexity."
+  ],
+  "finalization": {
+    "formatScope": "Explicit ten changed source/test paths only; backend singleQuote/trailingComma none/printWidth100, frontend configured .prettierrc; same options for write/check.",
+    "cleanup": "231 verified task-owned generated Angular build files and seven verified empty directories removed individually; manifest retained. Disposable MongoDB files cleaned by confined fixture teardown. No user work, original assets, licenses or historical evidence deleted.",
+    "productionOperations": 0,
+    "commits": 0,
+    "pushes": 0,
+    "deployments": 0,
+    "p14": "not started",
+    "readyForIndependentQA": true,
+    "finalInventory": "Exactly five modified files and nine added files; no moved/deleted accepted files, no unexpected working-tree paths, no staged changes.",
+    "sourceSha256": {
+      "backend/src/modules/recruiter/services/hub/candidateDiscoveryService.js": "4aa82838a6197a5a71d72d803d589c023e62391fc1a8393aaf443640f0933a28",
+      "backend/src/modules/recruiter/services/hub/recruiterAnalyticsService.js": "6d1f26fe3f133cc7eda4f7f2f0f999605ee0fd6a64b35135714f8fe0fbfc2603",
+      "backend/src/modules/recruiter/utils/hub/candidateDiscoveryPipeline.js": "ea01a5796c564f71e82edf387930dee6344d8dd01a2cd52caf244abe066356be",
+      "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.ts": "9e4da94818b844685fcfeacfc6c6afa64caf5ae3f2877e1f4e6922a0a117094b",
+      "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html": "828917716cd14409463c8f26423633b149543448bea3471ca33243d8a9163142",
+      "backend/src/modules/recruiter/services/hub/candidateAnalyticsService.js": "7d2175e906249d63a3cc2573bb185056a15811349d4c5ca8d10e9dac27495563",
+      "backend/src/modules/recruiter/utils/hub/candidateAnalyticsPipeline.js": "a621a092d81a2d05996c7dd9fa72ee63ea286a0901e903ba5e1eb6de57a0ef79",
+      "backend/src/tests/fixtures/recruiterAnalyticsFixture.js": "3c87ed9d0dd3df915d14686ccc5493e16fad41a57eb949123cdea669c68d1fe3",
+      "backend/src/tests/recruiter/candidateAnalytics.integration.test.js": "b93ff5e68a33e174602ba729257413856bbdd7fef5bb957487745dcca140e7b2",
+      "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts": "436ed2221464c625b5e923719282de24e8de834908b7b9dec10cae2b547ff4ac"
+    }
+  }
+}

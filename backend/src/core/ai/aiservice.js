@@ -4,6 +4,7 @@ const aiConfig = require('../config/aiProviders');
 const { withAiBudget } = require('./utils/aiRequestBudget');
 const {
   getCacheJson,
+  getCacheJsonWithMeta,
   setCacheJson,
   deleteCacheKey,
   deleteByPrefix,
@@ -79,32 +80,37 @@ class AIService {
   }
 
   memorySet(key, value, ttlSeconds) {
+    if (!Number.isFinite(Number(ttlSeconds)) || Number(ttlSeconds) <= 0) return;
     this.memoryCache.delete(key);
     while (this.memoryCache.size >= 256) this.memoryCache.delete(this.memoryCache.keys().next().value);
     this.memoryCache.set(key, {
       value,
-      expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : 0
+      expiresAt: Date.now() + Number(ttlSeconds) * 1000
     });
   }
 
-  async getSharedCache(key, namespace = 'ai:response') {
+  async getSharedCache(key, namespace = 'ai:response', { withMetadata = false } = {}) {
     const cacheKey = `${namespace}:${key}`;
     if (!isRedisCacheEnabled()) {
       const localValue = this.memoryGet(cacheKey);
-      if (localValue !== null) return localValue;
+      if (localValue !== null)
+        return withMetadata
+          ? { value: localValue, expiresAt: this.memoryCache.get(cacheKey).expiresAt }
+          : localValue;
       return null;
     }
 
     const redisStartedAt = Date.now();
     try {
-      const redisValue = await getCacheJson(cacheKey);
+      const metadata = withMetadata ? await getCacheJsonWithMeta(cacheKey) : null;
+      const redisValue = withMetadata ? metadata.value : await getCacheJson(cacheKey);
       this.recordRedisTiming(redisValue ? 'redis_cache_hit' : 'redis_cache_miss', redisStartedAt, {
         cacheKey: key.slice(0, 12),
         namespace
       });
       if (redisValue !== null) {
         this.metrics.redisHits += 1;
-        return redisValue;
+        return withMetadata ? metadata : redisValue;
       }
       this.metrics.redisMisses += 1;
     } catch (error) {

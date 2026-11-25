@@ -1,0 +1,132 @@
+:host {
+  display: block;
+}
+
+.portfolio-snapshot {
+  font-family: var(--font-sans, 'Manrope', 'Inter', sans-serif);
+}
+
+.snapshot-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-muted, #64748b);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.snapshot-empty-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted, #94a3b8);
+}
+
+.snapshot-body {
+  display: grid;
+  gap: 12px;
+}
+
+.snapshot-row {
+  display: grid;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+
+  &:first-child {
+    padding-top: 0;
+    border-top: none;
+  }
+}
+
+.snapshot-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #64748b);
+}
+
+.snapshot-value {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-primary, #0f172a);
+}
+
+.snapshot-summary {
+  color: var(--text-secondary, #475569);
+  white-space: pre-line;
+}
+
+.snapshot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.snapshot-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-secondary, #475569);
+  font-size: 12px;
+  font-weight: 500;
+
+  &--skill {
+    background: var(--color-primary-soft, #eef2ff);
+    border-color: var(--color-primary-border, #c7d2fe);
+    color: var(--color-primary-text, #4338ca);
+    font-weight: 600;
+  }
+}
+
+.snapshot-projects {
+  display: grid;
+  gap: 8px;
+}
+
+.snapshot-project {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.project-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+}
+
+.project-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-secondary, #475569);
+}
+
+:host-context([data-theme='dark']),
+:host-context(.dark) {
+  .snapshot-empty,
+  .snapshot-chip,
+  .snapshot-project {
+    background: var(--surface-secondary, #101622);
+    border-color: var(--border-color, #1e293b);
+  }
+
+  .snapshot-chip--skill {
+    background: rgba(99, 102, 241, 0.16);
+    border-color: rgba(129, 140, 248, 0.35);
+    color: #c7d2fe;
+  }
+}

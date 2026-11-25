@@ -50,7 +50,7 @@ button:focus-visible {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #4f46e5;
+  color: var(--color-primary-text, #a5b4fc);
 }
 .hero-text-block .eyebrow::before {
   content: '';

@@ -1,302 +1,407 @@
 <section class="hub-page">
-  <header class="hero">
-    <div class="hero__content">
-      <span class="hero__kicker">Recruiter Hub</span>
+  <header class="page-header">
+    <div class="page-header__copy">
+      <span class="page-header__eyebrow">
+        Recruiter Hub
+        <ng-container *ngIf="dashboard.profile.organizationName">
+          · {{ dashboard.profile.organizationName }}
+        </ng-container>
+      </span>
       <h1>Welcome back, {{ dashboard.profile.name || 'Recruiter' }}</h1>
-      <p>Here&apos;s what&apos;s happening with your recruitment pipeline today.</p>
+      <p>
+        Live overview of your scoped candidate pool, open requisitions, AI matching, and shortlist
+        pipeline.
+      </p>
     </div>
-    <div class="hero__summary">
-      <strong>{{ dashboard.metrics.successRate || 0 }}%</strong>
-      <span>Success rate</span>
+
+    <div class="page-header__actions">
+      <span class="success-pill">
+        <span class="dot" aria-hidden="true"></span>
+        {{ dashboard.metrics.successRate || 0 }}% Match-to-Shortlist
+      </span>
+      <button type="button" class="btn-secondary" (click)="loadDashboard()" [disabled]="loading">
+        Refresh
+      </button>
+      <button type="button" class="btn-primary" (click)="openRoute('/app/recruiter/jobs')">
+        Manage Jobs
+      </button>
     </div>
   </header>
 
-  <div class="message message--error" *ngIf="error">{{ error }}</div>
+  <app-ui-error-state
+    *ngIf="error"
+    title="Unable to load recruiter dashboard"
+    [message]="error"
+    (retry)="loadDashboard()"
+  />
 
-  <section class="section-shell">
-    <div class="section-head">
-      <div>
-        <h2>Hero Metrics</h2>
-        <p>Live pipeline indicators appear as soon as dashboard data lands.</p>
+  <div class="dashboard-loading" *ngIf="loading && !metricsReady">
+    <app-recruiter-loader label="Loading recruiter dashboard..." variant="stats" [count]="8" />
+    <app-recruiter-loader label="Preparing pipeline analytics..." variant="charts" [count]="2" />
+  </div>
+
+  <ng-container *ngIf="metricsReady">
+    <section class="section-shell">
+      <div class="section-head">
+        <div>
+          <h2>Hero Metrics</h2>
+          <p>Live pipeline indicators scoped to your organization and team memberships.</p>
+        </div>
+        <span class="section-head__badge"
+          >{{ dashboard.metrics.activeJobs || 0 }} active roles</span
+        >
       </div>
-      <span class="section-head__badge">{{ dashboard.metrics.activeJobs || 0 }} active roles</span>
-    </div>
 
-    <app-recruiter-loader
-      *ngIf="loading && !metricsReady"
-      label="Loading recruiter metrics..."
-      variant="stats"
-      [count]="8"
-    />
-
-    <div class="metric-grid" *ngIf="metricsReady">
-      <app-recruiter-stat-card
-        label="Total Candidates"
-        [value]="dashboard.metrics.totalCandidates"
-        tone="blue"
-        [hint]="dashboard.metrics.candidatesViewed + ' viewed this cycle'"
-      />
-      <app-recruiter-stat-card
-        label="Avg. Candidate Score"
-        [value]="dashboard.metrics.avgCandidateScore"
-        tone="cyan"
-        hint="Portfolio readiness"
-      />
-      <app-recruiter-stat-card
-        label="Open Jobs"
-        [value]="dashboard.metrics.openJobs"
-        tone="orange"
-        [hint]="dashboard.metrics.activeJobs + ' active now'"
-      />
-      <app-recruiter-stat-card
-        label="Draft Jobs"
-        [value]="dashboard.metrics.draftJobs"
-        tone="orange"
-        hint="Pending publish"
-      />
-      <app-recruiter-stat-card
-        label="Closed Jobs"
-        [value]="dashboard.metrics.closedJobs"
-        tone="green"
-        hint="Completed roles"
-      />
-      <app-recruiter-stat-card
-        label="Team Recruiters"
-        [value]="dashboard.metrics.teamRecruiters"
-        tone="purple"
-        [hint]="dashboard.metrics.assignedTeams + ' assigned teams'"
-      />
-      <app-recruiter-stat-card
-        label="Candidates Viewed"
-        [value]="dashboard.metrics.candidatesViewed"
-        tone="indigo"
-        hint="Profile reviews this cycle"
-      />
-      <app-recruiter-stat-card
-        label="Activity Score"
-        [value]="dashboard.metrics.recruiterActivityScore"
-        tone="green"
-        hint="Weekly recruiter productivity"
-      />
-    </div>
-  </section>
-
-  <section class="section-shell">
-    <div class="section-head">
-      <div>
-        <h2>Pipeline Snapshot</h2>
-        <p>Productivity, quick actions, and active funnel widgets render as soon as dashboard data arrives.</p>
+      <div class="metric-grid">
+        <app-recruiter-stat-card
+          label="Total Candidates"
+          [value]="dashboard.metrics.totalCandidates"
+          tone="blue"
+          [hint]="dashboard.metrics.candidatesViewed + ' viewed this cycle'"
+        />
+        <app-recruiter-stat-card
+          label="Avg. Candidate Score"
+          [value]="dashboard.metrics.avgCandidateScore"
+          tone="cyan"
+          hint="Portfolio readiness"
+        />
+        <app-recruiter-stat-card
+          label="Open Jobs"
+          [value]="dashboard.metrics.openJobs"
+          tone="green"
+          [hint]="dashboard.metrics.activeJobs + ' active now'"
+        />
+        <app-recruiter-stat-card
+          label="Draft Jobs"
+          [value]="dashboard.metrics.draftJobs"
+          tone="orange"
+          hint="Pending publish"
+        />
+        <app-recruiter-stat-card
+          label="Closed Jobs"
+          [value]="dashboard.metrics.closedJobs"
+          tone="indigo"
+          hint="Completed roles"
+        />
+        <app-recruiter-stat-card
+          label="Team Recruiters"
+          [value]="dashboard.metrics.teamRecruiters"
+          tone="purple"
+          [hint]="dashboard.metrics.assignedTeams + ' assigned teams'"
+        />
+        <app-recruiter-stat-card
+          label="Candidates Viewed"
+          [value]="dashboard.metrics.candidatesViewed"
+          tone="indigo"
+          hint="Profile reviews this cycle"
+        />
+        <app-recruiter-stat-card
+          label="Activity Score"
+          [value]="dashboard.metrics.recruiterActivityScore"
+          tone="green"
+          hint="Weekly recruiter velocity"
+        />
       </div>
-    </div>
+    </section>
 
-    <app-recruiter-loader
-      *ngIf="loading && !insightsReady"
-      label="Loading recruiter widgets..."
-      variant="table"
-      [count]="4"
-    />
-
-    <div class="insight-grid insight-grid--top" *ngIf="insightsReady">
-      <article class="list-card list-card--highlight">
-        <div class="list-card__head">
-          <h2>Quick Actions</h2>
-          <span>Jump back in</span>
+    <section class="section-shell" *ngIf="!error">
+      <div class="section-head">
+        <div>
+          <h2>Pipeline Overview</h2>
+          <p>Hiring requisition velocity, candidate seniority breakdown, and funnel progression.</p>
         </div>
-        <div class="quick-actions">
-          <button type="button" class="quick-action" (click)="openRoute('/app/recruiter/candidates')">
-            <strong>Review candidates</strong>
-            <span>Browse scoped talent and compare profiles.</span>
-          </button>
-          <button type="button" class="quick-action" (click)="openRoute('/app/recruiter/jobs')">
-            <strong>Manage jobs</strong>
-            <span>Update openings, draft roles, and archive filled positions.</span>
-          </button>
-          <button type="button" class="quick-action" (click)="openRoute('/app/recruiter/matches')">
-            <strong>Run AI matches</strong>
-            <span>Generate ranked fits and convert top matches into shortlists.</span>
-          </button>
-        </div>
-      </article>
-
-      <article class="list-card">
-        <div class="list-card__head">
-          <h2>Candidate Funnel</h2>
-          <span>{{ dashboard.metrics.totalCandidates || 0 }} in scope</span>
-        </div>
-        <div class="funnel-list">
-          <div class="funnel-item" *ngFor="let item of funnelItems; trackBy: trackByItem">
-            <div class="funnel-item__copy">
-              <strong>{{ item.label }}</strong>
-              <span>{{ item.value }} tracked</span>
-            </div>
-            <span class="funnel-item__value" [class]="'funnel-item__value funnel-item__value--' + item.tone">
-              {{ item.value }}
-            </span>
-          </div>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="section-shell">
-    <div class="section-head">
-      <div>
-        <h2>Pipeline Intelligence</h2>
-        <p>Charts render immediately with the dashboard response so the page never waits for an extra click.</p>
       </div>
-    </div>
 
-    <app-recruiter-loader
-      *ngIf="loading && !chartsReady"
-      label="Loading recruiter charts..."
-      variant="charts"
-      [count]="4"
-    />
-
-    <div class="chart-grid chart-grid--wide" *ngIf="chartsReady">
-      <app-recruiter-performance-chart
-        title="Candidate Score Distribution"
-        tone="cyan"
-        [items]="dashboard.charts.scoreDistribution"
-      />
-      <app-recruiter-performance-chart
-        title="Candidates by Stack"
-        tone="purple"
-        [items]="dashboard.charts.candidatesByStack"
-      />
-      <app-recruiter-performance-chart
-        title="Jobs Posted (Last 6 Months)"
-        tone="blue"
-        [items]="dashboard.charts.jobsPostedTrend"
-      />
-      <app-recruiter-performance-chart
-        title="Experience Distribution"
-        tone="orange"
-        mode="donut"
-        [items]="dashboard.charts.experienceDistribution"
-      />
-      <app-recruiter-performance-chart
-        title="Top Skills in Demand"
-        tone="indigo"
-        [items]="dashboard.charts.topSkillsDemand"
-      />
-      <app-recruiter-performance-chart
-        title="Supply vs Demand"
-        tone="green"
-        mode="dual"
-        [items]="dashboard.charts.supplyVsDemand"
-      />
-      <app-recruiter-performance-chart
-        title="Recruiter Activity (This Week)"
-        tone="purple"
-        mode="heatmap"
-        [items]="dashboard.charts.weeklyRecruiterActivity"
-        [trendLabel]="activityTrendLabel"
-      />
-      <app-recruiter-performance-chart
-        title="Productivity Score"
-        tone="green"
-        mode="gauge"
-        [items]="productivityItems"
-        [trendLabel]="successRateLabel"
-      />
-    </div>
-  </section>
-
-  <section class="section-shell" *ngIf="insightsReady">
-    <div class="section-head">
-      <div>
-        <h2>Priority Queues</h2>
-        <p>Shortlists, jobs, and match follow-ups are grouped for faster triage.</p>
+      <div class="primary-grid" *ngIf="chartsReady">
+        <app-recruiter-performance-chart
+          title="Jobs Posted (Last 6 Months)"
+          subtitle="Monthly requisitions created in your scope"
+          tone="indigo"
+          mode="area"
+          [height]="240"
+          [items]="dashboard.charts.jobsPostedTrend"
+        />
+        <app-recruiter-performance-chart
+          title="Experience Distribution"
+          subtitle="Seniority spread across visible candidates"
+          tone="blue"
+          mode="donut"
+          [height]="240"
+          [items]="dashboard.charts.experienceDistribution"
+        />
       </div>
-    </div>
+    </section>
 
-    <div class="insight-grid">
-      <article class="list-card">
-        <div class="list-card__head">
-          <h2>Top Candidates</h2>
-        </div>
-        <div class="list-card__body" *ngIf="topCandidates.length; else noTopCandidates">
-          <div
-            class="list-row list-row--candidate"
-            *ngFor="let candidate of topCandidates; let index = index; trackBy: trackByItem"
-          >
-            <span class="list-rank">{{ index + 1 }}</span>
-            <div class="list-avatar">{{ initialFor(candidate?.name || candidate?.fullName) }}</div>
-            <div class="list-main">
-              <strong>{{ candidate?.name || candidate?.fullName || 'Candidate' }}</strong>
-              <span>{{ candidate?.stack || 'Generalist' }}</span>
+    <section class="section-shell" *ngIf="!error">
+      <div class="primary-grid" *ngIf="insightsReady">
+        <article class="surface-card">
+          <div class="card-head">
+            <div>
+              <h3>Candidate Pipeline Funnel</h3>
+              <p>{{ dashboard.metrics.totalCandidates || 0 }} visible candidates in scope</p>
             </div>
-            <span class="list-score">{{ candidate?.readinessScore || candidate?.score || 0 }}</span>
+            <a routerLink="/app/recruiter/shortlists" class="card-link">View shortlists &rarr;</a>
           </div>
-        </div>
-        <ng-template #noTopCandidates>
-          <p class="empty-text">No candidates ranked yet.</p>
-        </ng-template>
-      </article>
 
-      <article class="list-card">
-        <div class="list-card__head">
-          <h2>Recent Jobs</h2>
-        </div>
-        <div class="list-card__body" *ngIf="recentJobs.length; else noRecentJobs">
-          <div class="list-row list-row--job" *ngFor="let job of recentJobs; trackBy: trackByItem">
-            <div class="list-main">
-              <strong>{{ job?.title || 'Untitled job' }}</strong>
-              <span>{{ job?.location || 'Remote' }}</span>
+          <div class="funnel-list">
+            <div class="funnel-row" *ngFor="let item of funnelItems; trackBy: trackByItem">
+              <div class="funnel-row__meta">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+              </div>
+              <div class="funnel-row__track" aria-hidden="true">
+                <i
+                  [class]="'funnel-fill funnel-fill--' + item.tone"
+                  [style.width.%]="item.percent"
+                ></i>
+              </div>
             </div>
-            <span class="status-chip" [ngClass]="statusClass(job?.status)">{{
-              job?.status || 'open'
-            }}</span>
           </div>
-        </div>
-        <ng-template #noRecentJobs>
-          <p class="empty-text">No recent jobs found.</p>
-        </ng-template>
-      </article>
+        </article>
 
-      <article class="list-card">
-        <div class="list-card__head">
-          <h2>Recent AI Matches</h2>
-        </div>
-        <div class="list-card__body" *ngIf="recentMatches.length; else noRecentMatches">
-          <div class="list-row list-row--match" *ngFor="let match of recentMatches; trackBy: trackByItem">
-            <div class="list-avatar">
-              {{ initialFor(match?.candidate?.name || match?.candidate?.fullName || 'C') }}
+        <article class="surface-card">
+          <div class="card-head">
+            <div>
+              <h3>Quick Actions &amp; Insights</h3>
+              <p>Jump straight into core sourcing workflows</p>
             </div>
-            <div class="list-main">
-              <strong>{{
-                match?.candidate?.name || match?.candidate?.fullName || 'Candidate'
-              }}</strong>
-              <span>{{ match?.job?.title || 'General role' }}</span>
-            </div>
-            <span class="match-badge">{{ matchScore(match) }}% Match</span>
           </div>
-        </div>
-        <ng-template #noRecentMatches>
-          <p class="empty-text">No AI matches generated yet.</p>
-        </ng-template>
-      </article>
 
-      <article class="list-card">
-        <div class="list-card__head">
-          <h2>Pending Follow-ups</h2>
-        </div>
-        <div class="list-card__body" *ngIf="pendingFollowUps.length; else noFollowUps">
-          <div class="list-row list-row--follow" *ngFor="let item of pendingFollowUps; trackBy: trackByItem">
-            <div class="list-main">
-              <strong>{{
-                item?.candidate?.name || item?.candidate?.fullName || 'Candidate'
-              }}</strong>
-              <span>{{ item?.job?.title || 'General shortlist' }}</span>
-            </div>
-            <span class="list-time">{{ timeAgo(item?.updatedAt || item?.createdAt) }}</span>
+          <div class="quick-actions">
+            <button
+              type="button"
+              class="quick-action"
+              (click)="openRoute('/app/recruiter/candidates')"
+            >
+              <div>
+                <strong>Review candidates</strong>
+                <span>Browse scoped talent and compare profiles.</span>
+              </div>
+              <span class="quick-action__arrow" aria-hidden="true">&rarr;</span>
+            </button>
+            <button type="button" class="quick-action" (click)="openRoute('/app/recruiter/jobs')">
+              <div>
+                <strong>Manage jobs</strong>
+                <span>Update openings, draft roles, and archive filled positions.</span>
+              </div>
+              <span class="quick-action__arrow" aria-hidden="true">&rarr;</span>
+            </button>
+            <button
+              type="button"
+              class="quick-action"
+              (click)="openRoute('/app/recruiter/matches')"
+            >
+              <div>
+                <strong>Run AI matches</strong>
+                <span>Generate ranked fits and convert top matches into shortlists.</span>
+              </div>
+              <span class="quick-action__arrow" aria-hidden="true">&rarr;</span>
+            </button>
           </div>
+
+          <div class="insights-list" *ngIf="aiInsights.length">
+            <div class="insight-banner" *ngFor="let insight of aiInsights; trackBy: trackByIndex">
+              <span class="insight-badge">Signal</span>
+              <span>{{ insight }}</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-shell" *ngIf="chartsReady">
+      <div class="section-head">
+        <div>
+          <h2>Pipeline Intelligence</h2>
+          <p>Live skill supply versus demand, score bands, and weekly activity telemetry.</p>
         </div>
-        <ng-template #noFollowUps>
-          <p class="empty-text">No pending follow-ups.</p>
-        </ng-template>
-      </article>
-    </div>
-  </section>
+      </div>
+
+      <div class="chart-grid">
+        <app-recruiter-performance-chart
+          title="Candidate Score Distribution"
+          tone="blue"
+          mode="column"
+          [height]="220"
+          [items]="dashboard.charts.scoreDistribution"
+        />
+        <app-recruiter-performance-chart
+          title="Candidates by Stack"
+          tone="purple"
+          mode="bars"
+          [height]="220"
+          [items]="dashboard.charts.candidatesByStack"
+        />
+        <app-recruiter-performance-chart
+          title="Top Skills in Demand"
+          tone="indigo"
+          mode="bars"
+          [height]="220"
+          [items]="dashboard.charts.topSkillsDemand"
+        />
+        <app-recruiter-performance-chart
+          title="Supply vs Demand"
+          [subtitle]="supplyVsDemandSubtitle"
+          tone="green"
+          mode="dual"
+          [height]="220"
+          [seriesLabels]="['Candidate Supply', 'Job Demand']"
+          [items]="dashboard.charts.supplyVsDemand"
+        />
+        <app-recruiter-performance-chart
+          title="Recruiter Activity (Recent Days)"
+          tone="purple"
+          mode="heatmap"
+          [height]="220"
+          [items]="dashboard.charts.weeklyRecruiterActivity"
+          [trendLabel]="activityTrendLabel"
+        />
+        <app-recruiter-performance-chart
+          title="Productivity Score"
+          tone="green"
+          mode="gauge"
+          [height]="220"
+          [items]="productivityItems"
+          [trendLabel]="successRateLabel"
+        />
+      </div>
+    </section>
+
+    <section class="section-shell" *ngIf="insightsReady">
+      <div class="section-head">
+        <div>
+          <h2>Priority Queues</h2>
+          <p>Shortlists, active requisitions, and match follow-ups grouped for fast triage.</p>
+        </div>
+      </div>
+
+      <div class="insight-grid">
+        <article class="list-card">
+          <div class="list-card__head">
+            <h3>Top Candidates</h3>
+            <a routerLink="/app/recruiter/candidates" class="card-link">View all &rarr;</a>
+          </div>
+          <div class="list-card__body" *ngIf="topCandidates.length; else noTopCandidates">
+            <button
+              type="button"
+              class="list-row"
+              *ngFor="let candidate of topCandidates; let index = index; trackBy: trackByItem"
+              (click)="openRoute('/app/recruiter/candidates/' + candidateIdFor(candidate))"
+            >
+              <span class="list-rank">{{ index + 1 }}</span>
+              <div class="list-avatar">
+                {{ initialFor(candidate?.name || candidate?.fullName) }}
+              </div>
+              <div class="list-main">
+                <strong>{{ candidate?.name || candidate?.fullName || 'Candidate' }}</strong>
+                <span>{{ candidate?.stack || 'Generalist' }}</span>
+              </div>
+              <span class="list-score">{{
+                candidate?.readinessScore || candidate?.score || 0
+              }}</span>
+            </button>
+          </div>
+          <ng-template #noTopCandidates>
+            <p class="empty-text">No candidates ranked yet.</p>
+          </ng-template>
+        </article>
+
+        <article class="list-card">
+          <div class="list-card__head">
+            <h3>Recent Jobs</h3>
+            <a routerLink="/app/recruiter/jobs" class="card-link">Manage &rarr;</a>
+          </div>
+          <div class="list-card__body" *ngIf="recentJobs.length; else noRecentJobs">
+            <button
+              type="button"
+              class="list-row"
+              *ngFor="let job of recentJobs; trackBy: trackByItem"
+              (click)="openRoute('/app/recruiter/jobs/' + job._id)"
+            >
+              <div class="list-main">
+                <strong>{{ job?.title || 'Untitled job' }}</strong>
+                <span>{{ job?.location || 'Remote' }}</span>
+              </div>
+              <span [class]="statusClass(job?.status)">{{ job?.status || 'open' }}</span>
+            </button>
+          </div>
+          <ng-template #noRecentJobs>
+            <p class="empty-text">No recent jobs found.</p>
+          </ng-template>
+        </article>
+
+        <article class="list-card">
+          <div class="list-card__head">
+            <h3>Recent AI Matches</h3>
+            <a routerLink="/app/recruiter/matches" class="card-link">Matches &rarr;</a>
+          </div>
+          <div class="list-card__body" *ngIf="recentMatches.length; else noRecentMatches">
+            <button
+              type="button"
+              class="list-row"
+              *ngFor="let match of recentMatches; trackBy: trackByItem"
+              (click)="
+                openRoute(
+                  '/app/recruiter/matches',
+                  match?.jobId ? { jobId: match.jobId } : undefined
+                )
+              "
+            >
+              <div class="list-avatar">
+                {{ initialFor(match?.candidate?.name || match?.candidate?.fullName || 'C') }}
+              </div>
+              <div class="list-main">
+                <strong>{{
+                  match?.candidate?.name || match?.candidate?.fullName || 'Candidate'
+                }}</strong>
+                <span>{{ match?.job?.title || 'General role' }}</span>
+              </div>
+              <span class="match-badge">{{ matchScore(match) }}% Match</span>
+            </button>
+          </div>
+          <ng-template #noRecentMatches>
+            <p class="empty-text">No AI matches generated yet.</p>
+          </ng-template>
+        </article>
+
+        <article class="list-card">
+          <div class="list-card__head">
+            <h3>Pending Follow-ups</h3>
+            <a routerLink="/app/recruiter/shortlists" class="card-link">Pipeline &rarr;</a>
+          </div>
+          <div class="list-card__body" *ngIf="pendingFollowUps.length; else noFollowUps">
+            <button
+              type="button"
+              class="list-row"
+              *ngFor="let item of pendingFollowUps; trackBy: trackByItem"
+              (click)="openRoute('/app/recruiter/shortlists')"
+            >
+              <div class="list-main">
+                <strong>{{
+                  item?.candidate?.name || item?.candidate?.fullName || 'Candidate'
+                }}</strong>
+                <span>{{ item?.job?.title || 'General shortlist' }}</span>
+              </div>
+              <span class="list-time">{{ timeAgo(item?.updatedAt || item?.createdAt) }}</span>
+            </button>
+          </div>
+          <ng-template #noFollowUps>
+            <p class="empty-text">No pending follow-ups.</p>
+          </ng-template>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-shell" *ngIf="insightsReady && recentActivity.length">
+      <div class="section-head">
+        <div>
+          <h2>Recent Activity Stream</h2>
+          <p>Latest organization-scoped actions across candidate screening and jobs.</p>
+        </div>
+        <a routerLink="/app/recruiter/activity-logs" class="card-link">Full audit log &rarr;</a>
+      </div>
+
+      <app-activity-timeline [items]="recentActivity" />
+    </section>
+  </ng-container>
 </section>

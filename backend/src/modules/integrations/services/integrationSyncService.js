@@ -9,6 +9,8 @@ const publicResources = require('./kaggleResourceObservationService');
 const governance = require('./integrationGovernanceService');
 const publicSnapshots = require('./integrationPublicSnapshotService');
 let timer;
+let activeTick;
+let stopping = false;
 let running = false;
 const safeError = (error) =>
   error.status === 503
@@ -149,7 +151,10 @@ async function syncDueConnections() {
       .limit(governance.integer('INTEGRATION_SYNC_BATCH_SIZE', 10, 1, 100))
       .select('userId provider')
       .lean();
-    for (const item of due) await syncProviderForUser(item.userId, item.provider, 'polling');
+    for (const item of due) {
+      if (stopping) break;
+      await syncProviderForUser(item.userId, item.provider, 'polling');
+    }
   } catch {
     console.error('Integration polling failed.');
   } finally {
@@ -157,16 +162,27 @@ async function syncDueConnections() {
   }
 }
 function startIntegrationSyncWorker() {
-  if (timer) return;
+  if (timer) return timer;
+  stopping = false;
   timer = setInterval(
     () => {
-      void syncDueConnections();
+      if (activeTick) return;
+      activeTick = syncDueConnections().finally(() => {
+        activeTick = null;
+      });
     },
     governance.integer('INTEGRATION_SYNC_INTERVAL_MS', 300000, 60000, 3600000)
   );
   timer.unref?.();
 }
+function stopIntegrationSyncWorker() {
+  stopping = true;
+  clearInterval(timer);
+  timer = null;
+  return activeTick;
+}
 module.exports = {
+  stopIntegrationSyncWorker,
   syncProviderForUser,
   syncConnectedProvidersForUser,
   startIntegrationSyncWorker,

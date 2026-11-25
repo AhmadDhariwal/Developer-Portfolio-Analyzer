@@ -1,0 +1,96 @@
+{
+  "scope": "P1.1A only: internal job discovery and direct applications",
+  "date": "2026-11-21",
+  "branch": "fix/P1-project",
+  "prTarget": "not applicable",
+  "commitsPushesDeploymentsProductionMigrations": false,
+  "contracts": {
+    "authoritativeInternalJob": "recruiter/Job; published is an explicit boolean defaulting to false, independent of draft/open/closed",
+    "externalJobs": "JobCache and UserJobAction retain their existing contracts and do not represent direct applications",
+    "discoveryEligibility": "Published, open, unarchived, existing unsuspended organization, active recruiter whose organization matches the job. Experience and skills are advisory requirements, not inferred hard applicant eligibility gates.",
+    "developerRoutes": [
+      "GET /api/jobs/internal -> { jobs: InternalJob[] }",
+      "GET /api/jobs/internal/options -> { resumes, portfolio, portfolioHash }",
+      "GET /api/jobs/internal/applications -> { applications: ApplicantApplication[] }",
+      "POST /api/jobs/internal/:id/applications { resumeId, consent: true, sharePortfolio: boolean, portfolioHash } -> 201 for first submission; 200 for an existing application"
+    ],
+    "recruiterRoutes": [
+      "PATCH /api/recruiter-hub/jobs/:id { published: boolean } retains existing job update response",
+      "GET /api/recruiter-hub/jobs/:id/applications -> { applications }",
+      "PATCH /api/recruiter-hub/jobs/:id/applications/:applicationId { status } -> { application }",
+      "GET /api/recruiter-hub/jobs/:id/applications/:applicationId/resume -> authenticated PDF attachment with no-store"
+    ],
+    "application": "Organization/job/recruiter/applicant IDs; submitted organization/job/applicant display names; immutable source resume ID, filename, upload date and SHA-256; immutable PDF bytes excluded from JSON/default queries; optional immutable portfolio text snapshot; immutable consent version, disclosure choice and timestamp; lifecycle status, timestamps and atomic actor/from/to audit history.",
+    "stateMachine": ["submitted -> reviewing", "submitted -> rejected", "reviewing -> rejected"],
+    "applicantVisibility": "Lifecycle status and submitted evidence metadata/snapshot only; recruiter audit history is excluded. No internal notes, interview, offer or CRM domain is introduced."
+  },
+  "workflow": [
+    "Recruiter explicitly publishes an owned job in Recruiter Job Details.",
+    "Developer Jobs Hub displays internal direct-apply listings separately from external discovery and tracking.",
+    "Developer reviews the job and recipient organization, selects an owned PDF, optionally reviews and shares limited portfolio text, and explicitly consents before submitting.",
+    "API validates consent and ownership, captures evidence, checks the portfolio preview hash, and transactionally fences the applicant and eligible job before application creation.",
+    "Recruiter views applicants on the owned job, downloads the retained PDF, reviews the submitted portfolio text and changes applicant-visible status.",
+    "Developer can refresh direct applications to see status even after the job closes or source evidence changes."
+  ],
+  "securityAndConcurrency": {
+    "rbac": "Developer-only routes use existing authenticated sessions and legacy developer role normalization. Recruiter routes inherit the full existing hub JWT, tenant, platform-access and organization guards; reads and status mutations additionally require the exact job owner and organization. Team membership does not grant applicant access.",
+    "disclosure": "No default-resume lookup, private analysis, contact sections, live portfolio links, images, AI scores or other private evidence is automatically disclosed. Portfolio text can be shared from a private profile only through explicit consent and the preview hash check.",
+    "retention": "Independent PDF bytes and portfolio text survive original resume deletion and portfolio edits. Application ownership/evidence/consent are immutable through the model and are not accepted from client payloads.",
+    "duplicates": "SHA-256 deterministic primary key of job ID and applicant ID, plus a unique job/applicant secondary index. Concurrent retries return the winning submission without replacing its evidence. The integration test removes the secondary index to verify primary-key protection independently.",
+    "atomicity": "MongoDB replica-set transaction writes the applicant and job fences and creates the application. Job close, unpublish, archive and deletion serialize against that job write. Status changes atomically compare the prior status and append audit history.",
+    "notifications": "Existing Notifications service is called only after durable creation, with an application event ID and no evidence in the notification. Delivery is best effort and does not cause application failure or duplicate creation."
+  },
+  "changedFiles": [
+    "backend/src/modules/jobs/jobRoutes.js",
+    "backend/src/modules/recruiter/models/Job.js",
+    "backend/src/modules/recruiter/routes/hub/recruiterJobRoutes.js",
+    "backend/src/modules/recruiter/services/hub/recruiterJobService.js",
+    "frontend/src/app/features/developer/pages/jobs/jobs.component.html",
+    "frontend/src/app/features/developer/pages/jobs/jobs.component.spec.ts",
+    "frontend/src/app/features/developer/pages/jobs/jobs.component.ts",
+    "frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+    "frontend/src/app/features/recruiter/pages/job-details/job-details.component.ts",
+    "frontend/src/app/features/recruiter/recruiter.module.ts"
+  ],
+  "addedFiles": [
+    "backend/src/modules/jobs/jobApplicationController.js",
+    "backend/src/modules/jobs/models/jobApplication.js",
+    "backend/src/modules/jobs/services/jobApplicationService.js",
+    "backend/src/tests/jobs/jobApplications.integration.test.js",
+    "frontend/src/app/shared/services/job-applications.service.ts",
+    "frontend/src/app/shared/components/direct-applications/internal-jobs.component.ts",
+    "frontend/src/app/shared/components/direct-applications/internal-jobs.component.html",
+    "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+    "frontend/src/app/shared/components/direct-applications/job-applicants.component.html",
+    "frontend/src/app/shared/components/direct-applications/submitted-portfolio.component.ts",
+    "frontend/src/app/shared/components/direct-applications/direct-applications.scss",
+    "frontend/src/app/shared/components/direct-applications/direct-applications.spec.ts",
+    "backend/verification/jobs-hub/p1.1a-acceptance.json"
+  ],
+  "movedFiles": [],
+  "deletedSourceFiles": [],
+  "verification": {
+    "status": "passed",
+    "backend": "Focused application HTTP/Mongo integration plus existing Jobs hardening/ranking: 39 passed, no skips. Final application-only rerun after display-name metadata addition: 9 passed, no skips.",
+    "frontend": "13 passed across direct application components and Developer/Recruiter Jobs. Final direct-application component rerun after the organization display change: 4 passed. Installed TypeScript --noEmit and Angular ngc --noEmit both passed against tsconfig.app.json.",
+    "quality": "All 22 changed/added sources formatted in write mode and checked with the same per-file options. Backend JavaScript syntax and Git staged/unstaged whitespace passed. No unused imports or task debugging code retained; obsolete preview styling removed. No moved/deleted source files or remaining disposable fixture directories.",
+    "boundaries": "Disposable local Mongo replica set and real Express/JWT/tenant middleware. Resume storage reading and notification delivery are explicit test boundaries; PDF copy, download and notification-after-commit behavior are verified. No provider, AI, B2, Redis or production service is called.",
+    "environment": "Sandboxed Mongo readiness and frontend temporary-file rename failed; permitted reruns outside sandbox restrictions succeeded. Disposable fixture data is removed per verified file by the existing fixture.",
+    "notRun": [
+      "Full frontend/backend suites",
+      "Production build",
+      "Browser matrix",
+      "Production migrations",
+      "Live B2/notification delivery"
+    ]
+  },
+  "limitations": [
+    "MongoDB replica-set transactions are required; standalone MongoDB is unsupported for submission.",
+    "Listings are capped at 50; application and resume lists at 100. Pagination is deferred.",
+    "Each application retains its own PDF copy up to 10 MiB in MongoDB. Shared blob deduplication and retention management are deferred.",
+    "Portfolio sharing is limited to bounded headline, summary, skill names and visible project text/technologies. Links, media and private assessments are excluded.",
+    "Notification failures have no background retry. Application persistence and refresh remain authoritative.",
+    "Hard-deleted jobs retain applicant history, but recruiter evidence endpoints require a currently owned job.",
+    "Withdrawal, reapplication, interviews, offers, CRM, expanded team permissions and future P1 phases are outside this step."
+  ]
+}

@@ -2,6 +2,7 @@ const { matchCandidatesToJob } = require('../../services/matching/matchingServic
 const { rankCandidates } = require('../../services/matching/aiRankingService');
 const { listCandidates } = require('../../services/matching/matchingService');
 const Job = require('../../models/Job');
+const { requireObjectId, validateCandidateIds } = require('../../utils/recruiterValidation');
 
 const matchCandidates = async (req, res) => {
   try {
@@ -13,6 +14,7 @@ const matchCandidates = async (req, res) => {
 
     const result = await matchCandidatesToJob({
       organizationId: req.organizationId,
+      recruiterId: req.user._id,
       jobId,
       candidateIds
     });
@@ -34,11 +36,20 @@ const matchCandidates = async (req, res) => {
 
 const aiRankCandidates = async (req, res) => {
   try {
-    const { jobId, job: inlineJob, candidates: inlineCandidates = [], candidateIds = [] } = req.body || {};
+    const {
+      jobId,
+      job: inlineJob,
+      candidates: inlineCandidates = [],
+      candidateIds = []
+    } = req.body || {};
 
     let resolvedJob = inlineJob || null;
     if (!resolvedJob && jobId) {
-      resolvedJob = await Job.findOne({ _id: jobId, organizationId: req.organizationId }).lean();
+      resolvedJob = await Job.findOne({
+        _id: requireObjectId(jobId, 'jobId'),
+        organizationId: req.organizationId,
+        recruiterId: req.user._id
+      }).lean();
     }
 
     if (!resolvedJob) {
@@ -48,16 +59,23 @@ const aiRankCandidates = async (req, res) => {
     let candidates = Array.isArray(inlineCandidates) ? inlineCandidates : [];
 
     if (!candidates.length) {
-      if (Array.isArray(candidateIds) && candidateIds.length) {
-        const allCandidates = await listCandidates({ limit: 300 });
-        const allowed = new Set(candidateIds.map(String));
+      const allowed = new Set(validateCandidateIds(candidateIds));
+      if (allowed.size) {
+        const allCandidates = await listCandidates({
+          organizationId: req.organizationId,
+          limit: 300
+        });
         candidates = allCandidates.filter((candidate) => {
           const candidateId = String(candidate.id || '');
           const userId = String(candidate.userId || '');
           return allowed.has(candidateId) || allowed.has(userId);
         });
       } else {
-        candidates = await listCandidates({ stack: resolvedJob.stack, limit: 300 });
+        candidates = await listCandidates({
+          organizationId: req.organizationId,
+          stack: resolvedJob.stack,
+          limit: 300
+        });
       }
     }
 
@@ -71,6 +89,7 @@ const aiRankCandidates = async (req, res) => {
       ...ranked
     });
   } catch (error) {
+    if (error.statusCode === 400) return res.status(400).json({ message: error.message });
     console.error('AI rank candidates error:', error.message);
     return res.status(500).json({ message: 'Failed to rank candidates.' });
   }

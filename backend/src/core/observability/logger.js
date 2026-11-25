@@ -1,4 +1,7 @@
-const { getAnalyticsSettingsSync } = require('../../modules/super-admin/services/platformSettingsService');
+const {
+  getAnalyticsSettingsSync
+} = require('../../modules/super-admin/services/platformSettingsService');
+const requestLogPath = require('./requestLogPath');
 
 const LEVELS = ['debug', 'info', 'warn', 'error'];
 
@@ -9,11 +12,17 @@ const resolveLevelWeight = (level) => {
 
 const ACTIVE_LEVEL = process.env.LOG_LEVEL || 'info';
 const ACTIVE_WEIGHT = resolveLevelWeight(ACTIVE_LEVEL);
+let useStructuredLogging = true;
 
 const write = (level, message, meta = {}) => {
   if (resolveLevelWeight(level) < ACTIVE_WEIGHT) return;
-  const analytics = getAnalyticsSettingsSync();
-  const useStructuredLogging = analytics.enableStructuredLogging !== false;
+  try {
+    const analytics = getAnalyticsSettingsSync();
+    useStructuredLogging = analytics.enableStructuredLogging !== false;
+  } catch {
+    // Logging must remain available while settings refresh or storage is unavailable.
+    // Retain only the last logging format; policy consumers still reject stale settings.
+  }
 
   const line = useStructuredLogging
     ? JSON.stringify({
@@ -37,7 +46,7 @@ const write = (level, message, meta = {}) => {
 const withRequest = (req) => ({
   requestId: req?.requestId || '',
   method: req?.method || '',
-  path: req?.originalUrl || req?.url || '',
+  path: requestLogPath({ originalUrl: req?.originalUrl || req?.url || '' }),
   userId: req?.user?._id ? String(req.user._id) : undefined
 });
 

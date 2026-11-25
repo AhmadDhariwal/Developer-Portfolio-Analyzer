@@ -482,6 +482,7 @@ test(
         await command(a.child, 'disconnect');
         const disconnected = await stream.reader.read();
         assert.equal(disconnected.done, true);
+        assert.equal((await request(a)).status, 503, 'Storage loss must fail closed');
         const missedId = await createInWorker(b.child, {
           ...payload,
           userId: String(owner._id),
@@ -490,9 +491,10 @@ test(
         await command(a.child, 'recover');
         const recovered = await openStream();
         assert.match(await frame(recovered.reader), /connected/);
-        assert.ok(
-          (await (await request(a)).json()).notifications.some((notice) => notice._id === missedId)
-        );
+        const response = await request(a);
+        const inbox = await response.json();
+        assert.equal(response.status, 200, JSON.stringify(inbox));
+        assert.ok(inbox.notifications.some((notice) => notice._id === missedId));
         recovered.controller.abort();
         evidence.checks.push('Mongo disconnect fail-closed and recovery PASS');
       }
@@ -775,7 +777,9 @@ test(
         integrationLinkedProfile: '../../modules/integrations/models/integrationLinkedProfile'
       };
       for (const name of new Set(collections)) {
-        const model = extraModels[name] ? require(extraModels[name]) : deletion.resolveOwnedModel(name);
+        const model = extraModels[name]
+          ? require(extraModels[name])
+          : deletion.resolveOwnedModel(name);
         await model.createCollection();
       }
       const retiring = await User.create({
@@ -820,10 +824,11 @@ test(
           workload:
             'sequential single recipient; local disposable replica; not a production capacity claim'
         };
-        const authorizedScope = await require('../../modules/notifications/notificationcontroller').scope({
-          user: owner,
-          query: {}
-        });
+        const authorizedScope =
+          await require('../../modules/notifications/notificationcontroller').scope({
+            user: owner,
+            query: {}
+          });
         const explanation = await Notification.find(authorizedScope)
           .sort({ createdAt: -1, _id: -1 })
           .limit(2)

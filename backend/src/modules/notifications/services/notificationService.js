@@ -42,7 +42,9 @@ const SAFE_PATHS = new Set([
   '/app/recommendations',
   '/app/weekly-reports',
   '/app/integrations',
-  '/app/portfolio'
+  '/app/portfolio',
+  '/app/jobs?view=internal',
+  '/app/recruiter/jobs'
 ]);
 
 function navigation(type, meta = {}, preferenceKey = '') {

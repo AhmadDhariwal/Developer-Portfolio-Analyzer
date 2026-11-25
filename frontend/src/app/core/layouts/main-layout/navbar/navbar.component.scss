@@ -8,7 +8,7 @@
   padding: 0 24px;
   position: fixed;
   top: 0;
-  left: 260px;
+  left: var(--sidebar-expanded-width, 260px);
   right: 0;
   z-index: 100;
   border-bottom: 1px solid var(--border-color);
@@ -16,7 +16,7 @@
   transition: left var(--transition-base);
 
   &.sidebar-closed {
-    left: 72px;
+    left: var(--sidebar-collapsed-width, 72px);
   }
 
   @media (max-width: 768px) {
@@ -172,7 +172,7 @@
         &:focus {
           outline: none;
           border-color: var(--color-primary);
-          background: var(--surface-primary, #ffffff);
+          background: var(--surface-input, #ffffff);
           box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
 
           width: 100%;
@@ -228,12 +228,12 @@
           }
 
           &.suggestion-page .suggestion-icon {
-            background: var(--dev-avatar-bg, #eef2ff);
+            background: var(--color-primary-soft, #eef2ff);
             color: var(--color-primary);
           }
 
           &.suggestion-repo .suggestion-icon {
-            background: #ecfdf5;
+            background: var(--color-success-soft, #ecfdf5);
             color: var(--color-success);
           }
 
@@ -273,23 +273,23 @@
           }
 
           &.suggestion-page .suggestion-badge {
-            background: #eef2ff;
-            color: var(--color-primary);
+            background: var(--color-primary-soft, #eef2ff);
+            color: var(--color-primary-text, var(--color-primary));
           }
 
           &.suggestion-repo .suggestion-badge {
-            background: #ecfdf5;
-            color: var(--color-success);
+            background: var(--color-success-soft, #ecfdf5);
+            color: var(--color-success-text, var(--color-success));
           }
 
           &.suggestion-skill .suggestion-icon {
-            background: #fffbeb;
+            background: var(--color-warning-soft, #fffbeb);
             color: var(--color-warning);
           }
 
           &.suggestion-skill .suggestion-badge {
-            background: #fffbeb;
-            color: var(--color-warning);
+            background: var(--color-warning-soft, #fffbeb);
+            color: var(--color-warning-text, var(--color-warning));
           }
         }
       }
@@ -323,7 +323,7 @@
         height: 22px;
         border-radius: 4px;
         border: 1px solid var(--border-color);
-        background: var(--surface-primary, #ffffff);
+        background: var(--surface-input, #ffffff);
         color: var(--text-primary);
         padding: 0 6px;
         min-width: 130px;
@@ -336,7 +336,7 @@
         }
 
         option {
-          background: var(--surface-primary, #ffffff);
+          background: var(--surface-card, #ffffff);
           color: var(--text-primary);
         }
       }
@@ -345,9 +345,9 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        background: #eef2ff;
-        border: 1px solid var(--dev-avatar-border, #c7d2fe);
-        color: var(--color-primary);
+        background: var(--color-primary-soft, #eef2ff);
+        border: 1px solid var(--color-primary-border, #c7d2fe);
+        color: var(--color-primary-text, var(--color-primary));
         padding: 4px 10px;
         border-radius: 6px;
         font-size: 0.75rem;
@@ -362,7 +362,7 @@
         }
 
         &:hover {
-          background: #e0e7ff;
+          background: var(--color-primary-soft, #e0e7ff);
         }
       }
 
@@ -373,9 +373,9 @@
         letter-spacing: 0.04em;
         padding: 3px 7px;
         border-radius: 999px;
-        background: #eef2ff;
-        color: var(--color-primary);
-        border: 1px solid #c7d2fe;
+        background: var(--color-primary-soft, #eef2ff);
+        color: var(--color-primary-text, var(--color-primary));
+        border: 1px solid var(--color-primary-border, #c7d2fe);
       }
 
       @media (max-width: 1320px) {
@@ -638,9 +638,9 @@
         width: 32px;
         height: 32px;
         border-radius: 6px;
-        background: #eef2ff;
-        color: var(--color-primary);
-        border: 1px solid #c7d2fe;
+        background: var(--color-primary-soft, #eef2ff);
+        color: var(--color-primary-text, var(--color-primary));
+        border: 1px solid var(--color-primary-border, #c7d2fe);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -911,7 +911,8 @@
   }
 }
 
-:host-context(.developer-workspace) .navbar {
+:host-context(.developer-workspace) .navbar,
+:host-context(.recruiter-workspace) .navbar {
   .menu-toggle,
   .icon-btn {
     min-width: 38px;
@@ -944,7 +945,8 @@
 }
 
 @media (max-width: 768px) {
-  :host-context(.developer-workspace) .navbar {
+  :host-context(.developer-workspace) .navbar,
+  :host-context(.recruiter-workspace) .navbar {
     padding-inline: 14px;
     gap: 10px;
 
@@ -974,7 +976,8 @@
 }
 
 @media (max-width: 640px) {
-  :host-context(.developer-workspace) .navbar {
+  :host-context(.developer-workspace) .navbar,
+  :host-context(.recruiter-workspace) .navbar {
     padding-inline: 12px;
     gap: 8px;
 
@@ -989,7 +992,8 @@
 }
 
 @media (max-width: 360px) {
-  :host-context(.developer-workspace) .navbar {
+  :host-context(.developer-workspace) .navbar,
+  :host-context(.recruiter-workspace) .navbar {
     padding-inline: 10px;
     gap: 6px;
 
@@ -1011,6 +1015,26 @@
 
 .navbar .suggestion-item[aria-selected='true'] {
   background: var(--surface-hover);
+}
+
+// Recruiter names/handles can be long. Keep the toolbar's fixed controls from
+// expanding across the search/menu area when the desktop sidebar is open.
+:host-context(.recruiter-workspace) .navbar {
+  .navbar-left .search-bar {
+    min-width: 0;
+  }
+
+  .navbar-right .user-info {
+    min-width: 0;
+    max-width: clamp(64px, 12vw, 160px);
+
+    .user-name,
+    .user-handle {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 
 @media (max-width: 640px) {

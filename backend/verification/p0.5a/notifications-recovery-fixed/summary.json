@@ -1,0 +1,9 @@
+{
+  "issue": "notifications-recovery",
+  "exitCode": 0,
+  "testFiles": ["notifications/notificationsProduction.test.js"],
+  "productionDataUsed": false,
+  "counts": ["# tests 2", "# pass 2", "# fail 0", "# skipped 0", "# duration_ms 14471.6258"],
+  "failures": [],
+  "cleanup": "Suite-owned disposable Mongo cleanup; see TAP and suite evidence"
+}

@@ -5,7 +5,9 @@ const path = require('node:path');
 const { fork } = require('node:child_process');
 const mongoose = require('mongoose');
 const { startMongo } = require('../fixtures/disposableRequestMongo');
-const root = path.resolve(__dirname, '../../../verification/resume');
+const root = path.resolve(
+  process.env.RESUME_VERIFICATION_DIRECTORY || path.join(__dirname, '../../../verification/resume')
+);
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function worker(uri) {
   const child = fork(path.join(__dirname, '../fixtures/resumeWorker.js'), [], {

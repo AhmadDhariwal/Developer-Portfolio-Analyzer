@@ -56,8 +56,10 @@ const deepMask = (obj) => {
 
 const trimPayload = (value, maxLen = 5000) => {
   if (value === null || value === undefined) return value;
-  const masked = deepMask(value);
   try {
+    // Match the response's JSON contract before traversing it. Mongoose documents
+    // contain cyclic internal state; toJSON also preserves ObjectIds and dates.
+    const masked = deepMask(JSON.parse(JSON.stringify(value)));
     const text = JSON.stringify(masked);
     if (text.length <= maxLen) return masked;
     return { __truncated: true, preview: text.slice(0, maxLen) };
@@ -121,6 +123,7 @@ const resolveScope = async (req) => {
 const auditLogMiddleware = (req, res, next) => {
   if (!MUTATION_METHODS.has(req.method)) return next();
   if (!req.originalUrl.startsWith('/api/')) return next();
+  const isRecruiterRoute = /^\/api\/recruiter(?:-hub)?(?:\/|\?|$)/.test(req.originalUrl);
 
   const actor = req.user?._id || resolveActorFromToken(req) || null;
   const ipAddress =
@@ -144,17 +147,28 @@ const auditLogMiddleware = (req, res, next) => {
 
   res.on('finish', async () => {
     try {
-      const action = `${req.method} ${req.baseUrl || ''}${req.path || ''}`.trim();
-      const { organizationId, teamId } = await resolveScope(req);
+      if (req.recruiterAuditRecorded && res.statusCode < 400) return;
+      const loggedRoute = requestLogPath(req);
+      const action =
+        loggedRoute === '/api/recruiter-hub/private-application-evaluation'
+          ? `${req.method} ${loggedRoute}`
+          : `${req.method} ${req.baseUrl || ''}${req.path || ''}`.trim();
+      const { organizationId, teamId } = isRecruiterRoute
+        ? { organizationId: firstValidObjectId(req.organizationId), teamId: null }
+        : req.method === 'POST' &&
+            req.originalUrl.split('?')[0] === '/api/tenant/organizations' &&
+            res.statusCode === 201
+          ? { organizationId: firstValidObjectId(responseBody?.organization?._id), teamId: null }
+          : await resolveScope(req);
       await AuditLog.create({
         actor,
         organizationId,
         teamId,
         action,
         method: req.method,
-        route: requestLogPath(req),
-        before: trimPayload(before),
-        after: trimPayload(responseBody),
+        route: loggedRoute,
+        before: isRecruiterRoute ? null : trimPayload(before),
+        after: isRecruiterRoute ? null : trimPayload(responseBody),
         statusCode: res.statusCode,
         ipAddress,
         userAgent,

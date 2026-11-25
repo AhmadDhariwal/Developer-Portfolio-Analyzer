@@ -8,6 +8,8 @@ const { safeCourseUrl, digest } = require('../utils/courseIdentity');
 const { acquirePoolLease, releasePoolLease } = require('./courseGovernanceService');
 let task;
 let discoveryTask;
+let maintenanceRun;
+let discoveryRun;
 let running = false;
 
 // Only public allowlisted destinations; no page content is downloaded or republished.
@@ -115,23 +117,37 @@ async function maintain({ probeCourse = probe } = {}) {
 }
 
 function start() {
-  if (task || process.env.COURSES_MAINTENANCE_ENABLED === 'false') return;
-  task = cron.schedule('17 * * * *', () =>
-    maintain().catch(() => console.warn('[Courses] Catalog maintenance deferred.')),
-  );
+  if (task || process.env.COURSES_MAINTENANCE_ENABLED === 'false') return null;
+  task = cron.schedule('17 * * * *', () => {
+    if (maintenanceRun) return maintenanceRun;
+    maintenanceRun = maintain()
+      .catch(() => console.warn('[Courses] Catalog maintenance deferred.'))
+      .finally(() => {
+        maintenanceRun = null;
+      });
+    return maintenanceRun;
+  });
   if (process.env.COURSES_GAP_DISCOVERY_ENABLED !== 'false')
-    discoveryTask = cron.schedule('* * * * *', () =>
-      require('./courseCatalogAcquisitionService')
+    discoveryTask = cron.schedule('* * * * *', () => {
+      if (discoveryRun) return discoveryRun;
+      discoveryRun = require('./courseCatalogAcquisitionService')
         .refresh()
         .then(() => require('./courseCatalogSearchService').processDiscoveryQueue())
-        .catch(() => console.warn('[Courses] Shared topic discovery deferred.')),
-    );
+        .catch(() => console.warn('[Courses] Shared topic discovery deferred.'))
+        .finally(() => {
+          discoveryRun = null;
+        });
+      return discoveryRun;
+    });
 }
 function stop() {
   task?.stop();
+  cron.getTasks?.()?.delete?.(task?.options?.name);
   task = null;
   discoveryTask?.stop();
+  cron.getTasks?.()?.delete?.(discoveryTask?.options?.name);
   discoveryTask = null;
+  return Promise.allSettled([maintenanceRun, discoveryRun]);
 }
 async function coverageReport() {
   await catalog.initialize();

@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorizeRoles } = require('../../../core/middleware/authmiddleware');
+const { protect } = require('../../../core/middleware/authmiddleware');
+const { requireRecruiterTenant } = require('../middleware/requireRecruiterTenant');
 const { requireOrganizationContext } = require('../../../core/middleware/orgMiddleware');
-const { requireRecruiterAccessEnabled } = require('../../../core/middleware/platformSettingsMiddleware');
+const {
+  requireRecruiterAccessEnabled
+} = require('../../../core/middleware/platformSettingsMiddleware');
 const {
   getRecruiterDashboard,
   getRecruiterCandidates,
@@ -15,7 +18,12 @@ const {
   aiRankCandidates
 } = require('../controllers/matching');
 
-router.use(protect, authorizeRoles('recruiter'), requireRecruiterAccessEnabled, requireOrganizationContext(['recruiter']));
+router.use(
+  protect,
+  requireRecruiterTenant,
+  requireRecruiterAccessEnabled,
+  requireOrganizationContext(['recruiter'])
+);
 
 // Dashboard
 router.get('/dashboard', getRecruiterDashboard);

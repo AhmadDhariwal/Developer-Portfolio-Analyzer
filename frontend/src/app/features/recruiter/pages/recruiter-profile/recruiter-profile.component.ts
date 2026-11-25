@@ -1,5 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { TenantContextService } from '../../../../shared/services/tenant-context.service';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
@@ -13,9 +15,13 @@ import { RecruiterProfile } from '../../models/recruiter.model';
 })
 export class RecruiterProfileComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   loading = true;
   saving = false;
+  avatarLoadError = false;
+  isOnboarding = false;
   profile: RecruiterProfile | null = null;
   error = '';
   notice = '';
@@ -28,8 +34,8 @@ export class RecruiterProfileComponent implements OnInit {
     name: ['', [Validators.required, Validators.maxLength(120)]],
     email: [{ value: '', disabled: true }, [Validators.required, Validators.email]],
     avatar: [''],
-    jobTitle: [''],
-    location: [''],
+    jobTitle: ['', [Validators.maxLength(120)]],
+    location: ['', [Validators.maxLength(120)]],
     phoneNumber: [''],
     githubUsername: [''],
     linkedin: [''],
@@ -56,11 +62,57 @@ export class RecruiterProfileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.isOnboarding = this.route.snapshot.queryParamMap.get('onboarding') === 'recruiter';
     this.loadProfile();
   }
 
   get isSubmitDisabled(): boolean {
     return this.loading || this.saving || this.profileForm.invalid;
+  }
+
+  get profileCompletionItems(): Array<{ label: string; done: boolean }> {
+    const current = this.profile;
+    return [
+      { label: 'Identity', done: Boolean(current?.name && current?.email) },
+      {
+        label: 'Contact',
+        done: Boolean(current?.phoneNumber || current?.linkedin || current?.githubUsername),
+      },
+      {
+        label: 'Background',
+        done: Boolean(
+          current?.recruiterDetails?.education ||
+          current?.recruiterDetails?.yearsOfExperience ||
+          current?.recruiterDetails?.certifications?.length,
+        ),
+      },
+      {
+        label: 'Sourcing Preferences',
+        done: Boolean(
+          current?.recruiterPreferences?.preferredStacks?.length ||
+          current?.recruiterPreferences?.preferredLocations?.length,
+        ),
+      },
+    ];
+  }
+
+  get completedStepsCount(): number {
+    return this.profileCompletionItems.filter((item) => item.done).length;
+  }
+
+  get completionPercent(): number {
+    return Math.round((this.completedStepsCount / this.profileCompletionItems.length) * 100);
+  }
+
+  onAvatarError(): void {
+    this.avatarLoadError = true;
+  }
+
+  discardChanges(): void {
+    this.error = '';
+    this.notice = '';
+    this.fieldErrors = {};
+    this.patchForm(this.profile);
   }
 
   save(): void {
@@ -104,37 +156,40 @@ export class RecruiterProfileComponent implements OnInit {
       },
     };
 
-    this.hubService.updateProfile(payload).subscribe({
-      next: (response) => {
-        this.profile = (response?.profile as RecruiterProfile) || this.profile;
-        this.patchForm(this.profile);
-        this.authService.updateCurrentUser({
-          name: this.profile?.name,
-          avatar: this.profile?.avatar,
-          githubUsername: this.profile?.githubUsername,
-        });
-        this.notice = 'Recruiter profile updated successfully.';
-        this.saving = false;
-        this.hubService.clearCache();
-      },
-      error: (err) => {
-        this.saving = false;
-        this.error = this.extractApiError(err, 'Unable to update recruiter profile.');
-        const errors = err?.error?.errors;
-        if (errors && typeof errors === 'object') {
-          this.fieldErrors = Object.fromEntries(
-            Object.entries(errors).map(([key, value]) => [key, String(value || '')]),
-          );
-        }
-      },
-    });
+    this.hubService
+      .updateProfile(payload)
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response) => {
+          this.profile = (response?.profile as RecruiterProfile) || this.profile;
+          this.avatarLoadError = false;
+          this.patchForm(this.profile);
+          this.authService.updateCurrentUser({
+            name: this.profile?.name,
+            avatar: this.profile?.avatar,
+            githubUsername: this.profile?.githubUsername,
+          });
+          this.notice = 'Recruiter profile updated successfully.';
+          this.saving = false;
+        },
+        error: (err) => {
+          this.saving = false;
+          this.error = this.extractApiError(err, 'Unable to update recruiter profile.');
+          const errors = err?.error?.errors;
+          if (errors && typeof errors === 'object') {
+            this.fieldErrors = Object.fromEntries(
+              Object.entries(errors).map(([key, value]) => [key, String(value || '')]),
+            );
+          }
+        },
+      });
   }
 
   showControlError(controlName: string): boolean {
     const control = this.profileForm.get(controlName);
     return Boolean(
       this.fieldErrors[controlName] ||
-        (control && control.invalid && (control.touched || control.dirty)),
+      (control && control.invalid && (control.touched || control.dirty)),
     );
   }
 
@@ -151,45 +206,39 @@ export class RecruiterProfileComponent implements OnInit {
     return fallback;
   }
 
-  private loadProfile(): void {
+  loadProfile(): void {
     this.loading = true;
     this.error = '';
-    this.hubService.getProfile().subscribe({
-      next: (response) => {
-        this.profile = (response?.profile as RecruiterProfile) || null;
-        this.patchForm(this.profile);
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = this.extractApiError(err, 'Unable to load recruiter profile.');
-        this.loading = false;
-      },
-    });
-  }
-
-  get profileCompletionItems(): Array<{ label: string; done: boolean }> {
-    const current = this.profile;
-    return [
-      { label: 'Identity', done: Boolean(current?.name && current?.email) },
-      { label: 'Contact', done: Boolean(current?.phoneNumber || current?.linkedin || current?.githubUsername) },
-      { label: 'Background', done: Boolean(current?.recruiterDetails?.education || current?.recruiterDetails?.yearsOfExperience || current?.recruiterDetails?.certifications?.length) },
-      { label: 'Sourcing Preferences', done: Boolean(current?.recruiterPreferences?.preferredStacks?.length || current?.recruiterPreferences?.preferredLocations?.length) },
-    ];
+    this.hubService
+      .getProfile()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response) => {
+          this.profile = (response?.profile as RecruiterProfile) || null;
+          this.avatarLoadError = false;
+          this.patchForm(this.profile);
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = this.extractApiError(err, 'Unable to load recruiter profile.');
+          this.loading = false;
+        },
+      });
   }
 
   private patchForm(profile: RecruiterProfile | null): void {
     if (profile?.organization?._id || profile?.organization?.name) {
       this.tenantContext.syncOrganization({
         id: String(profile?.organization?._id || this.tenantContext.snapshot.organizationId || ''),
-        name: String(profile?.organization?.name || this.tenantContext.snapshot.organizationName || ''),
-        myRole: 'recruiter'
+        name: String(
+          profile?.organization?.name || this.tenantContext.snapshot.organizationName || '',
+        ),
+        myRole: 'recruiter',
       });
     }
 
     this.organizationName =
-      profile?.organization?.name ||
-      this.tenantContext.snapshot.organizationName ||
-      '';
+      profile?.organization?.name || this.tenantContext.snapshot.organizationName || '';
     this.connectedTeams = Array.isArray(profile?.teams)
       ? profile.teams.map((team) => team.name).filter(Boolean)
       : [];

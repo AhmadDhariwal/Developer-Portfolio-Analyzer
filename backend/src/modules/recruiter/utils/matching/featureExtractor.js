@@ -2,12 +2,17 @@ const { predictGrowthPotential } = require('./potentialPredictor');
 
 const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(value) || 0));
 
-const normalizeText = (value) => String(value || '').trim().toLowerCase();
+const normalizeText = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase();
 
 const normalizeSkillSet = (skills = []) => {
-  return [...new Set((Array.isArray(skills) ? skills : [])
-    .map((skill) => normalizeText(skill))
-    .filter(Boolean))];
+  return [
+    ...new Set(
+      (Array.isArray(skills) ? skills : []).map((skill) => normalizeText(skill)).filter(Boolean)
+    )
+  ];
 };
 
 const toExperienceScore = (years, minExperienceYears = 0) => {
@@ -34,8 +39,12 @@ const computeSkillMatch = (candidateSkills = [], requiredSkills = []) => {
     };
   }
 
-  const matched = normalizedRequiredSkills.filter((skill) => normalizedCandidateSkills.includes(skill));
-  const missing = normalizedRequiredSkills.filter((skill) => !normalizedCandidateSkills.includes(skill));
+  const matched = normalizedRequiredSkills.filter((skill) =>
+    normalizedCandidateSkills.includes(skill)
+  );
+  const missing = normalizedRequiredSkills.filter(
+    (skill) => !normalizedCandidateSkills.includes(skill)
+  );
   const score = clamp((matched.length / normalizedRequiredSkills.length) * 100);
 
   return {
@@ -49,17 +58,21 @@ const computeProjectQuality = (projects = []) => {
   const safeProjects = Array.isArray(projects) ? projects : [];
   if (!safeProjects.length) return 0;
 
-  const avgImpact = safeProjects.reduce((sum, project) => {
-    return sum + (Number(project.impactScore) || 0);
-  }, 0) / safeProjects.length;
+  const avgImpact =
+    safeProjects.reduce((sum, project) => {
+      return sum + (Number(project.impactScore) || 0);
+    }, 0) / safeProjects.length;
 
-  const completionBonus = safeProjects.filter((project) => project.status === 'completed').length / safeProjects.length;
+  const completionBonus =
+    safeProjects.filter((project) => project.status === 'completed').length / safeProjects.length;
   return clamp(avgImpact * 0.8 + completionBonus * 20);
 };
 
 const extractCandidateFeatures = ({ candidate, job, enrichment = {} }) => {
   const skillMatchResult = computeSkillMatch(candidate.skills, job.requiredSkills);
-  const projectQuality = computeProjectQuality(candidate.projects);
+  const projectQuality = candidate.projects?.length
+    ? computeProjectQuality(candidate.projects)
+    : null;
 
   const resolvedConsistencyScore = enrichment.consistencyScore ?? candidate.consistencyScore;
   const consistencyScore = clamp(resolvedConsistencyScore);
@@ -73,13 +86,14 @@ const extractCandidateFeatures = ({ candidate, job, enrichment = {} }) => {
     projectVelocity: enrichment.projectVelocity
   });
 
-  const githubScore = clamp(candidate.githubScore);
+  const githubScore = candidate.githubScore == null ? null : clamp(candidate.githubScore);
   const experienceScore = toExperienceScore(candidate.yearsOfExperience, job.minExperienceYears);
 
   return {
+    github: githubScore,
     githubScore,
-    skillMatch: skillMatchResult.score,
-    skillRelevance: skillMatchResult.score,
+    skillMatch: candidate.skills?.length ? skillMatchResult.score : null,
+    skillRelevance: candidate.skills?.length ? skillMatchResult.score : null,
     projectQuality,
     experience: experienceScore,
     consistency: consistencyScore,

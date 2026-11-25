@@ -1,0 +1,64 @@
+{
+  "frontend": {
+    "initialTargeted": {
+      "files": 11,
+      "passed": 78,
+      "failed": 0
+    },
+    "finalUncertainOutcome": {
+      "files": 2,
+      "passed": 22,
+      "failed": 0,
+      "distinctNewTests": 2
+    },
+    "distinctPassed": 80,
+    "typescript": "passed with final required root invocation",
+    "productionBuild": {
+      "status": "passed",
+      "initialMB": 4.13,
+      "warnings": [
+        "Initial bundle 128.63 kB over the 4 MB warning threshold; below unchanged 5 MB error threshold",
+        "public-portfolio styles 49.97 kB versus 48 kB warning",
+        "developer/jobs styles 54.40 kB versus 48 kB warning"
+      ]
+    },
+    "sandboxAttempt": "Initial Angular run blocked by the installed Console Ninja hook loopback connection; outside-sandbox rerun passed.",
+    "fullSuite": {
+      "status": "incomplete",
+      "command": "npm test -- --watch=false",
+      "detail": "Stopped during cold Angular test compilation after about one minute at the user's request to finish promptly; targeted 80-test recruiter suite had passed earlier."
+    }
+  },
+  "backend": {
+    "originalBatch": {
+      "report": "backend/verification/jobs-hub/p1.5b/backend-tests.json",
+      "passed": 67,
+      "failed": 4,
+      "cancelled": 2,
+      "cause": "Notification parent exhausted its existing 120-second suite deadline during restart readiness; remaining notification children cancelled/not started. Other targeted suites passed."
+    },
+    "finalCapAndLegacy": {
+      "passed": 12,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "command": "node --test --test-concurrency=1 backend/src/tests/recruiter/applicationConcurrency.integration.test.js backend/src/tests/recruiter/recruiterHttp.integration.test.js",
+      "evidence": "backend/verification/jobs-hub/p1.5b/concurrency-tests.json"
+    },
+    "notificationIsolated": {
+      "status": "unverified: parent timeout",
+      "passed": 3,
+      "cancelled": 1,
+      "deadlineMs": 120000,
+      "invocation": "node -e require(notificationProduction.test.js), with separate evidence directory",
+      "report": "backend/verification/jobs-hub/p1.5b/notifications-isolated/integration-results.json"
+    },
+    "reconciledStatus": "Recruiter/application and legacy HTTP checks passed; full notification restart/multi-worker suite remains blocked by original parent timeout.",
+    "finalRerun": {
+      "status": "incomplete",
+      "detail": "Sequential rerun was stopped after about 105 seconds without progress output; earlier recorded cap and legacy run passed 12/12 and remains in concurrency-tests.json."
+    }
+  },
+  "sourceValidation": "backend/verification/jobs-hub/p1.5b/source-validation.json",
+  "performance": "backend/verification/jobs-hub/p1.5b/performance-comparison.json"
+}

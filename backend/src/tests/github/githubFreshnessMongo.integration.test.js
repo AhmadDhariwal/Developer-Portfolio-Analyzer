@@ -29,7 +29,30 @@ test(
       if (previousSecret === undefined) delete process.env.JWT_SECRET;
       else process.env.JWT_SECRET = previousSecret;
     });
-    await mongoose.connect(runtime.uri);
+    await mongoose.connect(runtime.uri, { monitorCommands: true });
+    let transactionActive = false;
+    let activeDDL = 0;
+    const overlappingDDL = [];
+    const mongoClient = mongoose.connection.getClient();
+    mongoClient.on('commandStarted', ({ command, commandName }) => {
+      if (['create', 'createIndexes'].includes(commandName)) {
+        activeDDL += 1;
+        if (transactionActive) overlappingDDL.push(`started:${commandName}`);
+      }
+      if (command.autocommit === false) {
+        transactionActive = true;
+        if (activeDDL > 0) overlappingDDL.push(`inFlight:${activeDDL}`);
+      }
+      if (['commitTransaction', 'abortTransaction'].includes(commandName))
+        transactionActive = false;
+    });
+    const finishDDL = ({ commandName }) => {
+      if (['create', 'createIndexes'].includes(commandName)) {
+        activeDDL = Math.max(0, activeDDL - 1);
+      }
+    };
+    mongoClient.on('commandSucceeded', finishDDL);
+    mongoClient.on('commandFailed', finishDDL);
     const User = require('../../modules/auth/models/user');
     const Analysis = require('../../modules/skill-gap/models/analysis');
     const SaveLock = require('../../modules/github/models/githubSaveLock');
@@ -97,6 +120,7 @@ test(
     assert.equal((await request({ savedOnly: true })).status, 404);
     assert.equal(syncs, 0);
     assert.equal((await request({ forceRefresh: true })).status, 200);
+    assert.deepEqual(overlappingDDL, [], 'Cold model DDL must finish before the save transaction');
     const accepted = await Analysis.findOne({ userId: user._id }).lean();
     for (let index = 0; index < 4; index++) {
       const response = await request({ savedOnly: true });

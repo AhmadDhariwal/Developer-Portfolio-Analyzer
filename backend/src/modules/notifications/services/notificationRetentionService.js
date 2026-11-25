@@ -144,11 +144,13 @@ async function runOnce() {
   }
 }
 
+let activeTick;
 function start() {
   const policy = configuration();
-  if (!policy.workerEnabled || timer) return;
+  if (!policy.workerEnabled || timer) return null;
   timer = setInterval(() => {
-    runOnce()
+    if (activeTick) return;
+    activeTick = runOnce()
       .then((result) => {
         metrics.outcomes.inc({
           operation: 'retention',
@@ -157,6 +159,9 @@ function start() {
       })
       .catch(() => {
         metrics.outcomes.inc({ operation: 'retention', outcome: 'failed' });
+      })
+      .finally(() => {
+        activeTick = null;
       });
   }, policy.intervalMs);
   timer.unref?.();
@@ -164,5 +169,6 @@ function start() {
 function stop() {
   clearInterval(timer);
   timer = null;
+  return activeTick;
 }
 module.exports = { configuration, expiredFilter, visibleFilter, runOnce, start, stop };

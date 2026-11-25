@@ -517,6 +517,11 @@ export class AuthService implements OnDestroy {
     return this.currentUserSubject.value ?? this.readStoredUser();
   }
 
+  adoptSession(user: SessionUser): void {
+    if (!user?.token) return;
+    this.storeSession(user);
+  }
+
   updateCurrentUser(partial: Partial<SessionUser>): void {
     const current = this.currentUserSubject.value ?? this.readStoredUser();
     if (!current) return;
@@ -580,7 +585,8 @@ export class AuthService implements OnDestroy {
     }
 
     if (role === 'recruiter') {
-      return target.startsWith('/app/recruiter');
+      const path = target.split(/[?#]/, 1)[0];
+      return path === '/app/recruiter' || path.startsWith('/app/recruiter/');
     }
 
     return !(

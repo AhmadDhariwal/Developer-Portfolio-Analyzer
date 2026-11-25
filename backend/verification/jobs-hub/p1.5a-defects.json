@@ -1,0 +1,44 @@
+{
+  "phase": "P1.5A",
+  "confirmedAndFixed": [
+    {
+      "defect": "Recruiter notification fallback leaves the Recruiter workspace and the role guard redirects to Dashboard.",
+      "reproduction": "New notification-navigation regression returned /app/notifications instead of /app/recruiter/notifications; AuthService restricts Recruiters to /app/recruiter routes.",
+      "fix": "Role-specific fallback for empty/unknown/unsafe or generic notification targets. Known authorized originating targets and non-Recruiter behavior remain.",
+      "validation": "Utility, notification component and Navbar focused suites passed."
+    },
+    {
+      "defect": "Deterministic assessment activity represented as AI execution.",
+      "reproduction": "Rendered Analytics hint was AI-enhanced screenings; chart title was AI Ranking Usage. Match-card fallback rendered AI ranking complete. Backend rank service uses weighted deterministic features/scoring.",
+      "fix": "Profile fit summaries, Assessment Activity, accurate chart subtitle and Weighted ranking complete fallback. Existing aiUsageGraph and legacy API names retained for compatibility.",
+      "validation": "New DOM regression failed before fix and passed after; final match-card component recheck 7/7."
+    },
+    {
+      "defect": "Replacement characters in shared ownership/team labels.",
+      "reproduction": "Rendered card output contained Owner \ufffd Team \ufffd; shared job option contained the same replacement character.",
+      "fix": "Use middle-dot separators in both cards and Matches job options.",
+      "validation": "Shared ownership DOM regression and job-option assertion passed."
+    },
+    {
+      "defect": "Cold-DDL fixture startup competes with bounded PlatformSettings upsert.",
+      "reproduction": "Sequential backend run: Candidate Discovery failed before its first subtest with MongoOperationTimeoutError in findOneAndUpdate during startup; settings synchronization preceded fixture model initialization.",
+      "fix": "Register production routes before fixture setup. In disposable-only fixture modules, disable import-time autoCreate/autoIndex, explicitly create the existing schema collections/indexes after connection, then start bounded settings reads. Production defaults, fail-closed behavior, schemas and query timeouts unchanged.",
+      "validation": "Final isolated integrity fixture: 3/3; final isolated discovery: 8/8. Existing lifecycle after import cleanup: 5/5. No app query deadline increased.",
+      "additionalReproduction": "Final cleanup rerun exposed model.createCollection connection-buffer timeout before a slow disposable connection was ready. Explicit post-connect DDL in ApplicationPerformanceFixture and CandidateDiscovery fixture removes that import-time race."
+    }
+  ],
+  "reviewedWithoutRuntimeChanges": [
+    {
+      "issue": "Transient organization API 503 during session switching",
+      "result": "Not reproduced in targeted browser fresh-owner/peer contexts and localStorage-clear/navigation scenario; organization request failures with 503=0. The deliberately ungranted team picker returned 403, preserving tenant authorization.",
+      "boundary": "No general cross-account session-race fix claimed; a failing deployed/development reproduction would belong to an independently scoped session/tenant investigation."
+    },
+    {
+      "issue": "NG0100 under artificial session clearing",
+      "result": "No JavaScript exceptions or NG0100 observed in production-build smoke; clearing localStorage and navigating redirected to /auth/login.",
+      "boundary": "Production Angular checks differ from development change-detection checks. This is not a complete development-mode artificial-session-race reproduction or a claimed runtime fix."
+    }
+  ],
+  "browserEvidence": "frontend/verification/recruiter/p1.5a/real-stack.json",
+  "unrelatedPhases": "No Admin/Super Admin redesign or P1.5B removal work performed."
+}

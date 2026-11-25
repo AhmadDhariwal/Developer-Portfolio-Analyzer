@@ -18,7 +18,10 @@ const {
 } = require('../utils/newsFormatter');
 const { rankNewsItems } = require('../utils/newsRanker');
 const { getIntegrationSecretsSync } = require('../../super-admin/services/platformSettingsService');
-const { getDeveloperSignals, buildSignalHash } = require('../../../core/developer-context/developerSignalService');
+const {
+  getDeveloperSignals,
+  buildSignalHash
+} = require('../../../core/developer-context/developerSignalService');
 const {
   buildNewsSkillEvidence,
   relatedNewsSkillEvidence,
@@ -138,8 +141,7 @@ const fetchJson = async (source, url, options = {}, format = (value) => value) =
   if (!reservation.allowed)
     throw Object.assign(new Error('Provider admission denied'), {
       newsOutcome: {
-        status:
-          reservation.reason === 'quota_store_unavailable' ? 'unavailable' : 'quota_limited',
+        status: reservation.reason === 'quota_store_unavailable' ? 'unavailable' : 'quota_limited',
         reason: reservation.reason,
         nextEligibleAt: reservation.nextEligibleAt || null,
         items: []
@@ -261,8 +263,7 @@ const matchesFilters = (item, filters, sinceTimestamp) => {
 const extractTrendingTopics = (items = []) => {
   const counters = new Map();
   items.forEach((item) => {
-    const text =
-      `${item.title} ${item.description} ${(item.tags || []).join(' ')}`.toLowerCase();
+    const text = `${item.title} ${item.description} ${(item.tags || []).join(' ')}`.toLowerCase();
     [
       'javascript',
       'typescript',
@@ -498,11 +499,8 @@ const fetchAllSources = async (sinceDate) => {
     if (!provider.enabled) {
       sourceBuckets[providerName] = [];
       diagnostic.status = 'disabled';
-      diagnostic.reason = provider.disabledReason
-        ? 'budget_not_configured'
-        : 'platform_disabled';
-      diagnostic.lastFailure =
-        provider.disabledReason || 'Provider disabled in platform settings';
+      diagnostic.reason = provider.disabledReason ? 'budget_not_configured' : 'platform_disabled';
+      diagnostic.lastFailure = provider.disabledReason || 'Provider disabled in platform settings';
       providerDiagnostics.push(diagnostic);
       return;
     }
@@ -660,9 +658,7 @@ const getNewsFeed = async ({ user, query = {} }) => {
   const availableItems = stored
     ? stored.items
     : uniqueNewsItems([...(snapshot?.allItems || []), ...(topicSnapshot?.allItems || [])]);
-  const matching = availableItems.filter((item) =>
-    matchesFilters(item, filters, sinceTimestamp)
-  );
+  const matching = availableItems.filter((item) => matchesFilters(item, filters, sinceTimestamp));
   const ranked =
     filters.mode === 'explore'
       ? matching
@@ -728,9 +724,7 @@ const getNewsFeed = async ({ user, query = {} }) => {
       nextEligibleAt: item.nextEligibleAt || null
     }));
     if (topicSnapshot.filters?.attemptedAt)
-      coverage.enrichment.lastAttemptAt = new Date(
-        topicSnapshot.filters.attemptedAt
-      ).toISOString();
+      coverage.enrichment.lastAttemptAt = new Date(topicSnapshot.filters.attemptedAt).toISOString();
   }
   const start = (filters.page - 1) * filters.limit;
   const sourceSummary =
@@ -823,21 +817,29 @@ const refreshNewsPool = () =>
   pool.refreshPool(() => fetchAllSources(new Date(Date.now() - 30 * 86400000)));
 discovery.registerBroadRefresh?.(refreshNewsPool);
 let scheduler;
+let schedulerRun;
 const startNewsIngestionScheduler = () => {
-  if (scheduler || process.env.NEWS_INGESTION_ENABLED === 'false') return;
+  if (scheduler || process.env.NEWS_INGESTION_ENABLED === 'false') return null;
   discovery.startWorker?.();
   const tick = () => {
-    refreshNewsPool().catch(() => logger.warn('news ingestion failed'));
-    discovery.prewarm().catch(() => logger.warn('news discovery failed'));
+    if (schedulerRun) return schedulerRun;
+    schedulerRun = Promise.allSettled([
+      refreshNewsPool().catch(() => logger.warn('news ingestion failed')),
+      discovery.prewarm().catch(() => logger.warn('news discovery failed'))
+    ]).finally(() => {
+      schedulerRun = null;
+    });
+    return schedulerRun;
   };
   scheduler = setInterval(tick, 60000);
   scheduler.unref?.();
   tick();
 };
 const stopNewsIngestionScheduler = () => {
-  discovery.stopWorker?.();
+  const discoveryDrain = discovery.stopWorker?.();
   clearInterval(scheduler);
   scheduler = null;
+  return Promise.allSettled([schedulerRun, discoveryDrain]);
 };
 module.exports = {
   getNewsFeed,

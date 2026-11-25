@@ -1,0 +1,65 @@
+{
+  "phase": "P1.5B",
+  "branch": "fix/P1-project",
+  "head": "5b18f4d1e3802b52dfaebcd060f2b42a3df5c5e8",
+  "target": "not applicable",
+  "stagedPreserved": [
+    {
+      "path": "backend/index.js",
+      "blob": "062dca31f08172d875fcc1eadf595af2e398c3de",
+      "sha256": "68dc02b5e363fb447ef46ee9b921e26c53410b08a52c6f74032b9ac0cdc18349"
+    },
+    {
+      "path": "backend/src/core/observability/logger.js",
+      "blob": "0e8f1c89b89aa76153d798acfcc4971758d51458",
+      "sha256": "b9ecf9913cb9fbb9b6df98a3718f3e1cd4aab06bd0d4f8167cf651afae02cb57"
+    },
+    {
+      "path": "backend/src/tests/core/logger.test.js",
+      "blob": "451639374e0bcaac6ab8d4860e8a9dfa22365a1d",
+      "sha256": "6618d2a59b9317ea9b9eafa5761bd8c14c5f019dec64652cef1693bdd3a03fe0"
+    }
+  ],
+  "unstaged": "",
+  "acceptedSources": [
+    {
+      "path": "backend/src/modules/recruiter/utils/hub/applicationIdentityValidation.js",
+      "blob": "6e667792e5df14edf4587ea938727a125c228a31",
+      "sha256": "4de864ca6f7788eec907c057fa3c1d0b015ebc5bbde60524efd9d3cb3d8b4be5"
+    },
+    {
+      "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+      "blob": "7b94e37a783c8ceb4f80ae97d0259051dc6368c1",
+      "sha256": "4ec9a5cb673218195666839f419f974cc9caad40b72248b6f6c4976c62453653"
+    },
+    {
+      "path": "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+      "blob": "f90bfce481876c035eda653aec0b41a7e3516e24",
+      "sha256": "da7cd0e179157ff7ce1883aabf5a14d37d2a6dae7d6c32c7c32b69c6e98a5de7"
+    },
+    {
+      "path": "backend/src/modules/recruiter/utils/hub/applicationShortlistQuery.js",
+      "blob": "66c328462b015a32172baef8c93ad08be193df04",
+      "sha256": "fab3fb3e8ec4a38eae21878e295bcdc87fa98bc541463ec8154d5e5b4f07f98e"
+    },
+    {
+      "path": "backend/src/modules/jobs/services/jobApplicationService.js",
+      "blob": "1a77a0304756ba9b8b1495365af2b8dcb98df407",
+      "sha256": "4362e8b34fe81532e8d41840f4bf26701472b4c6abf07b3d27d4f96ca04e77ac"
+    },
+    {
+      "path": "backend/src/modules/notifications/services/notificationTransactionService.js",
+      "blob": "31daf8c699b1657402625688aa87cae73725e70b",
+      "sha256": "8b575097b4e90f5e9cd7c61f69180107a8df37ce7aad8112bad54b4090a1a077"
+    }
+  ],
+  "externalCommitReconciliation": "P1.5A resumption bfda6cb3 followed by e85c2344 and 5b18f4d1; all accepted optimization and evidence changes are in current HEAD. Existing startup fix remains staged, untouched.",
+  "independentEvidence": {
+    "source": "User supplied independent P1.5A acceptance in P1.5B request; no matching separate report found in repository",
+    "sequential261P95": 151.54,
+    "sequential1000P95": 200.74,
+    "concurrent1000P95": 1436.48,
+    "mixed1000P95": 17473.22
+  },
+  "noProductionActions": true
+}

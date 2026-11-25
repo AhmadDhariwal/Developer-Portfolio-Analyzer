@@ -20,6 +20,7 @@ const SYNC_PROFILES = [
 ];
 
 let timer = null;
+let activeTick = null;
 let isRunning = false;
 
 async function runJobSourceSync(reason = 'scheduled') {
@@ -65,20 +66,35 @@ async function runJobSourceSync(reason = 'scheduled') {
 }
 
 function startJobSourceSyncWorker() {
-  if (timer) return;
+  if (timer) return timer;
 
   timer = setInterval(() => {
-    runJobSourceSync('scheduled').catch((error) => {
-      console.error('[JobSourceSync] Scheduled tick failed:', error.message);
-    });
+    if (activeTick) return;
+    activeTick = runJobSourceSync('scheduled')
+      .catch((error) => {
+        console.error('[JobSourceSync] Scheduled tick failed:', error.message);
+      })
+      .finally(() => {
+        activeTick = null;
+      });
   }, JOB_SYNC_INTERVAL_MS);
 
   if (typeof timer.unref === 'function') timer.unref();
-  runJobSourceSync('prewarm').catch(() => {});
+  activeTick = runJobSourceSync('prewarm')
+    .catch(() => {})
+    .finally(() => {
+      activeTick = null;
+    });
   console.log(`Job source sync worker started. Interval: ${JOB_SYNC_INTERVAL_MS}ms`);
 }
 
+function stopJobSourceSyncWorker() {
+  clearInterval(timer);
+  timer = null;
+  return activeTick;
+}
 module.exports = {
+  stopJobSourceSyncWorker,
   startJobSourceSyncWorker,
   runJobSourceSync
 };

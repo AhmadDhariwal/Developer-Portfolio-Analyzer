@@ -63,3 +63,64 @@
   color: #fff;
 }
 
+:host-context(.recruiter-workspace) {
+  .overlay {
+    background: rgba(15, 23, 42, 0.56);
+    padding: 16px;
+  }
+
+  .dialog-card {
+    background: var(--surface-modal, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: var(--dev-radius-surface, 8px);
+    box-shadow: var(--shadow-lg);
+    padding: 20px 24px;
+  }
+
+  .dialog-title {
+    font-family: var(--font-heading);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--text-primary, #0f172a);
+  }
+
+  .dialog-message {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #475569);
+  }
+
+  .actions button {
+    min-height: 38px;
+    border-radius: var(--dev-radius-control, 6px);
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  .actions .cancel {
+    background: var(--surface-card, #ffffff);
+    color: var(--text-primary, #0f172a);
+    border: 1px solid var(--border-strong, #cbd5e1);
+
+    &:hover {
+      opacity: 1;
+      background: var(--surface-hover, #f8fafc);
+    }
+  }
+
+  .actions .confirm {
+    background: var(--color-danger, #ef4444);
+    color: #ffffff;
+
+    &:hover {
+      opacity: 1;
+      background: var(--color-danger-dark, #dc2626);
+    }
+  }
+}
+

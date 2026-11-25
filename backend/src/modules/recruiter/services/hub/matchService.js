@@ -1,193 +1,177 @@
 const RecruiterMatch = require('../../models/RecruiterMatch');
 const RecruiterShortlist = require('../../models/RecruiterShortlist');
-const Job = require('../../models/Job');
+const {
+  requireObjectId,
+  validateCandidateIds,
+  invalidInput
+} = require('../../utils/recruiterValidation');
 const { listCandidates } = require('../matching/matchingService');
 const { generateMatches } = require('../../utils/hub/matchCalculator');
-const { getRecruiterCandidateDetails } = require('./candidateService');
+const access = require('../../utils/hub/recruiterEvaluationAccess');
 
 const MATCH_STATUSES = new Set(['generated', 'shortlisted', 'rejected']);
 
-const mapJobSummary = (job = {}) => ({
-  _id: String(job?._id || ''),
-  title: String(job?.title || ''),
-  stack: String(job?.stack || ''),
-  status: String(job?.status || ''),
-  description: String(job?.description || ''),
-  requiredSkills: Array.isArray(job?.requiredSkills) ? job.requiredSkills : [],
-  preferredSkills: Array.isArray(job?.preferredSkills) ? job.preferredSkills : []
-});
-
-const hydrateMatches = async ({ recruiterId, organizationId, job, matches = [] }) => {
-  const candidateIds = [...new Set(matches.map((entry) => String(entry.candidateId || '')).filter(Boolean))];
-  const jobIds = [...new Set(matches.map((entry) => String(entry.jobId || '')).filter(Boolean))];
-
-  const [candidates, jobs] = await Promise.all([
-    Promise.all(candidateIds.map((candidateId) => getRecruiterCandidateDetails(candidateId, organizationId))),
-    jobIds.length > 0
-      ? Job.find({ _id: { $in: jobIds }, recruiterId, organizationId })
-          .select('title stack status description requiredSkills preferredSkills')
-          .lean()
-      : []
-  ]);
-
-  const candidateMap = new Map(
-    candidates
-      .filter(Boolean)
-      .map((candidate) => [String(candidate.id || candidate.userId || ''), candidate])
+async function hydrate(ctx, rows, jobs) {
+  rows = rows.filter((row) => {
+    const job = jobs.get(String(row.jobId));
+    return job && access.ownsRecord(row, job, ctx);
+  });
+  const visible = await access.candidates(
+    ctx,
+    rows.map((row) => row.candidateId)
   );
-  const jobMap = new Map(jobs.map((entry) => [String(entry._id), mapJobSummary(entry)]));
+  return rows
+    .filter((row) => {
+      const job = jobs.get(String(row.jobId));
+      return job && access.ownsRecord(row, job, ctx) && visible.get(String(row.candidateId));
+    })
+    .map((row) =>
+      access.rowView(row, jobs.get(String(row.jobId)), visible.get(String(row.candidateId)), ctx)
+    );
+}
 
-  if (job?._id) {
-    jobMap.set(String(job._id), mapJobSummary(job));
-  }
-
-  return matches.map((entry) => ({
-    ...entry,
-    candidate: candidateMap.get(String(entry.candidateId || '')) || null,
-    job: jobMap.get(String(entry.jobId || '')) || null
-  }));
+const generateRecruiterMatches = async ({ payload = {}, ...scope }) => {
+  const jobId = requireObjectId(payload.jobId, 'jobId');
+  const requestedIds = validateCandidateIds(payload.candidateIds ?? [], 300);
+  await Promise.all([RecruiterMatch.init(), RecruiterShortlist.init()]);
+  return access.withAccess(scope, async (ctx) => {
+    const jobs = await access.jobs(ctx, jobId);
+    const job = jobs.get(jobId);
+    access.authorize(job, ctx, true);
+    const ids = requestedIds.length
+      ? requestedIds
+      : (
+          await listCandidates({
+            organizationId: ctx.organizationId,
+            limit: 300,
+            session: ctx.session
+          })
+        ).map((row) => row.userId);
+    const visible = await access.candidates(ctx, ids, true);
+    const candidates = [
+      ...new Map([...visible.values()].map((candidate) => [candidate.userId, candidate])).values()
+    ];
+    const result = generateMatches({ job, candidates });
+    const recruiterId = job.recruiterId;
+    const organizationId = ctx.organizationId;
+    const shortlisted = await RecruiterShortlist.find({
+      recruiterId,
+      organizationId,
+      jobId,
+      applicationId: null
+    })
+      .session(ctx.session)
+      .lean();
+    const statusByCandidate = new Map(
+      shortlisted.map((row) => [
+        String(row.candidateId),
+        row.status === 'rejected' ? 'rejected' : 'shortlisted'
+      ])
+    );
+    if (result.records.length)
+      await RecruiterMatch.bulkWrite(
+        result.records.map((record) => ({
+          updateOne: {
+            filter: { recruiterId, organizationId, jobId, candidateId: record.candidateId },
+            update: {
+              $set: { ...record, teamId: job.teamId || null },
+              $setOnInsert: { status: statusByCandidate.get(record.candidateId) || 'generated' }
+            },
+            upsert: true
+          }
+        })),
+        { session: ctx.session }
+      );
+    const rows = await RecruiterMatch.find({
+      recruiterId,
+      organizationId,
+      jobId,
+      candidateId: { $in: result.records.map((record) => record.candidateId) }
+    })
+      .session(ctx.session)
+      .lean();
+    const hydrated = await hydrate(ctx, rows, jobs);
+    const byCandidate = new Map(hydrated.map((row) => [String(row.candidateId), row]));
+    return {
+      job,
+      matches: result.records
+        .map((record, index) => ({
+          ...byCandidate.get(record.candidateId),
+          rank: index + 1,
+          shortlisted: statusByCandidate.has(record.candidateId)
+        }))
+        .filter((row) => row._id),
+      meta: result.meta
+    };
+  });
 };
 
-const loadJob = async ({ recruiterId, organizationId, jobId }) => {
-  return Job.findOne({ _id: jobId, recruiterId, organizationId }).lean();
-};
-
-const generateRecruiterMatches = async ({ recruiterId, organizationId, teamIds = [], payload = {} }) => {
-  const jobId = String(payload.jobId || '').trim();
-  const candidateIds = Array.isArray(payload.candidateIds) ? payload.candidateIds.map((item) => String(item || '').trim()).filter(Boolean) : [];
-  const job = await loadJob({ recruiterId, organizationId, jobId });
-  if (!job) {
-    const error = new Error('Job not found.');
-    error.statusCode = 404;
-    throw error;
-  }
-
-  const candidates = await listCandidates({
-    organizationId,
-    stack: String(job.stack || '').trim(),
-    limit: 300
+const listRecruiterMatches = async ({ query = {}, ...scope }) =>
+  access.withAccess(scope, async (ctx) => {
+    const jobs = await access.jobs(ctx, query.jobId);
+    const filter = { organizationId: ctx.organizationId, jobId: { $in: [...jobs.keys()] } };
+    if (query.candidateId) filter.candidateId = requireObjectId(query.candidateId, 'candidateId');
+    if (query.status) {
+      if (!MATCH_STATUSES.has(String(query.status))) throw invalidInput('Match status is invalid.');
+      filter.status = String(query.status);
+    }
+    const rows = await RecruiterMatch.find(filter)
+      .sort({ updatedAt: -1 })
+      .session(ctx.session)
+      .lean();
+    return hydrate(ctx, rows, jobs);
   });
 
-  const scopedCandidates = candidateIds.length > 0
-    ? candidates.filter((candidate) => candidateIds.includes(String(candidate.userId || candidate.id || '')))
-    : candidates;
+async function selected(ctx, matchId, manage) {
+  const row = await RecruiterMatch.findOne({
+    _id: requireObjectId(matchId, 'matchId'),
+    organizationId: ctx.organizationId
+  })
+    .session(ctx.session)
+    .lean();
+  if (!row) return null;
+  const jobs = await access.jobs(ctx, row.jobId);
+  const job = jobs.get(String(row.jobId));
+  if (!access.ownsRecord(row, job, ctx)) return null;
+  access.authorize(job, ctx, manage);
+  const [visible] = await hydrate(ctx, [row], jobs);
+  return visible ? { row, jobs } : null;
+}
 
-  const result = generateMatches({ job, candidates: scopedCandidates });
-  const teamId = teamIds[0] || null;
+const getRecruiterMatchDetails = async ({ matchId, ...scope }) =>
+  access.withAccess(scope, async (ctx) => {
+    const result = await selected(ctx, matchId, false);
+    return result ? (await hydrate(ctx, [result.row], result.jobs))[0] : null;
+  });
 
-  if (result.records.length > 0) {
-    await Promise.all(result.records.map((record) => RecruiterMatch.findOneAndUpdate(
+const updateMatchStatus = async ({ matchId, status, expectedVersion, ...scope }) => {
+  const normalizedStatus = String(status || 'generated')
+    .trim()
+    .toLowerCase();
+  if (!MATCH_STATUSES.has(normalizedStatus)) throw invalidInput('Match status is invalid.');
+  return access.withAccess(scope, async (ctx) => {
+    const result = await selected(ctx, matchId, true);
+    if (!result) return null;
+    access.version(result.row, expectedVersion);
+    if (result.row.status === normalizedStatus)
+      return (await hydrate(ctx, [result.row], result.jobs))[0];
+    const updated = await RecruiterMatch.findOneAndUpdate(
       {
-        recruiterId,
-        organizationId,
-        jobId: record.jobId,
-        candidateId: record.candidateId
+        _id: result.row._id,
+        recruiterId: result.row.recruiterId,
+        organizationId: ctx.organizationId
       },
       {
         $set: {
-          ...record,
-          recruiterId,
-          organizationId,
-          teamId
-        }
+          status: normalizedStatus,
+          teamId: result.jobs.get(String(result.row.jobId)).teamId || null
+        },
+        $inc: { __v: 1 }
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    )));
-  }
-
-  const shortlistMap = new Map(
-    (await RecruiterShortlist.find({
-      recruiterId,
-      organizationId,
-      candidateId: { $in: result.records.map((record) => record.candidateId) }
-    }).select('candidateId').lean()).map((entry) => [String(entry.candidateId), true])
-  );
-
-  const hydratedMatches = await hydrateMatches({
-    recruiterId,
-    organizationId,
-    job,
-    matches: result.records.map((record, index) => ({
-      ...record,
-      rank: index + 1,
-      shortlisted: shortlistMap.has(record.candidateId)
-    }))
+      { session: ctx.session, new: true, runValidators: true }
+    ).lean();
+    return (await hydrate(ctx, [updated], result.jobs))[0];
   });
-
-  return {
-    job: mapJobSummary(job),
-    matches: hydratedMatches,
-    meta: result.meta
-  };
-};
-
-const listRecruiterMatches = async ({ recruiterId, organizationId, query = {} }) => {
-  const filter = {
-    recruiterId,
-    organizationId
-  };
-  if (query.jobId) filter.jobId = String(query.jobId);
-  if (query.candidateId) filter.candidateId = String(query.candidateId);
-  if (query.status) filter.status = String(query.status);
-
-  const matches = await RecruiterMatch.find(filter)
-    .sort({ updatedAt: -1 })
-    .lean();
-
-  return hydrateMatches({
-    recruiterId,
-    organizationId,
-    matches: matches.map((entry) => ({
-      ...entry,
-      candidateId: String(entry.candidateId || ''),
-      jobId: String(entry.jobId || '')
-    }))
-  });
-};
-
-const getRecruiterMatchDetails = async ({ recruiterId, organizationId, matchId }) => {
-  const match = await RecruiterMatch.findOne({ _id: matchId, recruiterId, organizationId }).lean();
-  if (!match) return null;
-
-  const [hydrated] = await hydrateMatches({
-    recruiterId,
-    organizationId,
-    matches: [{
-      ...match,
-      candidateId: String(match.candidateId || ''),
-      jobId: String(match.jobId || '')
-    }]
-  });
-
-  return hydrated || null;
-};
-
-const updateMatchStatus = async ({ recruiterId, organizationId, matchId, status }) => {
-  const normalizedStatus = String(status || 'generated').trim().toLowerCase();
-  if (!MATCH_STATUSES.has(normalizedStatus)) {
-    const error = new Error('Match status is invalid.');
-    error.statusCode = 400;
-    throw error;
-  }
-
-  const match = await RecruiterMatch.findOneAndUpdate(
-    { _id: matchId, recruiterId, organizationId },
-    { $set: { status: normalizedStatus } },
-    { new: true, runValidators: true }
-  ).lean();
-  if (!match) return null;
-
-  const [hydrated] = await hydrateMatches({
-    recruiterId,
-    organizationId,
-    matches: [{
-      ...match,
-      candidateId: String(match.candidateId || ''),
-      jobId: String(match.jobId || '')
-    }]
-  });
-
-  return hydrated || null;
 };
 
 module.exports = {

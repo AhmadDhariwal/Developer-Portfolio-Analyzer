@@ -1,7 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
-type LoaderVariant = 'cards' | 'charts' | 'pills' | 'stats' | 'table' | 'timeline';
+export type LoaderVariant =
+  | 'cards'
+  | 'charts'
+  | 'detail'
+  | 'list'
+  | 'pills'
+  | 'stats'
+  | 'table'
+  | 'timeline';
 
 @Component({
   selector: 'app-recruiter-loader',

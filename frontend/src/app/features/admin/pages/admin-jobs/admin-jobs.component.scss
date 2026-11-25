@@ -1,15 +1,11 @@
 .admin-page {
-  --bg-panel: linear-gradient(180deg, rgba(10, 18, 34, 0.96), rgba(10, 18, 34, 0.9));
-  --bg-soft: rgba(18, 29, 50, 0.72);
-  --border-soft: rgba(78, 98, 132, 0.26);
-  --border-strong: rgba(106, 131, 173, 0.36);
-  --text-primary: #f8fbff;
-  --text-secondary: #aab8d1;
-  --text-muted: #6f819f;
-  --accent-blue: #7aa2ff;
-  --accent-amber: #f7c972;
-  --accent-emerald: #79e2c0;
-  --danger: #f28b8b;
+  --bg-panel: var(--surface-card);
+  --bg-soft: var(--surface-secondary);
+  --border-soft: var(--border-color);
+  --accent-blue: var(--color-primary-text);
+  --accent-amber: var(--color-warning-text);
+  --accent-emerald: var(--color-success-text);
+  --danger: var(--color-danger-text);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -85,25 +81,25 @@
   padding: 0.45rem 0.85rem;
   border-radius: 999px;
   border: 1px solid var(--border-soft);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-secondary);
   color: var(--text-primary);
   font-size: 0.78rem;
   font-weight: 700;
 
   &--blue {
-    color: #d8e5ff;
-    border-color: rgba(122, 162, 255, 0.28);
-    background: rgba(122, 162, 255, 0.08);
+    color: var(--color-primary-text);
+    border-color: var(--color-primary-border);
+    background: var(--color-primary-soft);
   }
 
   &--slate {
-    color: #d5e4ff;
+    color: var(--text-secondary);
   }
 
   &--amber {
-    color: #ffe1a1;
-    border-color: rgba(247, 201, 114, 0.28);
-    background: rgba(247, 201, 114, 0.08);
+    color: var(--color-warning-text);
+    border-color: var(--color-warning-border);
+    background: var(--color-warning-soft);
   }
 }
 
@@ -117,7 +113,7 @@
   border-radius: 22px;
   border: 1px solid var(--border-soft);
   background: var(--bg-panel);
-  box-shadow: 0 16px 40px rgba(1, 7, 18, 0.26);
+  box-shadow: var(--shadow-lg);
 }
 
 .filters-card,
@@ -189,22 +185,25 @@
     min-width: 0;
     appearance: none;
     border: 1px solid var(--border-soft);
-    background: rgba(8, 15, 30, 0.86);
+    background: var(--surface-secondary);
     border-radius: 14px;
     padding: 0.8rem 0.95rem;
     color: var(--text-primary);
     font-size: 0.88rem;
-    transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      transform 150ms ease;
 
     &:focus {
       outline: none;
-      border-color: rgba(122, 162, 255, 0.45);
+      border-color: var(--color-primary-border);
       box-shadow: 0 0 0 3px rgba(122, 162, 255, 0.14);
       transform: translateY(-1px);
     }
 
     &::placeholder {
-      color: #5d7090;
+      color: var(--text-muted);
     }
   }
 
@@ -244,7 +243,7 @@
   left: 0.9rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #6c83a8;
+  color: var(--text-muted);
   pointer-events: none;
 }
 
@@ -269,7 +268,12 @@
 .btn-secondary,
 .pagination__button,
 .pagination__page {
-  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease, color 150ms ease, opacity 150ms ease;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
 }
 
 .btn-primary,
@@ -296,7 +300,7 @@
 .btn-ghost,
 .btn-secondary {
   border: 1px solid var(--border-soft);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-secondary);
   color: var(--text-primary);
   border-radius: 12px;
   padding: 0.7rem 0.95rem;
@@ -311,18 +315,18 @@
 }
 
 .btn-secondary--soft {
-  color: #dce7ff;
-  border-color: rgba(122, 162, 255, 0.2);
+  color: var(--color-primary-text);
+  border-color: var(--color-primary-border);
 }
 
 .btn-secondary--warn {
-  color: #ffe1a1;
-  border-color: rgba(247, 201, 114, 0.24);
+  color: var(--color-warning-text);
+  border-color: var(--color-warning-border);
 }
 
 .btn-secondary--danger {
-  color: #ffb4b4;
-  border-color: rgba(242, 139, 139, 0.24);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger-border);
 }
 
 button:hover:not(:disabled),
@@ -330,7 +334,11 @@ button:hover:not(:disabled),
 .btn-secondary:hover {
   transform: translateY(-1px);
   border-color: var(--border-strong);
-  background: rgba(255, 255, 255, 0.07);
+}
+
+.btn-ghost:hover,
+.btn-secondary:hover {
+  background: var(--surface-hover);
 }
 
 button:disabled {
@@ -363,15 +371,15 @@ button:disabled {
     flex-shrink: 0;
 
     &--blue {
-      background: rgba(122, 162, 255, 0.12);
-      color: #c7d8ff;
-      border: 1px solid rgba(122, 162, 255, 0.22);
+      background: var(--color-primary-soft);
+      color: var(--color-primary-text);
+      border: 1px solid var(--color-primary-border);
     }
 
     &--orange {
-      background: rgba(247, 201, 114, 0.12);
-      color: #ffe1a1;
-      border: 1px solid rgba(247, 201, 114, 0.22);
+      background: var(--color-warning-soft);
+      color: var(--color-warning-text);
+      border: 1px solid var(--color-warning-border);
     }
   }
 
@@ -467,13 +475,13 @@ button:disabled {
 }
 
 .meta-chip {
-  background: rgba(122, 162, 255, 0.08);
-  border: 1px solid rgba(122, 162, 255, 0.18);
-  color: #d9e5ff;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-text);
 
   &--muted {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: var(--surface-secondary);
+    border-color: var(--border-color);
     color: var(--text-secondary);
   }
 }
@@ -493,14 +501,14 @@ button:disabled {
 }
 
 .skill-chip {
-  background: rgba(122, 162, 255, 0.08);
-  border: 1px solid rgba(122, 162, 255, 0.18);
-  color: #d9e5ff;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-text);
 
   &--soft {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.08);
-    color: #d3ddf0;
+    background: var(--surface-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
   }
 }
 
@@ -514,21 +522,21 @@ button:disabled {
   border: 1px solid transparent;
 
   &--open {
-    background: rgba(121, 226, 192, 0.1);
-    border-color: rgba(121, 226, 192, 0.22);
-    color: #baf8e3;
+    background: var(--color-success-soft);
+    border-color: var(--color-success-border);
+    color: var(--color-success-text);
   }
 
   &--draft {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.09);
-    color: #d3ddf0;
+    background: var(--surface-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
   }
 
   &--closed {
-    background: rgba(242, 139, 139, 0.1);
-    border-color: rgba(242, 139, 139, 0.22);
-    color: #ffb4b4;
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger-border);
+    color: var(--color-danger-text);
   }
 }
 
@@ -553,7 +561,7 @@ button:disabled {
     height: 2.6rem;
     border-radius: 13px;
     border: 1px solid var(--border-soft);
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-secondary);
     color: var(--text-primary);
     cursor: pointer;
     font-weight: 800;
@@ -607,24 +615,24 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--surface-secondary);
   color: var(--text-primary);
   font-weight: 800;
   flex-shrink: 0;
 
   &--gold {
-    background: rgba(247, 201, 114, 0.16);
-    color: #ffe1a1;
+    background: var(--color-warning-soft);
+    color: var(--color-warning-text);
   }
 
   &--silver {
     background: rgba(198, 208, 226, 0.14);
-    color: #ecf2ff;
+    color: var(--text-primary);
   }
 
   &--bronze {
     background: rgba(219, 143, 98, 0.16);
-    color: #ffd2b5;
+    color: var(--color-warning-text);
   }
 }
 
@@ -663,8 +671,8 @@ button:disabled {
 .recommendation-box {
   border-radius: 16px;
   padding: 0.85rem 0.9rem;
-  background: rgba(9, 17, 31, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .breakdown-item {
@@ -709,15 +717,15 @@ button:disabled {
   line-height: 1.35;
 
   &--positive {
-    background: rgba(121, 226, 192, 0.1);
-    border: 1px solid rgba(121, 226, 192, 0.22);
-    color: #baf8e3;
+    background: var(--color-success-soft);
+    border: 1px solid var(--color-success-border);
+    color: var(--color-success-text);
   }
 
   &--negative {
-    background: rgba(242, 139, 139, 0.1);
-    border: 1px solid rgba(242, 139, 139, 0.22);
-    color: #ffb4b4;
+    background: var(--color-danger-soft);
+    border: 1px solid var(--color-danger-border);
+    color: var(--color-danger-text);
   }
 }
 
@@ -760,15 +768,15 @@ button:disabled {
   z-index: 202;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(8, 14, 26, 0.99), rgba(10, 18, 34, 0.98));
+  background: var(--surface-drawer);
   border-left: 1px solid var(--border-soft);
   box-shadow: -16px 0 48px rgba(1, 7, 18, 0.42);
 
   &__header {
     flex-shrink: 0;
     padding: 1.15rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(8, 14, 26, 0.98);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--surface-secondary);
     display: flex;
     justify-content: space-between;
     gap: 0.8rem;
@@ -796,8 +804,12 @@ button:disabled {
     overflow-y: auto;
     overscroll-behavior: contain;
 
-    &::-webkit-scrollbar { width: 5px; }
-    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
     &::-webkit-scrollbar-thumb {
       background: var(--border-soft);
       border-radius: 999px;
@@ -810,7 +822,7 @@ button:disabled {
   height: 2.2rem;
   border-radius: 0.8rem;
   border: 1px solid var(--border-soft);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-secondary);
   color: var(--text-primary);
   cursor: pointer;
   font-size: 1.35rem;
@@ -834,8 +846,8 @@ button:disabled {
     min-width: 0;
     padding: 0.8rem 0.9rem;
     border-radius: 15px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     gap: 0.18rem;
@@ -938,4 +950,9 @@ button:disabled {
     top: var(--navbar-height);
     height: calc(100dvh - var(--navbar-height));
   }
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
 }

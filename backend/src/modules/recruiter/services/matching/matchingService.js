@@ -8,8 +8,11 @@ const WeeklyReport = require('../../../weekly-reports/models/weeklyReport');
 const Candidate = require('../../models/Candidate');
 const Job = require('../../models/Job');
 const { rankCandidates } = require('./aiRankingService');
+const { deleteJobWithPipeline } = require('./jobLifecycleService');
 const PlatformSettings = require('../../../super-admin/models/platformSettings');
 const { escapeRegex } = require('../../../../core/utils/validation');
+const { requireObjectId, validateCandidateIds } = require('../../utils/recruiterValidation');
+const { measuredScore, averageAvailableScores } = require('../../utils/hub/candidateFormatter');
 
 const DEVELOPER_ROLE_VALUES = Object.freeze(['developer', 'user']);
 
@@ -59,9 +62,7 @@ const flattenResumeSkills = (skillsMap = {}) => {
 const normalizeSkills = (skills = []) => {
   return [
     ...new Set(
-      (Array.isArray(skills) ? skills : [])
-        .map((item) => String(item || '').trim())
-        .filter(Boolean)
+      (Array.isArray(skills) ? skills : []).map((item) => String(item || '').trim()).filter(Boolean)
     )
   ];
 };
@@ -76,11 +77,12 @@ const sanitizePublicCandidate = (candidate = {}) => ({
   location: candidate.location || '',
   githubUsername: candidate.githubUsername || '',
   publicProfileSlug: candidate.publicProfileSlug || null,
-  githubScore: Number(candidate.githubScore || 0),
+  githubScore: candidate.githubScore ?? null,
   resumeScore: Number(candidate.resumeScore || 0),
   consistencyScore: Number(candidate.consistencyScore || 0),
   growthPotentialScore: Number(candidate.growthPotentialScore || 0),
   score: Number(candidate.score || 0),
+  assessmentEvidence: candidate.assessmentEvidence,
   skills: Array.isArray(candidate.skills) ? candidate.skills : [],
   skillScores: Array.isArray(candidate.skillScores) ? candidate.skillScores : [],
   projects: Array.isArray(candidate.projects)
@@ -98,11 +100,12 @@ const sanitizePublicCandidate = (candidate = {}) => ({
     forks: Number(candidate.githubStats?.forks || 0),
     followers: Number(candidate.githubStats?.followers || 0)
   },
+  lastActive: candidate.lastActive || null,
+  experienceLevel: candidate.experienceLevel || '',
+  isActive: candidate.isActive !== false,
   aiInsight: {
     summary: String(candidate.aiInsight?.summary || ''),
-    strengths: Array.isArray(candidate.aiInsight?.strengths)
-      ? candidate.aiInsight.strengths
-      : [],
+    strengths: Array.isArray(candidate.aiInsight?.strengths) ? candidate.aiInsight.strengths : [],
     weaknesses: Array.isArray(candidate.aiInsight?.weaknesses)
       ? candidate.aiInsight.weaknesses
       : [],
@@ -169,44 +172,63 @@ const toObjectId = (id) => {
   return new mongoose.Types.ObjectId(id);
 };
 
-const listPublicDeveloperUserIds = async ({ organizationId = '' } = {}) => {
+const buildVisibleDeveloperFilter = async (organizationId, session) => {
   // Consent and global discovery policy must be current on every worker.
   const settings = await PlatformSettings.findOne({ scope: 'global' })
     .select('recruiter.candidateVisibility')
+    .session(session)
     .lean();
   const mode = String(settings?.recruiter?.candidateVisibility || 'public').toLowerCase();
-  if (['private', 'disabled', 'none', 'off'].includes(mode)) return [];
-  if (mode === 'organization' && !organizationId) return [];
+  if (['private', 'disabled', 'none', 'off'].includes(mode)) return null;
+  if (mode === 'organization' && !organizationId) return null;
   const filter = {
     role: { $in: DEVELOPER_ROLE_VALUES },
     isPublic: true,
     isActive: { $ne: false }
   };
-  if (mode === 'organization') filter.organizationId = organizationId;
-  const users = await User.find(filter).select('_id').lean();
-  return users
-    .map((entry) => String(entry._id))
-    .filter((id) => mongoose.Types.ObjectId.isValid(id));
+  if (mode === 'organization')
+    filter.organizationId = requireObjectId(organizationId, 'organizationId');
+  return filter;
 };
 
-const hydrateUserCandidates = async (users = []) => {
+// MongoDB does not support parallel operations on a transaction session.
+const resolveCandidateReads = async (reads, session) => {
+  if (!session) return Promise.all(reads);
+  const results = [];
+  for (const read of reads) results.push(await read);
+  return results;
+};
+
+const hydrateUserCandidates = async (users = [], session) => {
   if (!users.length) return [];
 
   const userIds = users.map((user) => user._id);
 
-  const [analyses, resumeAnalyses, publicProfiles, sprints, weeklyReports] = await Promise.all([
-    Analysis.find({ userId: { $in: userIds } }).lean(),
-    ResumeAnalysis.find({ userId: { $in: userIds } })
-      .sort({ analyzedAt: -1 })
-      .lean(),
-    PublicProfile.find({ userId: { $in: userIds } }).lean(),
-    CareerSprint.find({ userId: { $in: userIds } })
-      .sort({ updatedAt: -1 })
-      .lean(),
-    WeeklyReport.find({ userId: { $in: userIds } })
-      .sort({ weekEndDate: -1 })
-      .lean()
-  ]);
+  const [analyses, resumeAnalyses, publicProfiles, sprints, weeklyReports] =
+    await resolveCandidateReads(
+      [
+        Analysis.find({ userId: { $in: userIds } })
+          .session(session)
+          .lean(),
+        ResumeAnalysis.find({ userId: { $in: userIds } })
+          .sort({ analyzedAt: -1 })
+          .session(session)
+          .lean(),
+        PublicProfile.find({ userId: { $in: userIds }, isPublic: true })
+          .select('userId slug isPublic skills projects')
+          .session(session)
+          .lean(),
+        CareerSprint.find({ userId: { $in: userIds } })
+          .sort({ updatedAt: -1 })
+          .session(session)
+          .lean(),
+        WeeklyReport.find({ userId: { $in: userIds } })
+          .sort({ weekEndDate: -1 })
+          .session(session)
+          .lean()
+      ],
+      session
+    );
 
   const analysisByUser = new Map(analyses.map((entry) => [String(entry.userId), entry]));
   const resumeByUser = new Map();
@@ -228,89 +250,142 @@ const hydrateUserCandidates = async (users = []) => {
 
   return users.map((user) => {
     const userId = String(user._id);
-    const analysis = analysisByUser.get(userId);
-    const resume = resumeByUser.get(userId);
-    const profile = profileByUser.get(userId);
-    const sprint = sprintByUser.get(userId);
-    const weeklyReport = weeklyByUser.get(userId);
-
-    const resumeSkills = flattenResumeSkills(resume?.skills);
-    const profileSkills = (profile?.skills || []).map((skill) => skill?.name).filter(Boolean);
-    const skills = normalizeSkills([...resumeSkills, ...profileSkills]);
-    const projects = (profile?.projects || []).map((project) => ({
-      title: project.title,
-      description: project.description || '',
-      technologies: normalizeSkills(project.tech || []),
-      impactScore: 65,
-      status: project.status === 'completed' ? 'completed' : 'in-progress'
-    }));
-
-    const githubScore = Number(analysis?.githubScore || 0);
-    const resumeScore = computeResumeScore(resume);
-    const consistencyScore = computeConsistencyScore({ sprint, weeklyReport });
-    const growthSignals = computeGrowthSignals({
-      weeklyReport,
-      sprint,
-      projectCount: projects.length
+    return candidateFromSources(user, {
+      analysis: analysisByUser.get(userId),
+      resume: resumeByUser.get(userId),
+      profile: profileByUser.get(userId),
+      sprint: sprintByUser.get(userId),
+      weeklyReport: weeklyByUser.get(userId)
     });
-    const growthPotentialScore = clamp(
-      growthSignals.weeklyCoverageDelta +
-        growthSignals.readinessDelta +
-        growthSignals.sprintCompletionRate * 0.4 +
-        growthSignals.githubConsistencySignal * 0.4 +
-        growthSignals.projectVelocity * 0.2
-    );
-
-    const candidate = {
-      id: String(user._id),
-      userId: String(user._id),
-      sourceType: 'user',
-      name: user.name,
-      fullName: user.name,
-      email: user.email,
-      stack: user.activeCareerStack || user.careerStack || 'Full Stack',
-      yearsOfExperience: Number(
-        resume?.experienceYears ||
-          EXPERIENCE_LEVEL_TO_YEARS[user.activeExperienceLevel || user.experienceLevel] ||
-          0
-      ),
-      jobTitle: user.jobTitle || '',
-      headline: user.jobTitle || '',
-      location: user.location || '',
-      avatar: user.avatar || '',
-      githubUsername: user.githubUsername || '',
-      githubScore,
-      resumeScore,
-      consistencyScore,
-      growthPotentialScore,
-      skills,
-      skillScores: (profile?.skills || [])
-        .map((skill) => ({
-          name: skill?.name || '',
-          score: Number(skill?.score || 0)
-        }))
-        .filter((skill) => Boolean(skill.name)),
-      projects,
-      skillGaps: analysis?.missingSkills || [],
-      publicProfileSlug: profile?.isPublic ? String(profile.slug || '') : null,
-      githubStats: {
-        repos: Number(analysis?.githubStats?.repos || 0),
-        stars: Number(analysis?.githubStats?.stars || 0),
-        forks: Number(analysis?.githubStats?.forks || 0),
-        followers: Number(analysis?.githubStats?.followers || 0)
-      },
-      aiInsight: {
-        summary: '',
-        strengths: [],
-        weaknesses: [],
-        recommendation: ''
-      },
-      enrichment: growthSignals
-    };
-
-    candidate.score = baseCandidateScore(candidate);
-    return candidate;
   });
+};
+
+const candidateFromSources = (user, { analysis, resume, profile, sprint, weeklyReport }) => {
+  const resumeSkills = flattenResumeSkills(resume?.skills);
+  const profileSkills = (profile?.skills || []).map((skill) => skill?.name).filter(Boolean);
+  const skills = normalizeSkills([...resumeSkills, ...profileSkills]);
+  const projects = (profile?.projects || []).map((project) => ({
+    title: project.title,
+    description: project.description || '',
+    technologies: normalizeSkills(project.tech || []),
+    impactScore: 65,
+    status: project.status === 'completed' ? 'completed' : 'in-progress'
+  }));
+
+  const githubScore = analysis?.githubScore ?? null;
+  const resumeScore = computeResumeScore(resume);
+  const consistencyScore = computeConsistencyScore({ sprint, weeklyReport });
+  const growthSignals = computeGrowthSignals({
+    weeklyReport,
+    sprint,
+    projectCount: projects.length
+  });
+  const growthPotentialScore = clamp(
+    growthSignals.weeklyCoverageDelta +
+      growthSignals.readinessDelta +
+      growthSignals.sprintCompletionRate * 0.4 +
+      growthSignals.githubConsistencySignal * 0.4 +
+      growthSignals.projectVelocity * 0.2
+  );
+
+  const candidate = {
+    id: String(user._id),
+    userId: String(user._id),
+    sourceType: 'user',
+    name: user.name,
+    fullName: user.name,
+    email: user.email,
+    stack: user.activeCareerStack || user.careerStack || 'Full Stack',
+    yearsOfExperience: Number(
+      resume?.experienceYears ||
+        EXPERIENCE_LEVEL_TO_YEARS[user.activeExperienceLevel || user.experienceLevel] ||
+        0
+    ),
+    jobTitle: user.jobTitle || '',
+    headline: user.jobTitle || '',
+    location: user.location || '',
+    avatar: user.avatar || '',
+    githubUsername: user.githubUsername || '',
+    githubScore,
+    resumeScore,
+    consistencyScore,
+    growthPotentialScore,
+    skills,
+    skillScores: (profile?.skills || [])
+      .map((skill) => ({
+        name: skill?.name || '',
+        score: Number(skill?.score || 0)
+      }))
+      .filter((skill) => Boolean(skill.name)),
+    projects,
+    skillGaps: analysis?.missingSkills || [],
+    publicProfileSlug: profile?.isPublic ? String(profile.slug || '') : null,
+    lastActive: user.updatedAt || user.createdAt || null,
+    experienceLevel: user.activeExperienceLevel || user.experienceLevel || '',
+    isActive: user.isActive !== false,
+    githubStats: {
+      repos: Number(analysis?.githubStats?.repos || 0),
+      stars: Number(analysis?.githubStats?.stars || 0),
+      forks: Number(analysis?.githubStats?.forks || 0),
+      followers: Number(analysis?.githubStats?.followers || 0)
+    },
+    aiInsight: {
+      summary: '',
+      strengths: [],
+      weaknesses: [],
+      recommendation: ''
+    },
+    enrichment: growthSignals
+  };
+
+  candidate.score = baseCandidateScore(candidate);
+  // Presentation metadata only: do not change the matching inputs above.
+  const githubTimestamp = analysis?.githubSignals?.analyzedAt || null;
+  const githubMeasured = Boolean(
+    githubTimestamp ||
+    analysis?.githubSignals?.acceptedResult ||
+    analysis?.githubAnalysisHistory?.length ||
+    Number(analysis?.githubScore) > 0
+  );
+  const assessedGithubScore = githubMeasured ? measuredScore(githubScore) : null;
+  const assessedResumeScore = resume
+    ? averageAvailableScores([
+        resume.atsScore,
+        resume.keywordDensity,
+        resume.formatScore,
+        resume.contentQuality
+      ])
+    : null;
+  const readinessAvailable =
+    assessedGithubScore !== null ||
+    assessedResumeScore !== null ||
+    Boolean(sprint || weeklyReport || projects.length);
+  candidate.assessmentEvidence = {
+    readiness: {
+      score: readinessAvailable ? measuredScore(candidate.score) : null,
+      recordedAt: null,
+      explanation: readinessAvailable
+        ? 'Existing weighted readiness score; derived from recorded inputs, not an independent measurement.'
+        : 'No recorded inputs support a readiness assessment.'
+    },
+    github: {
+      score: assessedGithubScore,
+      recordedAt: githubTimestamp,
+      explanation:
+        assessedGithubScore === null
+          ? 'No valid GitHub score with supporting analysis evidence is available.'
+          : 'Recorded GitHub analysis score; availability does not establish current skill or freshness.'
+    },
+    resume: {
+      score: assessedResumeScore,
+      recordedAt: resume?.analyzedAt || null,
+      explanation:
+        assessedResumeScore === null
+          ? 'No valid resume score measurements are available.'
+          : 'Mean of available ATS, keyword density, format and content measurements; resume claims are not verified ability.'
+    }
+  };
+  return candidate;
 };
 
 const normalizeCandidateDoc = (candidateDoc = {}) => {
@@ -328,7 +403,7 @@ const normalizeCandidateDoc = (candidateDoc = {}) => {
     location: candidateDoc.location || '',
     avatar: '',
     githubUsername: candidateDoc.githubUsername || '',
-    githubScore: Number(candidateDoc.githubScore || 0),
+    githubScore: candidateDoc.githubScore ?? null,
     resumeScore: Number(candidateDoc.resumeScore || 0),
     consistencyScore: Number(candidateDoc.consistencyScore || 0),
     growthPotentialScore: Number(candidateDoc.growthPotentialScore || 0),
@@ -373,6 +448,7 @@ const mergeCandidates = (candidateDocs = [], hydratedUsers = []) => {
       mergedMap.set(key, {
         ...existing,
         ...normalized,
+        githubScore: existing.githubScore ?? normalized.githubScore,
         name: normalized.name || existing.name,
         jobTitle: normalized.jobTitle || existing.jobTitle,
         avatar: normalized.avatar || existing.avatar || '',
@@ -405,7 +481,7 @@ const applyCandidateFilters = (candidates = [], filters = {}) => {
   return candidates.filter((candidate) => {
     if (normalizedSearch) {
       const haystack =
-        `${candidate.fullName} ${candidate.email} ${candidate.githubUsername} ${candidate.headline}`.toLowerCase();
+        `${candidate.fullName} ${candidate.githubUsername} ${candidate.headline}`.toLowerCase();
       if (!haystack.includes(normalizedSearch)) return false;
     }
 
@@ -436,104 +512,110 @@ const listCandidates = async ({
   experience = 0,
   minScore = 0,
   organizationId = '',
-  limit = 50
+  limit = 50,
+  session
 } = {}) => {
-  const visibleDeveloperIds = await listPublicDeveloperUserIds({ organizationId });
-  if (!visibleDeveloperIds.length) return [];
-
-  const userObjectIds = visibleDeveloperIds.map((id) => new mongoose.Types.ObjectId(id));
-  const userQuery = {
-    _id: { $in: userObjectIds },
-    role: { $in: DEVELOPER_ROLE_VALUES },
-    isPublic: true,
-    isActive: { $ne: false }
-  };
+  const userQuery = await buildVisibleDeveloperFilter(organizationId, session);
+  if (!userQuery) return [];
+  const safeLimit = Math.min(2000, toPositiveInt(limit, 50));
+  const andConditions = [];
 
   if (search) {
-    const regex = new RegExp(search, 'i');
-    userQuery.$or = [
-      { name: regex },
-      { email: regex },
-      { githubUsername: regex },
-      { jobTitle: regex }
-    ];
+    const regex = new RegExp(escapeRegex(search), 'i');
+    andConditions.push({ $or: [{ name: regex }, { githubUsername: regex }, { jobTitle: regex }] });
+  }
+
+  const normalizedStackFilter = String(stack || '').trim();
+  if (normalizedStackFilter && normalizedStackFilter.toLowerCase() !== 'all') {
+    const stackRegex = new RegExp(escapeRegex(normalizedStackFilter), 'i');
+    andConditions.push({ $or: [{ activeCareerStack: stackRegex }, { careerStack: stackRegex }] });
+  }
+
+  if (andConditions.length === 1) {
+    Object.assign(userQuery, andConditions[0]);
+  } else if (andConditions.length > 1) {
+    userQuery.$and = andConditions;
   }
 
   const users = await User.find(userQuery)
     .select(
-      'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic'
+      'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic isActive createdAt updatedAt'
     )
-    .limit(Math.max(limit, 100))
+    .sort({ _id: 1 })
+    .limit(Math.max(safeLimit, 100))
+    .session(session)
     .lean();
 
   if (!users.length) return [];
 
-  const hydratedUsers = await hydrateUserCandidates(users);
+  const hydratedUsers = await hydrateUserCandidates(users, session);
   const hydratedUserIds = hydratedUsers
     .map((candidate) => candidate.userId)
     .filter((id) => mongoose.Types.ObjectId.isValid(id))
     .map((id) => new mongoose.Types.ObjectId(id));
 
   const candidateDocs = hydratedUserIds.length
-    ? await Candidate.find({ isActive: true, userId: { $in: hydratedUserIds } }).lean()
+    ? await Candidate.find({ isActive: true, userId: { $in: hydratedUserIds } })
+        .session(session)
+        .lean()
     : [];
 
   const merged = mergeCandidates(candidateDocs, hydratedUsers);
   const filtered = applyCandidateFilters(merged, { search, stack, experience, minScore });
 
   const sorted = [...filtered].sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
-  return sorted.slice(0, limit).map((candidate) => sanitizePublicCandidate(candidate));
+  return sorted.slice(0, safeLimit).map((candidate) => sanitizePublicCandidate(candidate));
 };
 
-const getCandidateById = async (id, { organizationId = '' } = {}) => {
+const getCandidatesByIds = async (ids, { organizationId, session } = {}) => {
+  const requestedIds = [...new Set(ids.map(toObjectId).filter(Boolean).map(String))];
+  if (!requestedIds.length) return new Map();
+
+  const userFilter = await buildVisibleDeveloperFilter(organizationId, session);
+  if (!userFilter) return new Map();
+  const aliases = await Candidate.find({ _id: { $in: requestedIds }, isActive: true })
+    .select('userId')
+    .session(session)
+    .lean();
+  const aliasMap = new Map(
+    aliases
+      .filter((entry) => entry.userId)
+      .map((entry) => [String(entry._id), String(entry.userId)])
+  );
+  const userIds = [...new Set([...requestedIds, ...aliasMap.values()])];
+  const users = await User.find({ ...userFilter, _id: { $in: userIds } })
+    .select(
+      'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel'
+    )
+    .session(session)
+    .lean();
+  if (!users.length) return new Map();
+
+  const [hydrated, documents] = await resolveCandidateReads(
+    [
+      hydrateUserCandidates(users, session),
+      Candidate.find({ userId: { $in: users.map((user) => user._id) }, isActive: true })
+        .session(session)
+        .lean()
+    ],
+    session
+  );
+  const candidates = new Map(
+    mergeCandidates(documents, hydrated).map((candidate) => [
+      candidate.userId,
+      sanitizePublicCandidate(candidate)
+    ])
+  );
+  return new Map(
+    requestedIds.map((id) => [id, candidates.get(id) || candidates.get(aliasMap.get(id)) || null])
+  );
+};
+
+const getCandidateById = async (id, options) => {
   const objectId = toObjectId(id);
   if (!objectId) return null;
-
-  const visibleDeveloperIds = await listPublicDeveloperUserIds({ organizationId });
-  const visibleSet = new Set(visibleDeveloperIds.map((entry) => String(entry)));
-  if (!visibleSet.size) return null;
-
-  const candidateDoc = await Candidate.findById(objectId).lean();
-  if (candidateDoc?.userId) {
-    const userId = String(candidateDoc.userId);
-    if (!visibleSet.has(userId)) return null;
-
-    const user = await User.findOne({
-      _id: userId,
-      role: { $in: DEVELOPER_ROLE_VALUES },
-      isPublic: true,
-      isActive: { $ne: false }
-    })
-      .select(
-        'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic'
-      )
-      .lean();
-    if (!user) return null;
-
-    const [hydratedCandidate] = await hydrateUserCandidates([user]);
-    const merged = mergeCandidates(
-      [candidateDoc],
-      hydratedCandidate ? [hydratedCandidate] : []
-    );
-    return sanitizePublicCandidate(merged[0] || hydratedCandidate || null);
-  }
-
-  if (!visibleSet.has(String(objectId))) return null;
-
-  const user = await User.findOne({
-    _id: objectId,
-    role: { $in: DEVELOPER_ROLE_VALUES },
-    isPublic: true,
-    isActive: { $ne: false }
-  })
-    .select(
-      'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic'
-    )
-    .lean();
-  if (!user) return null;
-
-  const [candidate] = await hydrateUserCandidates([user]);
-  return sanitizePublicCandidate(candidate || null);
+  const candidates = await getCandidatesByIds([objectId], options);
+  return candidates.get(String(objectId)) || null;
 };
 
 const assertOrganizationScope = (organizationId) => {
@@ -544,7 +626,7 @@ const assertOrganizationScope = (organizationId) => {
     throw error;
   }
 
-  return safeOrganizationId;
+  return requireObjectId(safeOrganizationId, 'organizationId');
 };
 
 const createJob = async ({ recruiterId, organizationId, payload }) => {
@@ -568,10 +650,12 @@ const createJob = async ({ recruiterId, organizationId, payload }) => {
   return job;
 };
 
-const updateJob = async ({ organizationId, jobId, payload }) => {
+const updateJob = async ({ organizationId, recruiterId, jobId, payload }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
 
-  const job = await Job.findOne({ _id: jobId, organizationId: safeOrganizationId });
+  const filter = { _id: requireObjectId(jobId, 'jobId'), organizationId: safeOrganizationId };
+  if (recruiterId) filter.recruiterId = requireObjectId(recruiterId, 'recruiterId');
+  const job = await Job.findOne(filter);
   if (!job) return null;
 
   const patch = {
@@ -606,7 +690,10 @@ const updateJob = async ({ organizationId, jobId, payload }) => {
 
 const closeJob = async ({ organizationId, jobId }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
-  const job = await Job.findOne({ _id: jobId, organizationId: safeOrganizationId });
+  const job = await Job.findOne({
+    _id: requireObjectId(jobId, 'jobId'),
+    organizationId: safeOrganizationId
+  });
   if (!job) return null;
 
   job.status = 'closed';
@@ -615,19 +702,17 @@ const closeJob = async ({ organizationId, jobId }) => {
   return job;
 };
 
-const deleteJob = async ({ organizationId, jobId }) => {
+const deleteJob = async ({ organizationId, recruiterId, jobId }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
-  const deleted = await Job.findOneAndDelete({
-    _id: jobId,
-    organizationId: safeOrganizationId
-  });
-  return !!deleted;
+  const filter = { _id: requireObjectId(jobId, 'jobId'), organizationId: safeOrganizationId };
+  if (recruiterId) filter.recruiterId = requireObjectId(recruiterId, 'recruiterId');
+  return deleteJobWithPipeline(filter);
 };
 
 const listJobs = async ({ organizationId, recruiterId = '' }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
   const query = { organizationId: safeOrganizationId };
-  if (recruiterId) query.recruiterId = recruiterId;
+  if (recruiterId) query.recruiterId = requireObjectId(recruiterId, 'recruiterId');
   return Job.find(query).sort({ updatedAt: -1 }).lean();
 };
 
@@ -707,9 +792,14 @@ const listOrganizationJobsPage = async ({
   };
 };
 
-const matchCandidatesToJob = async ({ organizationId, jobId, candidateIds = [] }) => {
+const matchCandidatesToJob = async ({ organizationId, recruiterId, jobId, candidateIds = [] }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
-  const job = await Job.findOne({ _id: jobId, organizationId: safeOrganizationId }).lean();
+  const selected = new Set(validateCandidateIds(candidateIds));
+  const job = await Job.findOne({
+    _id: requireObjectId(jobId, 'jobId'),
+    organizationId: safeOrganizationId,
+    recruiterId: requireObjectId(recruiterId, 'recruiterId')
+  }).lean();
   if (!job) {
     const error = new Error('Job not found.');
     error.code = 404;
@@ -717,16 +807,14 @@ const matchCandidatesToJob = async ({ organizationId, jobId, candidateIds = [] }
   }
 
   const visibleCandidates = await listCandidates({
+    organizationId: safeOrganizationId,
     stack: job.stack,
     minScore: 0,
     limit: 500
   });
 
   let candidates = visibleCandidates;
-  if (Array.isArray(candidateIds) && candidateIds.length > 0) {
-    const selected = new Set(
-      candidateIds.map((candidateId) => String(candidateId).trim()).filter(Boolean)
-    );
+  if (selected.size > 0) {
     candidates = visibleCandidates.filter((candidate) => {
       const candidateId = String(candidate.id || '').trim();
       const userId = String(candidate.userId || '').trim();
@@ -742,8 +830,12 @@ const matchCandidatesToJob = async ({ organizationId, jobId, candidateIds = [] }
 };
 
 module.exports = {
+  candidateFromSources,
+  mergeCandidates,
+  sanitizePublicCandidate,
   listCandidates,
   getCandidateById,
+  getCandidatesByIds,
   createJob,
   updateJob,
   closeJob,

@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
 
 @Component({
@@ -8,6 +9,7 @@ import { RecruiterHubService } from '../../services/recruiter-hub.service';
   styleUrl: './recruiter-analytics.component.scss',
 })
 export class RecruiterAnalyticsComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   loading = true;
   error = '';
   metricsReady = false;
@@ -28,23 +30,31 @@ export class RecruiterAnalyticsComponent implements OnInit {
     this.highlightsReady = false;
     this.chartsReady = false;
 
-    this.hubService.getAnalytics().subscribe({
-      next: (analytics) => {
-        this.analytics = this.normalizeAnalytics(analytics);
-        this.metricsReady = true;
-        this.highlightsReady = true;
-        this.chartsReady = true;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to load recruiter analytics.';
-        this.loading = false;
-      },
-    });
+    this.hubService
+      .getAnalytics()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (analytics) => {
+          this.analytics = this.normalizeAnalytics(analytics);
+          this.metricsReady = true;
+          this.highlightsReady = true;
+          this.chartsReady = true;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to load recruiter analytics.';
+          this.loading = false;
+        },
+      });
   }
 
   get topJobs(): any[] {
     return this.analytics?.highlights?.mostActiveJobs || [];
+  }
+
+  get topMatchedSkills(): any[] {
+    const explicit = this.analytics?.highlights?.mostMatchedSkills || [];
+    return explicit.length ? explicit : (this.analytics?.charts?.topSkillsDemand || []).slice(0, 5);
   }
 
   get successGaugeItems(): Array<{ label: string; value: number }> {
@@ -54,6 +64,42 @@ export class RecruiterAnalyticsComponent implements OnInit {
   get successRateHint(): string {
     const shortlistCount = Number(this.analytics?.metrics?.shortlistedCandidates || 0);
     return `${shortlistCount} shortlisted`;
+  }
+
+  get hasSupplyDemandDemand(): boolean {
+    return (this.analytics?.charts?.supplyVsDemand || []).some(
+      (item: any) => Number(item?.demand || 0) > 0,
+    );
+  }
+
+  get supplyVsDemandSubtitle(): string {
+    const exact = this.analytics?.meta?.candidatePopulation?.mode === 'exact';
+    if (!exact) {
+      return 'Candidate supply compared against your job requirements; coverage unreported';
+    }
+    return this.hasSupplyDemandDemand
+      ? 'Complete eligible candidate supply compared against your created job requirements'
+      : 'Complete eligible candidate supply per skill · Create jobs with required skills to populate demand';
+  }
+
+  get populationAccuracyHint(): string {
+    const population = this.analytics?.meta?.candidatePopulation;
+    return population?.mode === 'exact'
+      ? `Candidate averages, distributions and skill supply cover all ${Number(population.total || 0).toLocaleString('en-US')} currently eligible candidates.`
+      : 'Candidate population coverage is not reported by this response.';
+  }
+
+  get boundedAccuracyHint(): string {
+    const activity = this.analytics?.meta?.activity;
+    const cards = this.analytics?.meta?.topCandidates;
+    const hints: string[] = [];
+    if (activity?.mode === 'bounded')
+      hints.push(`Activity indicators use up to ${activity.limit} recent audit events.`);
+    if (cards?.mode === 'bounded')
+      hints.push(
+        `Top Candidates is a bounded list selected from up to ${cards.poolLimit} discovery profiles.`,
+      );
+    return hints.join(' ');
   }
 
   trendLabelFor(items: any[]): string {
@@ -81,6 +127,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
     const payload = response?.analytics || response || {};
     const defaults = this.defaultAnalytics();
     return {
+      meta: payload?.meta || {},
       metrics: {
         ...defaults.metrics,
         ...(payload?.metrics || {}),
@@ -96,12 +143,14 @@ export class RecruiterAnalyticsComponent implements OnInit {
       },
       highlights: {
         mostActiveJobs: this.asArray(payload?.highlights?.mostActiveJobs),
+        mostMatchedSkills: this.asArray(payload?.highlights?.mostMatchedSkills),
       },
     };
   }
 
   private defaultAnalytics(): any {
     return {
+      meta: {},
       metrics: {
         candidatesViewed: 0,
         candidatesAnalyzed: 0,
@@ -122,6 +171,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
       },
       highlights: {
         mostActiveJobs: [],
+        mostMatchedSkills: [],
       },
     };
   }

@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "command": "node --test backend/src/tests/recruiter/applicationIntegrity.integration.test.js",
+  "passed": 3,
+  "failed": 0,
+  "skipped": 0,
+  "fixtureInitialization": "Automatic DDL disabled only in the disposable fixture; collections and indexes are explicitly created after connection.",
+  "stdout": "[AIProviderManager] DISABLED Gemini (missing_key)\n[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"gemini\",\"envKey\":\"GEMINI_API_KEY\"}\n[AIProviderManager] DISABLED OpenAI (missing_key)\n[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"openai\",\"envKey\":\"OPENAI_API_KEY\"}\n[AIProviderManager] DISABLED Groq (missing_key)\n[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"groq\",\"envKey\":\"GROQ_API_KEY\"}\n[AIProviderManager] DISABLED Anthropic (Claude) (missing_key)\n[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"anthropic\",\"envKey\":\"ANTHROPIC_API_KEY\"}\n[AIProviderManager] DISABLED Grok (xAI) (missing_key)\n[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"xai\",\"envKey\":\"XAI_API_KEY\"}\n[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"no_providers_ready\",\"providers\":[],\"priority\":\"\"}\n▶ bounded identity validation retains exact, live application authorization\n  ✔ plausible forged hashes and malformed consent never enter the total; validation is not cached (2185.1193ms)\n  ✔ capacity and elapsed budgets fail explicitly, never return truncated IDs or totals (201.7932ms)\n✔ bounded identity validation retains exact, live application authorization (100147.6621ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 110249.2425\n"
+}

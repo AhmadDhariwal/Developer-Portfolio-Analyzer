@@ -8,12 +8,13 @@ export const recruiterRoleGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
 
   const currentUser = authService.getCurrentUser();
-  const role = String(currentUser?.role || '').trim().toLowerCase();
+  const role = String(currentUser?.role || '')
+    .trim()
+    .toLowerCase();
 
   if (role === 'recruiter') {
     return true;
   }
 
-  router.navigateByUrl(authService.getHomeRoute(currentUser));
-  return false;
+  return router.parseUrl(authService.getHomeRoute(currentUser));
 };

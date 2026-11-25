@@ -1,6 +1,5 @@
 const User = require('../../../auth/models/user');
 const Job = require('../../models/Job');
-const Membership = require('../../../admin/models/membership');
 const { listCandidates } = require('../../services/matching/matchingService');
 
 /**
@@ -15,8 +14,8 @@ const getRecruiterDashboard = async (req, res) => {
 
     // ── Parallel data fetch ────────────────────────────────────────────────
     const [candidates, jobs, orgRecruiters] = await Promise.all([
-      listCandidates({ limit: 200 }),
-      Job.find({ organizationId }).sort({ createdAt: -1 }).lean(),
+      listCandidates({ organizationId, limit: 200 }),
+      Job.find({ organizationId, recruiterId }).sort({ createdAt: -1 }).lean(),
       User.find({ role: 'recruiter', organizationId, isActive: { $ne: false } })
         .select('_id name createdAt')
         .lean()
@@ -28,17 +27,15 @@ const getRecruiterDashboard = async (req, res) => {
     const averageScore = totalCandidates
       ? Number((scores.reduce((a, b) => a + b, 0) / totalCandidates).toFixed(1))
       : 0;
-    const topCandidates = [...candidates]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
+    const topCandidates = [...candidates].sort((a, b) => b.score - a.score).slice(0, 5);
 
     // Score distribution buckets: 0-20, 21-40, 41-60, 61-80, 81-100
     const scoreDistribution = [
-      { range: '0–20',  count: scores.filter((s) => s <= 20).length },
+      { range: '0–20', count: scores.filter((s) => s <= 20).length },
       { range: '21–40', count: scores.filter((s) => s > 20 && s <= 40).length },
       { range: '41–60', count: scores.filter((s) => s > 40 && s <= 60).length },
       { range: '61–80', count: scores.filter((s) => s > 60 && s <= 80).length },
-      { range: '81–100',count: scores.filter((s) => s > 80).length }
+      { range: '81–100', count: scores.filter((s) => s > 80).length }
     ];
 
     // Stack breakdown
@@ -62,7 +59,10 @@ const getRecruiterDashboard = async (req, res) => {
       else if (yoe <= 10) expMap['7–10']++;
       else expMap['10+']++;
     });
-    const experienceDistribution = Object.entries(expMap).map(([range, count]) => ({ range, count }));
+    const experienceDistribution = Object.entries(expMap).map(([range, count]) => ({
+      range,
+      count
+    }));
 
     // ── Job stats ──────────────────────────────────────────────────────────
     const totalJobs = jobs.length;
@@ -89,12 +89,14 @@ const getRecruiterDashboard = async (req, res) => {
     // ── Predictions / insights ────────────────────────────────────────────
     // Simple heuristic: top skill demand from required skills across open jobs
     const skillDemand = {};
-    jobs.filter((j) => j.status === 'open').forEach((j) => {
-      (j.requiredSkills || []).forEach((skill) => {
-        const s = String(skill || '').trim();
-        if (s) skillDemand[s] = (skillDemand[s] || 0) + 1;
+    jobs
+      .filter((j) => j.status === 'open')
+      .forEach((j) => {
+        (j.requiredSkills || []).forEach((skill) => {
+          const s = String(skill || '').trim();
+          if (s) skillDemand[s] = (skillDemand[s] || 0) + 1;
+        });
       });
-    });
     const topSkillsDemand = Object.entries(skillDemand)
       .map(([skill, demand]) => ({ skill, demand }))
       .sort((a, b) => b.demand - a.demand)

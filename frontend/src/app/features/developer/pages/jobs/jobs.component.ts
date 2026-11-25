@@ -40,7 +40,8 @@ import { JobCardComponent } from '../../../../shared/components/job-card/job-car
 import { JobFiltersComponent } from '../../../../shared/components/job-filters/job-filters.component';
 import { jobDate, jobRequestError } from '../../../../shared/utils/job-presentation';
 import { JobsHiddenAccessService } from '../../../../shared/services/jobs-hidden-access.service';
-type View = 'discover' | 'saved' | 'applied' | 'hidden';
+import { InternalJobsComponent } from '../../../../shared/components/direct-applications/internal-jobs.component';
+type View = 'discover' | 'internal' | 'saved' | 'applied' | 'hidden';
 interface LibraryRow {
   action: JobActionRecord;
   job: Job | null;
@@ -48,7 +49,14 @@ interface LibraryRow {
 @Component({
   selector: 'app-jobs',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, JobCardComponent, JobFiltersComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    JobCardComponent,
+    JobFiltersComponent,
+    InternalJobsComponent,
+  ],
   templateUrl: './jobs.component.html',
   styleUrl: './jobs.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,6 +64,7 @@ interface LibraryRow {
 export class JobsComponent implements OnInit, OnDestroy {
   readonly tabs: { id: View; label: string }[] = [
     { id: 'discover', label: 'Discover' },
+    { id: 'internal', label: 'Internal jobs' },
     { id: 'saved', label: 'Saved jobs' },
     { id: 'applied', label: 'Application tracker' },
     { id: 'hidden', label: 'Hidden' },
@@ -87,7 +96,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   private request = new Subscription();
   private readonly subscriptions = new Subscription();
   private token = 0;
-  private contextOwner = '';
+  contextOwner = '';
   private lastLoadedAt = 0;
   private timer: ReturnType<typeof setInterval> | undefined;
   constructor(
@@ -119,6 +128,12 @@ export class JobsComponent implements OnInit, OnDestroy {
     return this.offline || this.coolingDown || this.now < this.actions.retryAt;
   }
   ngOnInit(): void {
+    this.subscriptions.add(
+      this.route.queryParamMap?.subscribe((params) => {
+        const next = params.get('view');
+        if (next === 'internal' && this.view !== 'internal') this.setView('internal');
+      }),
+    );
     const tab = this.route.snapshot.queryParamMap.get('view');
     if (this.tabs.some((item) => item.id === tab)) this.view = tab as View;
     this.subscriptions.add(
@@ -228,11 +243,22 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
   revalidate(): void {
-    if (this.coolingDown || this.offline || !this.auth.getCurrentUser()) return;
+    if (this.view === 'internal' || this.coolingDown || this.offline || !this.auth.getCurrentUser())
+      return;
     this.jobsApi.clearCache();
     this.load(this.page);
   }
   load(page: number): void {
+    if (this.view === 'internal') {
+      this.token++;
+      this.request.unsubscribe();
+      this.jobs = [];
+      this.rows = [];
+      this.response = null;
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
     if (this.view === 'hidden' && !this.hiddenAccess.unlocked) {
       this.token++;
       this.request.unsubscribe();

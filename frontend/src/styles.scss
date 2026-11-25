@@ -28,6 +28,19 @@
   --color-primary-text: #4338ca;
   --color-primary-hover: #4338ca;
 
+  /* Filled controls pair their background with an accessible label in each theme. */
+  --button-primary-bg: var(--color-primary);
+  --button-primary-text: var(--text-inverse);
+  --button-primary-hover-bg: var(--color-primary-hover);
+  --button-primary-gradient: linear-gradient(135deg in srgb, var(--color-primary-dark), #0e7490);
+  --button-gradient-text: #ffffff;
+
+  /* Resolve message pairs here so page-local text overrides cannot break them. */
+  --message-surface: var(--surface-card);
+  --message-text: var(--text-primary);
+  --message-action-text: var(--text-secondary);
+  --message-action-hover-surface: var(--surface-hover);
+
   --color-secondary: #6366f1;
   --color-secondary-soft: #f3e8ff;
   --color-secondary-border: #ddd6fe;
@@ -77,10 +90,10 @@
 
   /* Semantic Status Colors (Restrained Light Mode) */
   --color-success: #10b981;
-  --color-success-dark: #059669;
+  --color-success-dark: #047857;
   --color-success-soft: #ecfdf5;
   --color-success-border: #a7f3d0;
-  --color-success-text: #059669;
+  --color-success-text: #047857;
   --color-success-bg: #ecfdf5;
 
   --color-warning: #f59e0b;
@@ -209,6 +222,8 @@
   --color-primary-border: rgba(99, 102, 241, 0.35);
   --color-primary-text: #a5b4fc;
   --color-primary-hover: #4f46e5;
+  --button-primary-bg: var(--color-primary-light);
+  --button-primary-hover-bg: var(--color-primary-text);
 
   --color-secondary: #818cf8;
   --color-secondary-soft: rgba(139, 92, 246, 0.16);
@@ -421,7 +436,8 @@ button {
   color: var(--color-primary);
 }
 
-// Opt-in Developer primitives; role scoping preserves other workspaces.
-.developer-workspace {
+// Opt-in Developer/Recruiter workspace primitives; role scoping preserves Admin/SuperAdmin.
+.developer-workspace,
+.recruiter-workspace {
   @include developer.utilities;
 }

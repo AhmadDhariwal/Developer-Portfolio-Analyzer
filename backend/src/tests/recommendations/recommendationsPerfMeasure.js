@@ -59,6 +59,7 @@ const createHarness = ({
   notificationDelayMs = 30,
 } = {}) => {
   const shared = new Map();
+  const sharedExpiries = new Map();
   const mongo = new Map();
   const counters = {
     github: 0,
@@ -98,15 +99,20 @@ const createHarness = ({
   });
 
   mock('core/ai/aiservice.js', {
-    getSharedCache: async (key, namespace) => {
+    getSharedCache: async (key, namespace, { withMetadata = false } = {}) => {
       counters.redisGets += 1;
       await delay(redisDelayMs);
-      return shared.get(`${namespace}:${key}`) || null;
+      const cacheKey = `${namespace}:${key}`;
+      const value = shared.get(cacheKey) || null;
+      const expiresAt = sharedExpiries.get(cacheKey);
+      if (expiresAt <= Date.now()) return null;
+      return value && withMetadata ? { value, expiresAt } : value;
     },
     setSharedCache: async (key, value, _ttl, namespace) => {
       counters.redisSets += 1;
       counters.persistence += 1;
       shared.set(`${namespace}:${key}`, value);
+      sharedExpiries.set(`${namespace}:${key}`, Date.now() + _ttl * 1000);
     },
     runAIAnalysis: async (_prompt, fallback, retries = 0, opts = {}) => {
       counters.ai += 1;
@@ -190,7 +196,9 @@ const createHarness = ({
   });
 
   mock('modules/recommendations/models/recommendation.js', { findOneAndUpdate: async () => ({}) });
-  mock('modules/resume/models/resumeFile.js', { findOne: () => chain({ _id: 'default', userId: 'u-perf-1' }) });
+  mock('modules/resume/models/resumeFile.js', {
+    findOne: () => chain({ _id: 'default', userId: 'u-perf-1' }),
+  });
   mock('modules/github/models/githubAnalysisCache.js', {
     findOne: () => chain(null, 5),
   });
@@ -226,7 +234,9 @@ const createHarness = ({
       await delay(notificationDelayMs);
     },
   });
-  mock('modules/recommendations/prompts/recommendationPrompt.js', { getRecommendationPrompt: () => 'prompt' });
+  mock('modules/recommendations/prompts/recommendationPrompt.js', {
+    getRecommendationPrompt: () => 'prompt',
+  });
   mock('core/developer-context/developerSignalService.js', {
     getDeveloperSignals: async () => {
       counters.signals += 1;

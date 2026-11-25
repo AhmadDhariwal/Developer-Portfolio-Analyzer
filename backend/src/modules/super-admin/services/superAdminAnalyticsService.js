@@ -12,7 +12,8 @@ const Team = require('../../admin/models/team');
 const Analysis = require('../../skill-gap/models/analysis');
 const ResumeAnalysis = require('../../resume/models/resumeAnalysis');
 const Recommendation = require('../../recommendations/models/recommendation');
-const Candidate = require('../../recruiter/models/Candidate');
+const AuditLog = require('../../admin/models/auditLog');
+const { CANDIDATE_ANALYZED } = require('../../recruiter/services/hub/recruiterReportingService');
 const { registry } = require('../../../core/observability/metricsService');
 
 const getMonthlyRange = () => {
@@ -297,7 +298,6 @@ const mapRecentAnalysis = (analysis) => ({
   tone: 'indigo'
 });
 
-
 const getPlatformAnalyticsData = async (query = {}) => {
   const filters = {
     organizationId: String(query.organizationId || '').trim(),
@@ -356,8 +356,11 @@ const getPlatformAnalyticsData = async (query = {}) => {
     ])
       .then((rows) => rows[0]?.total || 0)
       .catch(() => 0),
-    Candidate.countDocuments({}),
-    Job.countDocuments({})
+    AuditLog.countDocuments({
+      action: CANDIDATE_ANALYZED,
+      ...(selectedOrgId && { organizationId: selectedOrgId })
+    }),
+    Job.countDocuments(selectedOrgId ? { organizationId: selectedOrgId } : {})
   ]);
 
   const previousPeriodOrganizationCount = await Organization.countDocuments({
@@ -519,20 +522,26 @@ const getPlatformAnalyticsData = async (query = {}) => {
       userId: userIdFilter,
       createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
     }),
-    Candidate.countDocuments({
-      createdBy: recruiterIdFilter,
-      createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
+    AuditLog.countDocuments({
+      action: CANDIDATE_ANALYZED,
+      actor: recruiterIdFilter,
+      ...(selectedOrgId && { organizationId: selectedOrgId }),
+      timestamp: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
     }),
-    Candidate.countDocuments({
-      createdBy: recruiterIdFilter,
-      createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
+    AuditLog.countDocuments({
+      action: CANDIDATE_ANALYZED,
+      actor: recruiterIdFilter,
+      ...(selectedOrgId && { organizationId: selectedOrgId }),
+      timestamp: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
     }),
     Job.countDocuments({
       recruiterId: recruiterIdFilter,
+      ...(selectedOrgId && { organizationId: selectedOrgId }),
       createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
     }),
     Job.countDocuments({
       recruiterId: recruiterIdFilter,
+      ...(selectedOrgId && { organizationId: selectedOrgId }),
       createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
     }),
     User.countDocuments({ ...userMatch, role: 'recruiter', isActive: true }),
@@ -716,11 +725,7 @@ const getPlatformAnalyticsData = async (query = {}) => {
           { ...userMatch, role: 'recruiter' },
           currentBuckets
         ),
-        developers: await buildTimeSeries(
-          User,
-          { ...userMatch, role: 'developer' },
-          currentBuckets
-        )
+        developers: await buildTimeSeries(User, { ...userMatch, role: 'developer' }, currentBuckets)
       },
       aiUsageDaily: {
         labels: currentBuckets.map((bucket) => bucket.label),
@@ -785,5 +790,5 @@ module.exports = {
   mapRecentInvite,
   mapRecentDeveloper,
   mapRecentAnalysis,
-  getPlatformAnalyticsData,
+  getPlatformAnalyticsData
 };

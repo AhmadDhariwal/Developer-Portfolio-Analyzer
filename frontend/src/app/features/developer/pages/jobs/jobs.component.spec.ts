@@ -10,6 +10,7 @@ import { AuthService } from '../../../../shared/services/auth.service';
 import { CareerProfileService } from '../../../../shared/services/career-profile.service';
 import { JobsResponse } from '../../../../shared/models/job.model';
 import { JobsHiddenAccessService } from '../../../../shared/services/jobs-hidden-access.service';
+import { JobApplicationsService } from '../../../../shared/services/job-applications.service';
 
 describe('Jobs Hub request lifecycle', () => {
   let response: Subject<JobsResponse>;
@@ -22,6 +23,14 @@ describe('Jobs Hub request lifecycle', () => {
     TestBed.configureTestingModule({
       imports: [JobsComponent],
       providers: [
+        {
+          provide: JobApplicationsService,
+          useValue: {
+            discover: () => of({ jobs: [] }),
+            options: () => of({ resumes: [], portfolio: null, portfolioHash: '' }),
+            mine: () => of({ applications: [] }),
+          },
+        },
         provideRouter([]),
         {
           provide: ActivatedRoute,

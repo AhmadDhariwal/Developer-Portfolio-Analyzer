@@ -1,0 +1,545 @@
+{
+  "phase": "P1.5A",
+  "date": "2026-11-24",
+  "status": "complete",
+  "scope": "Recruiter performance stabilization, compatibility dependency audit and confirmed narrow defects only. P1.5B not started.",
+  "preflight": {
+    "branch": "fix/P1-project",
+    "target": "not applicable; no integration requested",
+    "originalHead": "9a207034512c65a8a16dc0d2f2f1375753a19f70",
+    "resumedHead": "bfda6cb368ebd2661c1e6a423522e2ffe0421c01",
+    "indexPreservation": "Original 20 index blobs verified during initial work. HEAD/index changed externally while interrupted; resumed 26-file index baseline recorded and preserved without staging, commits, reset or checkout operations.",
+    "sourcesRead": [
+      "MASTER-PRODUCT-ROADMAP.md",
+      "backend/verification/jobs-hub/p1.3a-discovery.json",
+      "backend/verification/jobs-hub/p1.3b.1-implementation.json",
+      "backend/verification/jobs-hub/p1.3b.1-analytics.json",
+      "backend/verification/jobs-hub/p1.4a-implementation.json",
+      "backend/verification/jobs-hub/p1.4a-linkage-tests.json",
+      "backend/verification/jobs-hub/p1.4b-implementation.json",
+      "backend/verification/jobs-hub/p1.4b-workflow-tests.json"
+    ],
+    "independentAcceptance": "User supplied independent P1.4B acceptance and 261-record QA measurements. Separate independent A/B report files were not found in the scoped verification directories; supplied QA and retained accepted reports were used, with a fresh comparable baseline benchmark."
+  },
+  "planCompleted": [
+    "Verify branch/index and accepted implementation; preserve existing staged work.",
+    "Document optimization alternatives and trust/compatibility boundaries before implementation.",
+    "Implement bounded canonical integrity and source validation before exact totals; retain existing transaction/revocation contracts.",
+    "Measure preserved P1.4B and optimized HTTP/query/memory/timeout behavior at 261 and 1000 records, including simultaneous and mixed workloads, sequentially.",
+    "Inventory legacy dependencies and external-use uncertainty; propose future approval-gated cleanup without removing code.",
+    "Reproduce and fix narrow Recruiter defects; run focused backend/Angular and real-stack checks.",
+    "Format changed files, remove unused task-scope imports, verify cleanup, compiler/build/syntax/whitespace, index preservation and exact inventory."
+  ],
+  "performance": {
+    "rootCause": "Interpreted native 64-round SHA-256 and per-row source joins ran across the whole owner feed before the count facet, making cost depend on population rather than page size.",
+    "selectedOptimization": "Native Node SHA-256 with bounded request-local minimal tuples; batch-owned Job/Application source validation; simple MongoDB exact rows/count facet restricted to fully validated IDs; hydrate names/titles only for returned page. No per-row network queries.",
+    "integrityGuarantees": [
+      "Canonical digest uses the existing lifecycle application key generator, exposed as an internal helper; no alternative identity or marker.",
+      "Original job/applicant/organization/recruiter tuple, consent version/date/boolean and supported lifecycle status are checked before totals. Exact BSON scalar type guards exclude malformed array-shaped values.",
+      "No private names, notes, PDF bytes or portfolio evidence are needed in the integrity scan/source maps.",
+      "Owner/org/membership/settings authority, all reads and final page access fences remain in the accepted snapshot transaction. No cross-request identity/authorization cache.",
+      "Forged hashes, source mismatches, malformed consent and changed owners cannot influence successful totals. No schema, marker, backfill, dependency, production index or migration introduced."
+    ],
+    "budgetAndCapacity": "Shared five-second validation/query budget retained. Stream batches of 256, maximum 10,000 provisional identity rows and bounded source maps. Exceeding capacity or deadline returns explicit 503, never a successful truncated total.",
+    "benchmarks": [
+      {
+        "records": 261,
+        "baseline": {
+          "requests": 7,
+          "p50Ms": 656.8284000000021,
+          "p95Ms": 3073.4071000000004,
+          "failures": 0,
+          "timeoutRate": 0
+        },
+        "optimized": {
+          "requests": 7,
+          "p50Ms": 140.0254000000059,
+          "p95Ms": 418.47619999999733,
+          "failures": 0,
+          "timeoutRate": 0
+        },
+        "baselineSimultaneousReads": {
+          "requests": 6,
+          "p50Ms": 1993.3941999999988,
+          "p95Ms": 2930.5995999999977,
+          "failures": 0,
+          "timeoutRate": 0
+        },
+        "optimizedSimultaneousReads": {
+          "requests": 6,
+          "p50Ms": 292.36409999999887,
+          "p95Ms": 577.5137999999934,
+          "failures": 0,
+          "timeoutRate": 0
+        },
+        "optimizedMixed": {
+          "reads": {
+            "requests": 2,
+            "p50Ms": 500.39660000000003,
+            "p95Ms": 625.9653000000035,
+            "failures": 0,
+            "timeoutRate": 0,
+            "samples": [
+              {
+                "ms": 625.9653000000035,
+                "status": 200,
+                "timeout": false,
+                "memory": {
+                  "rss": 147734528,
+                  "heapUsed": 65888080
+                }
+              },
+              {
+                "ms": 500.39660000000003,
+                "status": 200,
+                "timeout": false,
+                "memory": {
+                  "rss": 147292160,
+                  "heapUsed": 60607024
+                }
+              }
+            ]
+          },
+          "statusAction": 200
+        }
+      },
+      {
+        "records": 1000,
+        "baseline": {
+          "requests": 7,
+          "p50Ms": 5062.395700000001,
+          "p95Ms": 5092.785499999998,
+          "failures": 7,
+          "timeoutRate": 1
+        },
+        "optimized": {
+          "requests": 7,
+          "p50Ms": 202.4996000000101,
+          "p95Ms": 231.22060000000056,
+          "failures": 0,
+          "timeoutRate": 0
+        },
+        "baselineSimultaneousReads": {
+          "requests": 6,
+          "p50Ms": 10213.376499999998,
+          "p95Ms": 15313.9375,
+          "failures": 6,
+          "timeoutRate": 1
+        },
+        "optimizedSimultaneousReads": {
+          "requests": 6,
+          "p50Ms": 263.60130000000936,
+          "p95Ms": 419.7804000000033,
+          "failures": 0,
+          "timeoutRate": 0
+        },
+        "optimizedMixed": {
+          "reads": {
+            "requests": 2,
+            "p50Ms": 218.86170000000857,
+            "p95Ms": 345.35629999999946,
+            "failures": 0,
+            "timeoutRate": 0,
+            "samples": [
+              {
+                "ms": 345.35629999999946,
+                "status": 200,
+                "timeout": false,
+                "memory": {
+                  "rss": 196349952,
+                  "heapUsed": 81615416
+                }
+              },
+              {
+                "ms": 218.86170000000857,
+                "status": 200,
+                "timeout": false,
+                "memory": {
+                  "rss": 195026944,
+                  "heapUsed": 66496768
+                }
+              }
+            ]
+          },
+          "statusAction": 200
+        }
+      }
+    ],
+    "queryPlanSummary": {
+      "261": {
+        "sourceDocsExamined": [261, 1, 261],
+        "sourceExecutionMs": [28, 3, 11],
+        "optimizedFacetDocsExamined": 261,
+        "optimizedFacetMs": 12,
+        "sortBytes": 108576,
+        "spills": 0
+      },
+      "1000": {
+        "sourceDocsExamined": [1000, 1, 1000],
+        "sourceExecutionMs": [39, 2, 41],
+        "optimizedFacetDocsExamined": 1000,
+        "optimizedFacetMs": 40,
+        "sortBytes": 416000,
+        "spills": 0
+      }
+    },
+    "memory": "Actual Node RSS/heap before/after and sample peaks are retained in each benchmark report. Optimized sequential sampled heap peaks were ~64.9 MiB (261) and ~60.1 MiB (1000), including the fixture, driver and other loaded services, not isolated per-request allocations. Mongo fixture cache configured at 0.25 GiB; sort sizes/spills retained in explain.",
+    "limitations": [
+      "Seven sequential measured requests after warmup and two waves of three reads are local evidence, not production capacity or an SLA.",
+      "All seven 1000-record baseline sequential requests timed out; their p50/p95 describe time-to-failure, not successful response latency. Optimized sequential/simultaneous/mixed requests had zero failures/timeouts.",
+      "Exact validation remains O(owner population) within the explicit 10,000-row capacity. Larger pools need a separately reviewed design; no silent truncation.",
+      "Actor/job/application fences still serialize conflicting work; broader deployment load, failover and throughput not certified.",
+      "Explain diagnostics run outside transactions on comparable disposable fixtures; actual API uses snapshot transactions. Raw native baseline explain execution may exceed the API query deadline; request outcomes were measured separately.",
+      "After measurements, only fixture startup was hardened to explicitly initialize the same schema collections/indexes after connection. Application query code, data/index definitions and five-second budget were unchanged."
+    ],
+    "provenance": "Benchmark pins the original accepted blob recorded in p1.5a-preflight.json, so staging/committing optimized work cannot silently change the baseline.",
+    "evidence": [
+      "backend/verification/jobs-hub/p1.5a-design.json",
+      "backend/verification/jobs-hub/p1.5a-benchmarks.json",
+      "backend/verification/jobs-hub/p1.5a-benchmarks-261.json",
+      "backend/verification/jobs-hub/p1.5a-benchmarks-1000.json",
+      "backend/verification/jobs-hub/p1.5a-optimization-evaluation.json"
+    ]
+  },
+  "authorityContracts": {
+    "JobApplication": "Only authority for applicant-visible status/history and immutable submitted evidence/consent. Existing lifecycle/notification transaction reused without new states.",
+    "RecruiterShortlist": "Internal evaluation stage/notes only; no automatic application status synchronization or Developer notifications.",
+    "RecruiterMatch": "Existing public deterministic matching authority. Application-origin evaluations remain excluded from public/shared/analytics/admin surfaces.",
+    "legacyData": "No ownership transfer, automatic public/legacy conversion, evidence-retention or deletion-policy change."
+  },
+  "compatibilityAudit": {
+    "inventory": "backend/verification/jobs-hub/p1.5a-legacy-inventory.json",
+    "summary": [
+      "Candidate model: actively required by matching/discovery/consent/alias conflicts and account cleanup.",
+      "Recruiter and Stats models: historical collection/account-deletion compatibility dependencies; no safe removal in this phase.",
+      "Legacy /api/recruiter routes remain mounted and compatibility-tested; no internal callers for nine frontend wrappers, but external consumers are unknown.",
+      "Admin/tenant/console surfaces remain active; consolidation needs separate authorization.",
+      "backend/src/services and backend/src/jobSources do not exist in this checkout; no cleanup operation performed."
+    ],
+    "sourceFilesRemoved": []
+  },
+  "defects": "backend/verification/jobs-hub/p1.5a-defects.json",
+  "validation": {
+    "status": "passed",
+    "backendDistinctPassed": 89,
+    "skipped": 0,
+    "backendProtocol": "12 files run with node --test --test-concurrency=1; 81 passed and one fixture startup failed before subtests. After fixture-only cold initialization fix, Candidate Discovery rerun passed all 8 checks. Initial failure report retained; no failed result relabeled as passed.",
+    "backendEvidence": [
+      "backend/verification/jobs-hub/p1.5a-regressions.json",
+      "backend/verification/jobs-hub/p1.5a-discovery-rerun.json",
+      "backend/verification/jobs-hub/p1.5a-workflow-regression.json",
+      "backend/verification/jobs-hub/p1.5a-notifications/integration-results.json",
+      "backend/verification/jobs-hub/p1.5a-integrity-rerun.json"
+    ],
+    "angularDistinctPassed": 73,
+    "angularFiles": 10,
+    "finalComponentRecheck": {
+      "passed": 7,
+      "reason": "Final accurate match-card fallback wording."
+    },
+    "angularCommand": "npm test -- --watch=false --include='src/app/shared/components/direct-applications/*.spec.ts' --include='src/app/features/recruiter/pages/recruiter-pages.spec.ts' --include='src/app/features/recruiter/components/recruiter-components.spec.ts' --include='src/app/features/recruiter/pages/matches/matches.component.spec.ts' --include='src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts' --include='src/app/shared/utils/notification-navigation.spec.ts' --include='src/app/features/notifications/notifications.component.spec.ts' --include='src/app/core/layouts/main-layout/navbar/navbar.component.spec.ts'",
+    "full805SuiteRepeated": false,
+    "productionBuild": "npm run build passed on final frontend implementation; 4.13 MB initial bundle warning and existing developer/jobs (54.40 kB) and public-portfolio (49.97 kB) style warnings remain. No budget increased.",
+    "typescript": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json passed.",
+    "browser": {
+      "status": "passed",
+      "apiMocks": false,
+      "engine": "Installed headless Edge using native CDP over a fresh task-owned profile; no Playwright or other dependency installed.",
+      "screenshots": [
+        "frontend/verification/recruiter/p1.5a/light-desktop.png",
+        "frontend/verification/recruiter/p1.5a/dark-mobile.png",
+        "frontend/verification/recruiter/p1.5a/system-tablet.png"
+      ],
+      "evidence": "frontend/verification/recruiter/p1.5a/real-stack.json",
+      "checks": [
+        "page 2 -> explicit reviewing -> reject cancel/confirm -> terminal -> exact submitted-evidence navigation; two notifications; stale 409",
+        "Light/Dark/System responsive screenshots and peer owner-only exclusion"
+      ],
+      "appearance": [
+        {
+          "name": "light-desktop",
+          "theme": "light",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "observedTheme": "light"
+        },
+        {
+          "name": "dark-mobile",
+          "theme": "dark",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "observedTheme": "dark"
+        },
+        {
+          "name": "system-tablet",
+          "theme": "system",
+          "viewport": {
+            "width": 768,
+            "height": 1024
+          },
+          "observedTheme": "dark"
+        }
+      ],
+      "sessionClearing": {
+        "destination": "/auth/login",
+        "ng0100": false,
+        "organization503": 0
+      }
+    },
+    "finalization": "Explicit changed-file Prettier write/check, backend syntax, tracked/staged/new-file whitespace, index preservation and cleanup verification are run before final response. No source moves or deletions.",
+    "finalCleanupRechecks": {
+      "lifecyclePassed": 5,
+      "integrityPassed": 3,
+      "discoveryPassed": 8,
+      "note": "Counts overlap the 89 distinct checks; startup-only fixture failures are retained in the history and fixed by explicit post-connect DDL. No runtime tests skipped."
+    },
+    "fixtureStartupHistory": "A final import-cleanup run passed lifecycle 5/5 but hit import-time Mongoose collection-create buffering in the integrity fixture. Final explicit-DDL reruns passed integrity 3/3 and discovery 8/8. Startup hardening does not change the timed application query path or production defaults."
+  },
+  "cleanup": {
+    "sourceFilesMoved": [],
+    "sourceFilesDeleted": [],
+    "obsoleteTaskOwnedTemporaryFilesRemaining": [],
+    "evidenceRetained": "Final benchmark/initialization diagnostic reports, regression logs, fixtures, reusable scripts, three screenshots and real-stack JSON retained; no historical/user records removed.",
+    "browser": {
+      "browserStopped": true,
+      "temporaryFilesRemoved": 318
+    },
+    "smokeMongo": {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 331,
+      "productionDataUsed": false
+    },
+    "runtimeDirectories": "All current-task Mongo and browser children stopped and individually verified temporary files removed by fixture cleanup. p1.5a-runtime contains no files. The 2026-11-23 devinsight-real-integrations-RBmeeF directory predates this task and remains untouched.",
+    "build": "Final frontend/dist/frontend distribution, assets/licenses and existing cache retained; no recursive shell deletion or Git cleanup."
+  },
+  "remainingP15BRequirements": [
+    "Obtain external-consumer and authorized traffic/SDK inventory for /api/recruiter before proposing route retirement.",
+    "Approve endpoint/wrapper deprecation, response/error parity, compatibility window and rollback plan before deletion.",
+    "Approve historical collection retention/account-deletion strategy before removing Recruiter or Stats models; Candidate is still active.",
+    "Keep future Admin/Super Admin consolidation separate.",
+    "Reproduce development-only session-switch/NG0100 issues with an exact failing scenario before changing shared session architecture. Production smoke did not reproduce them.",
+    "Separately review capacity beyond 10,000 owner evaluation tuples and deployment-equivalent throughput; do not introduce deferred candidate assessment projections."
+  ],
+  "actions": {
+    "sourceDeletion": false,
+    "commits": false,
+    "pushes": false,
+    "deployments": false,
+    "productionMutations": false,
+    "productionMigrations": false,
+    "productionIndexOperations": false,
+    "stagingChanges": false
+  },
+  "inventory": {
+    "files": [
+      {
+        "path": "backend/scripts/benchmark-application-shortlists.cjs",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\scripts\\benchmark-application-shortlists.cjs",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/scripts/smoke-application-shortlists.cjs",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\scripts\\smoke-application-shortlists.cjs",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/scripts/verify-recruiter-p15a.cjs",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\scripts\\verify-recruiter-p15a.cjs",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/modules/jobs/services/jobApplicationService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\jobs\\services\\jobApplicationService.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\applicationShortlistService.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/applicationIdentityValidation.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\utils\\hub\\applicationIdentityValidation.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/applicationShortlistQuery.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\utils\\hub\\applicationShortlistQuery.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/tests/fixtures/applicationPerformanceFixture.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\applicationPerformanceFixture.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/tests/fixtures/disposableBrowser.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\disposableBrowser.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/tests/recruiter/applicationIntegrity.integration.test.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\recruiter\\applicationIntegrity.integration.test.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/tests/recruiter/applicationWorkflow.integration.test.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\recruiter\\applicationWorkflow.integration.test.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/src/tests/recruiter/candidateDiscovery.integration.test.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\recruiter\\candidateDiscovery.integration.test.js",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-benchmarks-1000.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-benchmarks-1000.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-benchmarks-261.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-benchmarks-261.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-benchmarks.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-benchmarks.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-defects.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-defects.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-design.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-design.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-discovery-rerun.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-discovery-rerun.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-implementation.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-implementation.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-integrity-rerun.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-integrity-rerun.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-legacy-inventory.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-legacy-inventory.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-notifications/integration-results.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-notifications\\integration-results.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-optimization-evaluation.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-optimization-evaluation.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-preflight.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-preflight.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-regressions.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-regressions.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-validation.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-validation.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-workflow-regression.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-workflow-regression.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/components/match-card/match-card.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\match-card\\match-card.component.html",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/components/recruiter-components.spec.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\recruiter-components.spec.ts",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\shortlist-card\\shortlist-card.component.html",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/matches/matches.component.spec.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\matches\\matches.component.spec.ts",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/matches/matches.component.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\matches\\matches.component.ts",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\recruiter-analytics\\recruiter-analytics.component.html",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\recruiter-analytics\\recruiter-analytics.component.spec.ts",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/src/app/shared/utils/notification-navigation.spec.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\utils\\notification-navigation.spec.ts",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/src/app/shared/utils/notification-navigation.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\utils\\notification-navigation.ts",
+        "kind": "source/test/script"
+      },
+      {
+        "path": "frontend/verification/recruiter/p1.5a/dark-mobile.png",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\recruiter\\p1.5a\\dark-mobile.png",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "frontend/verification/recruiter/p1.5a/light-desktop.png",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\recruiter\\p1.5a\\light-desktop.png",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "frontend/verification/recruiter/p1.5a/real-stack.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\recruiter\\p1.5a\\real-stack.json",
+        "kind": "retained evidence"
+      },
+      {
+        "path": "frontend/verification/recruiter/p1.5a/system-tablet.png",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\recruiter\\p1.5a\\system-tablet.png",
+        "kind": "retained evidence"
+      }
+    ],
+    "moved": [],
+    "deleted": [],
+    "sourceCount": 21,
+    "totalFiles": 40
+  }
+}
