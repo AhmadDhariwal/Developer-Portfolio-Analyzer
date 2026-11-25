@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { getGithubAuthOAuthConfig } = require('../../../core/config/githubOauth');
 
 const STATE_TTL_SECONDS = 10 * 60;
-const consumedStates = new Map();
+const { consumeOAuth } = require('./authCoordinationService');
 
 const providerConfig = (provider) => {
   if (provider === 'google') {
@@ -39,7 +39,8 @@ const requireConfig = (provider) => {
 
 const cookieOptions = () => ({
   httpOnly: true,
-  secure: String(process.env.AUTH_COOKIE_SECURE || '').toLowerCase() === 'true' || process.env.NODE_ENV === 'production',
+  secure:
+    String(process.env.AUTH_COOKIE_SECURE || '').toLowerCase() === 'true' || process.env.NODE_ENV === 'production',
   sameSite: ['strict', 'lax', 'none'].includes(String(process.env.AUTH_COOKIE_SAMESITE || '').toLowerCase())
     ? String(process.env.AUTH_COOKIE_SAMESITE).toLowerCase()
     : 'lax',
@@ -48,14 +49,17 @@ const cookieOptions = () => ({
 });
 
 const stateCookieName = (provider) => `devinsight_${provider}_oauth_state`;
-const parseCookies = (header = '') => String(header).split(';').reduce((cookies, part) => {
-  const separator = part.indexOf('=');
-  if (separator < 0) return cookies;
-  const key = part.slice(0, separator).trim();
-  const value = part.slice(separator + 1).trim();
-  if (key) cookies[key] = decodeURIComponent(value);
-  return cookies;
-}, {});
+const parseCookies = (header = '') =>
+  String(header)
+    .split(';')
+    .reduce((cookies, part) => {
+      const separator = part.indexOf('=');
+      if (separator < 0) return cookies;
+      const key = part.slice(0, separator).trim();
+      const value = part.slice(separator + 1).trim();
+      if (key) cookies[key] = decodeURIComponent(value);
+      return cookies;
+    }, {});
 
 const createAuthorization = (provider) => {
   const config = requireConfig(provider);
@@ -78,12 +82,22 @@ const createAuthorization = (provider) => {
   } else {
     params.set('scope', 'read:user user:email');
   }
-  return { state, authorizationUrl: `${config.authorizeUrl}?${params.toString()}`, cookieName: stateCookieName(provider), cookieOptions: cookieOptions() };
+  return {
+    state,
+    authorizationUrl: `${config.authorizeUrl}?${params.toString()}`,
+    cookieName: stateCookieName(provider),
+    cookieOptions: cookieOptions()
+  };
 };
 
-const validateState = (provider, state, cookieHeader) => {
+const validateState = async (provider, state, cookieHeader) => {
   const cookieState = parseCookies(cookieHeader)[stateCookieName(provider)] || '';
-  if (!state || !cookieState || state.length !== cookieState.length || !crypto.timingSafeEqual(Buffer.from(state), Buffer.from(cookieState))) {
+  if (
+    !state ||
+    !cookieState ||
+    state.length !== cookieState.length ||
+    !crypto.timingSafeEqual(Buffer.from(state), Buffer.from(cookieState))
+  ) {
     throw Object.assign(new Error('Invalid OAuth state.'), { statusCode: 400 });
   }
   const decoded = jwt.verify(state, process.env.JWT_SECRET, {
@@ -91,12 +105,10 @@ const validateState = (provider, state, cookieHeader) => {
     issuer: process.env.JWT_ISSUER || 'devinsight-api',
     audience: process.env.JWT_AUDIENCE || 'devinsight-web'
   });
-  if (decoded.purpose !== 'oauth-state' || decoded.provider !== provider || !decoded.nonce || consumedStates.has(decoded.nonce)) {
+  if (decoded.purpose !== 'oauth-state' || decoded.provider !== provider || !decoded.nonce) {
     throw Object.assign(new Error('Invalid or reused OAuth state.'), { statusCode: 400 });
   }
-  const now = Date.now();
-  consumedStates.set(decoded.nonce, now + STATE_TTL_SECONDS * 1000);
-  for (const [nonce, expiresAt] of consumedStates) if (expiresAt <= now) consumedStates.delete(nonce);
+  await consumeOAuth(provider, decoded);
 };
 
 const fetchJson = async (url, options = {}) => {
@@ -111,13 +123,27 @@ const exchangeGoogleIdentity = async (code) => {
   const token = await fetchJson('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ code, client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: config.callbackUrl, grant_type: 'authorization_code' })
+    body: new URLSearchParams({
+      code,
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+      redirect_uri: config.callbackUrl,
+      grant_type: 'authorization_code'
+    })
   });
   const profile = await fetchJson('https://openidconnect.googleapis.com/v1/userinfo', {
     headers: { Authorization: `Bearer ${token.access_token}` }
   });
-  if (!profile.sub || !profile.email || profile.email_verified !== true) throw Object.assign(new Error('Google email is not verified.'), { statusCode: 403 });
-  return { provider: 'google', providerId: String(profile.sub), email: String(profile.email).trim().toLowerCase(), name: String(profile.name || '').trim(), avatarUrl: String(profile.picture || '').trim(), username: '' };
+  if (!profile.sub || !profile.email || profile.email_verified !== true)
+    throw Object.assign(new Error('Google email is not verified.'), { statusCode: 403 });
+  return {
+    provider: 'google',
+    providerId: String(profile.sub),
+    email: String(profile.email).trim().toLowerCase(),
+    name: String(profile.name || '').trim(),
+    avatarUrl: String(profile.picture || '').trim(),
+    username: ''
+  };
 };
 
 const exchangeGitHubIdentity = async (code) => {
@@ -125,16 +151,42 @@ const exchangeGitHubIdentity = async (code) => {
   const token = await fetchJson('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, code, redirect_uri: config.callbackUrl })
+    body: new URLSearchParams({
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+      code,
+      redirect_uri: config.callbackUrl
+    })
   });
-  const headers = { Authorization: `Bearer ${token.access_token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'DevInsight-AI' };
+  const headers = {
+    Authorization: `Bearer ${token.access_token}`,
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'DevInsight-AI'
+  };
   const [profile, emails] = await Promise.all([
     fetchJson('https://api.github.com/user', { headers }),
     fetchJson('https://api.github.com/user/emails', { headers })
   ]);
-  const verified = Array.isArray(emails) ? emails.find((item) => item?.verified && item?.primary) || emails.find((item) => item?.verified) : null;
-  if (!profile.id || !verified?.email) throw Object.assign(new Error('GitHub verified email is required.'), { statusCode: 403 });
-  return { provider: 'github', providerId: String(profile.id), email: String(verified.email).trim().toLowerCase(), name: String(profile.name || profile.login || '').trim(), avatarUrl: String(profile.avatar_url || '').trim(), username: String(profile.login || '').trim() };
+  const verified = Array.isArray(emails)
+    ? emails.find((item) => item?.verified && item?.primary) || emails.find((item) => item?.verified)
+    : null;
+  if (!profile.id || !verified?.email)
+    throw Object.assign(new Error('GitHub verified email is required.'), { statusCode: 403 });
+  return {
+    provider: 'github',
+    providerId: String(profile.id),
+    email: String(verified.email).trim().toLowerCase(),
+    name: String(profile.name || profile.login || '').trim(),
+    avatarUrl: String(profile.avatar_url || '').trim(),
+    username: String(profile.login || '').trim()
+  };
 };
 
-module.exports = { createAuthorization, validateState, exchangeGoogleIdentity, exchangeGitHubIdentity, stateCookieName, cookieOptions };
+module.exports = {
+  createAuthorization,
+  validateState,
+  exchangeGoogleIdentity,
+  exchangeGitHubIdentity,
+  stateCookieName,
+  cookieOptions
+};

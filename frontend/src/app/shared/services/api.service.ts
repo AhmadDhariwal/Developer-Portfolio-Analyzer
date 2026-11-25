@@ -627,68 +627,6 @@ export class ApiService {
     });
   }
 
-  /* ── Recruiter Dashboard ── */
-  getRecruiterDashboard(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/recruiter/dashboard`);
-  }
-
-  getRecruiterCandidates(
-    params: {
-      search?: string;
-      stack?: string;
-      experience?: number;
-      minScore?: number;
-      skills?: string[];
-      limit?: number;
-    } = {},
-  ): Observable<any> {
-    const query = new URLSearchParams();
-    if (params.search) query.set('search', params.search);
-    if (params.stack) query.set('stack', params.stack);
-    if (params.experience !== undefined) query.set('experience', String(params.experience));
-    if (params.minScore !== undefined) query.set('minScore', String(params.minScore));
-    if (params.skills?.length) query.set('skills', params.skills.join(','));
-    if (params.limit) query.set('limit', String(params.limit));
-    const suffix = query.toString();
-    const path = suffix
-      ? `${this.baseUrl}/recruiter/candidates?${suffix}`
-      : `${this.baseUrl}/recruiter/candidates`;
-    return this.http.get(path);
-  }
-
-  getRecruiterCandidateById(candidateId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/recruiter/candidate/${encodeURIComponent(candidateId)}`);
-  }
-
-  getRecruiterJobs(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/recruiter/jobs`);
-  }
-
-  createRecruiterJob(payload: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/recruiter/job`, payload);
-  }
-
-  updateRecruiterJob(jobId: string, payload: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}/recruiter/job/${encodeURIComponent(jobId)}`, payload);
-  }
-
-  deleteRecruiterJob(jobId: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/recruiter/job/${encodeURIComponent(jobId)}`);
-  }
-
-  matchRecruiterCandidates(payload: { jobId: string; candidateIds?: string[] }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/recruiter/match`, payload);
-  }
-
-  aiRankCandidates(payload: {
-    jobId?: string;
-    candidateIds?: string[];
-    candidates?: any[];
-    job?: any;
-  }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/recruiter/ai-rank`, payload);
-  }
-
   /* ── Recruiter Hub ── */
   getRecruiterHubDashboard(): Observable<any> {
     return this.http.get(`${this.baseUrl}/recruiter-hub/analytics/dashboard`);
@@ -806,6 +744,20 @@ export class ApiService {
   updateRecruiterHubShortlist(id: string, payload: Record<string, unknown>): Observable<any> {
     return this.http.patch(
       `${this.baseUrl}/recruiter-hub/shortlists/${encodeURIComponent(id)}`,
+      payload,
+    );
+  }
+  getRecruiterApplicationShortlists(page = 1, limit = 20): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/shortlists/applications`, {
+      params: { page, limit },
+    });
+  }
+  updateRecruiterApplicationShortlist(
+    id: string,
+    payload: Record<string, unknown>,
+  ): Observable<any> {
+    return this.http.patch(
+      `${this.baseUrl}/recruiter-hub/shortlists/applications/${encodeURIComponent(id)}`,
       payload,
     );
   }

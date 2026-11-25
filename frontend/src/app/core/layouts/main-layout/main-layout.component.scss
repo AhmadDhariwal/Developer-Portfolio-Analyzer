@@ -45,12 +45,17 @@
   container-type: inline-size;
   margin-top: var(--navbar-height);
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: clamp(20px, 2.5vw, 36px);
   min-width: 0;
   background: var(--bg-main);
 
   @media (max-width: 768px) {
     padding: 16px 14px;
+  }
+
+  @media (max-width: 420px) {
+    padding: 12px 10px;
   }
 
   &::-webkit-scrollbar {
@@ -73,6 +78,14 @@
   @include developer.tokens;
   .main-content {
     padding: var(--dev-workspace-padding);
+
+    @media (max-width: 640px) {
+      padding: 14px 12px;
+    }
+
+    @media (max-width: 400px) {
+      padding: 12px 10px;
+    }
   }
 }
 .skip-link {

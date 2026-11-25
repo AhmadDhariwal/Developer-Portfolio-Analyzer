@@ -48,6 +48,14 @@
   letter-spacing: 0.04em;
   width: 190px;
   border-right: 1px solid var(--border-color);
+  box-shadow: 4px 0 8px -6px rgba(15, 23, 42, 0.16);
+
+  @media (max-width: 640px) {
+    width: 132px;
+    min-width: 132px;
+    padding: 10px 10px;
+    font-size: 10.5px;
+  }
 }
 
 .comparison-table tbody tr:hover td {

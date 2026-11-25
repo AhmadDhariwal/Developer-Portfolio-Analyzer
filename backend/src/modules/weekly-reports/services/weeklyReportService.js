@@ -18,11 +18,15 @@ const PublicProfile = require('../../public-portfolio/models/publicProfile');
 const IntegrationConnection = require('../../integrations/models/integrationConnection');
 const UserCourseProgress = require('../../courses/models/userCourseProgress');
 const aiService = require('../../../core/ai/aiservice');
-const { getDeveloperSignals, buildSignalsUsedSummary } = require('../../../core/developer-context/developerSignalService');
+const {
+  getDeveloperSignals,
+  buildSignalsUsedSummary,
+} = require('../../../core/developer-context/developerSignalService');
 const { getWeeklyReportPrompt } = require('../prompts/weeklyReportPrompt');
 
 const WEEKLY_REPORT_VERSION = 'weekly-report-v2';
 let weeklyReportSchedulerTask = null;
+let schedulerRun = null;
 const SOURCE_STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days — sources older than this are considered stale
 const generationInflight = new Map();
 const emailInflight = new Map();
@@ -1782,10 +1786,17 @@ const startWeeklyReportScheduler = () => {
 
   weeklyReportSchedulerTask = cron.schedule(
     scheduleExpr,
-    () =>
-      runWeeklyReportBatch({ dryRun }).catch((error) => {
-        console.error('[WeeklyReportScheduler] batch failed', { error: error.message });
-      }),
+    () => {
+      if (schedulerRun) return schedulerRun;
+      schedulerRun = runWeeklyReportBatch({ dryRun })
+        .catch((error) => {
+          console.error('[WeeklyReportScheduler] batch failed', { error: error.message });
+        })
+        .finally(() => {
+          schedulerRun = null;
+        });
+      return schedulerRun;
+    },
     timezone ? { timezone } : undefined,
   );
 
@@ -1794,7 +1805,15 @@ const startWeeklyReportScheduler = () => {
   );
   return weeklyReportSchedulerTask;
 };
+const stopWeeklyReportScheduler = () => {
+  weeklyReportSchedulerTask?.stop();
+  weeklyReportSchedulerTask?.destroy?.();
+  cron.getTasks?.()?.delete?.(weeklyReportSchedulerTask?.options?.name);
+  weeklyReportSchedulerTask = null;
+  return schedulerRun;
+};
 module.exports = {
+  stopWeeklyReportScheduler,
   __test: {
     loadDefaultResumeAnalysis,
     buildLearningSnapshot,

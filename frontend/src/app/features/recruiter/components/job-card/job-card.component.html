@@ -16,6 +16,18 @@
     </span>
   </div>
 
+  <div class="job-card__ownership">
+    <span class="ownership-pill">
+      Owner: {{ job?.owner?.name || 'Job owner' }}{{ job?.access?.isOwner ? ' (you)' : '' }}
+    </span>
+    <span class="ownership-pill" [class.ownership-pill--shared]="job?.teamShared">
+      {{
+        job?.teamShared
+          ? 'Shared team: ' + (job?.sharedTeam?.name || 'Unavailable')
+          : 'Private to owner'
+      }}
+    </span>
+  </div>
   <p class="job-card__desc">{{ job?.description || 'No description provided yet.' }}</p>
 
   <div class="job-card__meta">
@@ -51,18 +63,29 @@
     <button type="button" class="job-card__btn job-card__btn--secondary" (click)="view.emit(job)">
       View
     </button>
-    <button type="button" class="job-card__btn job-card__btn--primary" (click)="edit.emit(job)">
+    <button
+      *ngIf="job?.access?.edit"
+      type="button"
+      class="job-card__btn job-card__btn--primary"
+      (click)="edit.emit(job)"
+    >
       Edit
     </button>
     <button
       type="button"
       class="job-card__btn job-card__btn--secondary"
+      *ngIf="job?.access?.archive"
       [disabled]="isClosed"
       (click)="archive.emit(job)"
     >
       {{ isClosed ? 'Archived' : 'Archive' }}
     </button>
-    <button type="button" class="job-card__btn job-card__btn--danger" (click)="remove.emit(job)">
+    <button
+      *ngIf="job?.access?.delete"
+      type="button"
+      class="job-card__btn job-card__btn--danger"
+      (click)="remove.emit(job)"
+    >
       Delete
     </button>
   </div>

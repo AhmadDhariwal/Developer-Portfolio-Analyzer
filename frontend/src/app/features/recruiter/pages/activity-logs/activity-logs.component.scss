@@ -42,8 +42,14 @@
 
 .surface-card {
   @include recruiter.card-surface(20px);
+  min-width: 0;
+  max-width: 100%;
   display: grid;
   gap: 16px;
+
+  @media (max-width: 480px) {
+    padding: 14px;
+  }
 }
 
 .filter-panel {
@@ -52,7 +58,7 @@
 
 .filter-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
   gap: 14px;
   align-items: end;
 }

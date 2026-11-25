@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { RecruiterModule } from '../../recruiter.module';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
@@ -22,15 +22,63 @@ describe('JobsComponent', () => {
       listJobs: vi.fn().mockReturnValue(
         of({
           jobs: [
-            { _id: 'j1', title: 'Senior Backend Architect', stack: 'Node.js', status: 'open', requiredSkills: ['Node.js'] },
-            { _id: 'j2', title: 'Design Systems Lead', stack: 'Angular', status: 'draft', requiredSkills: ['Angular'] },
-            { _id: 'j3', title: 'Legacy Platform Maintainer', stack: 'Java', status: 'closed', requiredSkills: ['Java'] },
+            {
+              _id: 'j1',
+              version: 0,
+              access: {
+                isOwner: true,
+                edit: true,
+                archive: true,
+                delete: true,
+                manageSharing: true,
+              },
+              title: 'Senior Backend Architect',
+              stack: 'Node.js',
+              status: 'open',
+              requiredSkills: ['Node.js'],
+            },
+            {
+              _id: 'j2',
+              version: 0,
+              access: {
+                isOwner: true,
+                edit: true,
+                archive: true,
+                delete: true,
+                manageSharing: true,
+              },
+              title: 'Design Systems Lead',
+              stack: 'Angular',
+              status: 'draft',
+              requiredSkills: ['Angular'],
+            },
+            {
+              _id: 'j3',
+              version: 0,
+              access: {
+                isOwner: true,
+                edit: true,
+                archive: true,
+                delete: true,
+                manageSharing: true,
+              },
+              title: 'Legacy Platform Maintainer',
+              stack: 'Java',
+              status: 'closed',
+              requiredSkills: ['Java'],
+            },
           ],
         }),
       ),
       createJob: vi.fn().mockReturnValue(
         of({
-          job: { _id: 'j4', title: 'AI Systems Engineer', stack: 'Python', status: 'open', requiredSkills: ['Python'] },
+          job: {
+            _id: 'j4',
+            title: 'AI Systems Engineer',
+            stack: 'Python',
+            status: 'open',
+            requiredSkills: ['Python'],
+          },
         }),
       ),
       updateJob: vi.fn().mockReturnValue(of({ job: {} })),
@@ -70,5 +118,104 @@ describe('JobsComponent', () => {
     component.onConfirmAccepted();
     expect(jobServiceMock.archiveJob).toHaveBeenCalledWith('j1');
     expect(component.closedJobsCount).toBe(2);
+  });
+  it('renders team member metadata without edit/archive/delete actions', () => {
+    const job = {
+      _id: 'shared',
+      title: 'Shared Engineer',
+      status: 'open',
+      teamShared: true,
+      owner: { name: 'Job Creator' },
+      sharedTeam: { name: 'Hiring' },
+      access: { isOwner: false, edit: false, archive: false, delete: false },
+    };
+    component.jobs = [job];
+    fixture.detectChanges();
+    const card = fixture.nativeElement.querySelector('app-recruiter-job-card');
+    expect(card.textContent).toContain('Job Creator');
+    expect(card.textContent).toContain('Hiring');
+    expect(
+      Array.from(card.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).map((button) =>
+        button.textContent?.trim(),
+      ),
+    ).toEqual(['View']);
+    component.editJob(job);
+    component.archiveJob(job);
+    component.deleteJob(job);
+    expect(component.editorOpen).toBe(false);
+    expect(jobServiceMock.archiveJob).not.toHaveBeenCalled();
+    expect(jobServiceMock.deleteJob).not.toHaveBeenCalled();
+  });
+  it('sends explicit sharing intent and observed version only for the owner', () => {
+    const job = {
+      _id: 'j1',
+      title: 'Engineer',
+      role: 'Engineer',
+      stack: 'Backend',
+      location: 'Remote',
+      status: 'open',
+      requiredSkills: ['Node.js'],
+      version: 4,
+      teamId: 'team',
+      teamShared: false,
+      access: { edit: true, manageSharing: true },
+    };
+    component.editJob(job);
+    expect(component.jobForm.controls.teamShared.value).toBe(false);
+    component.jobForm.patchValue({ teamShared: true });
+    component.saveJob();
+    component.onConfirmAccepted();
+    expect(jobServiceMock.updateJob).toHaveBeenCalledWith(
+      'j1',
+      expect.objectContaining({ teamShared: true, teamId: 'team', expectedVersion: 4 }),
+    );
+    component.editJob({ ...job, teamShared: true, access: { edit: true, manageSharing: false } });
+    component.saveJob();
+    component.onConfirmAccepted();
+    const payload = jobServiceMock.updateJob.mock.calls.at(-1)?.[1];
+    expect(payload.expectedVersion).toBe(4);
+    expect(payload.teamId).toBeUndefined();
+    expect(payload.teamShared).toBeUndefined();
+  });
+  it('closes a stale sharing editor and refreshes current access after conflict', () => {
+    const job = {
+      _id: 'j1',
+      title: 'Engineer',
+      role: 'Engineer',
+      stack: 'Backend',
+      location: 'Remote',
+      status: 'open',
+      requiredSkills: ['Node.js'],
+      version: 4,
+      access: { edit: true, manageSharing: true },
+    };
+    component.editJob(job);
+    jobServiceMock.updateJob.mockReturnValue(
+      throwError(() => ({ status: 409, error: { message: 'Job changed. Refresh.' } })),
+    );
+    component.saveJob();
+    component.onConfirmAccepted();
+    expect(component.editorOpen).toBe(false);
+    expect(component.error).toContain('Job changed');
+    expect(jobServiceMock.listJobs).toHaveBeenCalledTimes(2);
+  });
+  it('requires separate evaluation opt-in and keeps evaluation sharing out of manager patches', () => {
+    component.editJob({
+      _id: 'shared',
+      version: 3,
+      title: 'Engineer',
+      role: 'Engineer',
+      stack: 'Node',
+      location: 'Remote',
+      requiredSkills: ['Node'],
+      access: { edit: true, manageSharing: false },
+    });
+    component.jobForm.controls.evaluationShared.setValue(true);
+    component.saveJob();
+    component.onConfirmAccepted();
+    const payload = jobServiceMock.updateJob.mock.calls[0][1];
+    expect(payload.expectedVersion).toBe(3);
+    expect(payload).not.toHaveProperty('teamShared');
+    expect(payload).not.toHaveProperty('evaluationShared');
   });
 });

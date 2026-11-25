@@ -1,0 +1,139 @@
+{
+  "scope": "P1.2A only: Recruiter Hub team-shared job metadata",
+  "date": "2026-11-22",
+  "branch": "fix/P1-project",
+  "integrationTarget": "not applicable",
+  "baseline": "Pre-existing staged P1.1 work preserved. No staging, commits, pushes, deployments, production mutations, dependencies, AI, caches or workers added.",
+  "ownershipAndContracts": {
+    "authority": "Existing recruiter/Job remains authoritative. recruiterId remains creator/owner and organizationId remains the tenant. Existing teamId is reused; no duplicate job or grant domain is introduced.",
+    "explicitGrant": "New Job.teamShared boolean defaults to false. An existing teamId, including historical team assignment, never grants collaboration by itself. Only an owner may enable/disable sharing or change the assigned team; a new target must be an active team in the same organization with an active exact team membership for the owner.",
+    "legacyCompatibility": "An active Recruiter with the existing direct User.organizationId affiliation and no Membership records retains creator access to private owned jobs. This compatibility fallback never grants team access or permission to share to a team. An explicit inactive organization membership denies metadata access; team membership revocation removes team grants while creator ownership remains independent when organization affiliation is still active.",
+    "organizationMembership": "The existing tenant service recognizes active direct organization membership or active team membership as organizational affiliation. This policy follows that convention, but never inherits a team grant from organization-wide role alone; a disabled direct organization membership overrides active team grants.",
+    "metadataApi": "Existing /api/recruiter-hub/jobs list/detail/create/update/archive/delete routes remain. List response retains jobs and adds teams containing only the caller's eligible team choices. Job responses add owner, sharedTeam, version and access capabilities. No evidence, applicant or candidate payload is included.",
+    "sharingInput": "teamShared must be a boolean; teamId must be null/empty or a valid eligible ObjectId. Ownership/permission injection is rejected. expectedVersion is required whenever teamShared is explicitly supplied or teamId is changed on a shared job. Other metadata patches accept it optionally for existing-client compatibility; current UI sends it for edits/publication.",
+    "version": "Uses existing Job.__v with atomic compare-and-set and transaction coordination. Metadata reads use a separate internal fence counter and do not invalidate the public version. Existing application coordination may conservatively cause a version conflict; refresh and reconfirm sharing rather than overwriting it.",
+    "errors": "401 unauthenticated; 403 invalid actor/organization or insufficient permissions on a visible job; 404 hidden/cross-tenant job; 400 invalid sharing/version input; 409 stale expectedVersion. No errors are converted to empty success."
+  },
+  "permissionMatrix": [
+    {
+      "actor": "Job owner with active Recruiter account and organization affiliation",
+      "view": true,
+      "edit": true,
+      "publish": true,
+      "archive": true,
+      "changeSharing": true,
+      "delete": true,
+      "privateEvidenceAndMatching": "unchanged existing owner-scoped policies"
+    },
+    {
+      "actor": "Recruiter with active exact team membership: member",
+      "view": "explicitly shared metadata only",
+      "edit": false,
+      "publish": false,
+      "archive": false,
+      "changeSharing": false,
+      "delete": false,
+      "privateEvidenceAndMatching": false
+    },
+    {
+      "actor": "Recruiter with active exact team membership: manager or admin",
+      "view": "explicitly shared metadata only",
+      "edit": true,
+      "publish": true,
+      "archive": true,
+      "changeSharing": false,
+      "delete": false,
+      "privateEvidenceAndMatching": false
+    },
+    {
+      "actor": "Organization-wide member/manager/admin without exact team membership",
+      "view": "own jobs only",
+      "edit": "own jobs only",
+      "publish": "own jobs only",
+      "archive": "own jobs only",
+      "changeSharing": "owner plus active selected-team membership only",
+      "delete": "own jobs only",
+      "privateEvidenceAndMatching": "no additional grant"
+    },
+    {
+      "actor": "Platform account role Admin or Super Admin",
+      "view": "Recruiter Hub denied regardless of membership role or job reference",
+      "edit": false,
+      "publish": false,
+      "archive": false,
+      "changeSharing": false,
+      "delete": false,
+      "privateEvidenceAndMatching": false
+    }
+  ],
+  "policyAndConcurrency": {
+    "reusablePolicy": "recruiterJobAccess.js re-reads actor role/activity/session revision, active organization, memberships, active same-org teams and current job ownership/grant in a snapshot transaction. No permission cache or client capability is trusted.",
+    "fences": "Internal MongoDB write fences on User, Organization, Membership, Team and returned/mutated Job records serialize decisions against existing admin updates/deletes and external job ownership changes. Snapshot write conflicts retry and re-authorize against current records. Admin workflows need no separate grant cache invalidation or new queue. Fence writes do not alter business updatedAt timestamps.",
+    "sharingRaces": "Owner changes validate expectedVersion and write the current owned job plus version increment in the same authorized transaction. Concurrent changes from the same version produce one success and one 409, never a silent overwrite.",
+    "revocation": "Role demotion, disabled/deleted team membership, inactive/deleted team, inactive organization membership, suspended/deleted organization and changed ownership are checked on subsequent requests. The regression pauses an edit after the snapshot team read but before its fence, deactivates the team, then verifies the retried request cannot commit the stale edit.",
+    "deletion": "Existing deleteJobWithPipeline accepts an optional existing session so owner authorization and the original matching/shortlist cascade share the transaction. No matching algorithm or grant is changed. JobApplication history remains retained under the existing deletion contract."
+  },
+  "P1_2BPrivacyBoundary": {
+    "privateHelper": "Existing getRecruiterJobDetails remains owner-only because comparison and shortlist services consume it. A separate getAccessibleRecruiterJob is used exclusively by metadata controllers; broadening the private helper would have broadened candidate-related access.",
+    "applications": "JobApplication routes/services, immutable evidence, lifecycle, notification recipients and PDF authorization are unchanged. Team members/managers/admin-members are denied applicant listing, PDF downloads and status mutation even when they can edit the job metadata.",
+    "frontend": "Shared Job Details never fetches matching results and never mounts the private applicants component. Only server capabilities for the actual owner enable those controls. Backend authorization is still mandatory regardless of UI flags.",
+    "privatePickers": "The existing Angular job-list service defaults to owner-only matching-capable jobs for matching/comparison consumers. Only the Jobs metadata workspace explicitly requests shared listings; shared metadata does not become a private workflow option.",
+    "developerDiscovery": "Team sharing does not publish/unpublish a job or change Developer eligibility. Existing publication/open/archive/organization/recruiter eligibility rules remain unchanged.",
+    "auditAndNotifications": "Existing audit action names and response contracts are retained; successful creation/update/archive audit payloads now include teamId/teamShared. Existing post-mutation audit persistence behavior remains. No team application notifications, recipient changes or private evidence disclosure are introduced."
+  },
+  "workflow": [
+    "Recruiter Jobs lists owned jobs and explicitly shared jobs belonging to the caller's live team memberships, with owner/team labels and server-authorized actions.",
+    "On create, jobs are private by default. Selecting a team alone is metadata assignment; the owner must also opt in to Share job details with this team.",
+    "On edit, only owners see sharing controls. Existing confirmation and expectedVersion protect changes. Managers' edit payloads omit sharing fields.",
+    "Team members view metadata; team managers/admin-members edit, publish and archive. Only owners can change sharing or delete. Shared views explain that applications, evidence and matching remain private.",
+    "Stale/forbidden mutations trigger current-list/detail refresh and clear the stale editor or stale private panels. Unknown capabilities fail closed in the UI. Existing theme mixins/tokens style new controls."
+  ],
+  "changedFiles": [
+    "backend/src/modules/recruiter/controllers/hub/recruiterJobController.js",
+    "backend/src/modules/recruiter/models/Job.js",
+    "backend/src/modules/recruiter/services/hub/recruiterJobService.js",
+    "backend/src/modules/recruiter/services/matching/jobLifecycleService.js",
+    "backend/src/modules/recruiter/utils/hub/recruiterAccess.js",
+    "frontend/src/app/features/recruiter/components/job-card/job-card.component.html",
+    "frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+    "frontend/src/app/features/recruiter/pages/job-details/job-details.component.ts",
+    "frontend/src/app/features/recruiter/pages/jobs/jobs.component.html",
+    "frontend/src/app/features/recruiter/pages/jobs/jobs.component.scss",
+    "frontend/src/app/features/recruiter/pages/jobs/jobs.component.spec.ts",
+    "frontend/src/app/features/recruiter/pages/jobs/jobs.component.ts",
+    "frontend/src/app/features/recruiter/pages/recruiter-pages.spec.ts",
+    "frontend/src/app/features/recruiter/services/recruiter-job.service.ts",
+    "frontend/src/app/features/recruiter/services/recruiter-domain-services.spec.ts"
+  ],
+  "addedFiles": [
+    "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+    "backend/src/tests/recruiter/teamSharedJobs.integration.test.js",
+    "backend/verification/jobs-hub/p1.2a-team-sharing.json"
+  ],
+  "movedFiles": [],
+  "deletedSourceFiles": [],
+  "validation": {
+    "status": "passed focused validation; one optional Redis outage subtest skipped",
+    "securityApi": "10 passed, 0 failed/skipped using disposable MongoDB and actual Hub JWT/role/org middleware. Covers private historical assignment, explicit opt-in/version validation, foreign-team/owner injection rejection, direct org-admin non-inheritance, member/manager/admin-membership matrix, applicant/PDF/status denials, preserved comparison/shortlist private helper, concurrent unsharing/retargeting, membership/org/team revocation, ownership changes, in-flight revocation and owner deletion retaining applications.",
+    "existingBackend": "recruiterHttp.integration.test.js, recruiterAcceptance.integration.test.js and jobApplications.integration.test.js: 19 passed, 0 failed, 1 optional Redis outage subtest skipped. Preserves owned job APIs, legacy job/ranking, private pipeline/cascade, onboarding, application immutability, notifications and application/SSE lifecycle.",
+    "angular": "Final npm test -- --watch=false with explicit includes for recruiter-domain-services.spec.ts, jobs.component.spec.ts, recruiter-pages.spec.ts and recruiter-components.spec.ts: 4 files, 25 tests passed. Includes shared metadata capabilities, owner-only private job pickers, manager edit payloads, stale-edit refresh and private-panel suppression. Initial sandbox run executed no tests because Vitest temporary-cache rename returned EPERM; permitted rerun passed.",
+    "quality": "All 17 changed source/test files formatted in write mode with installed Prettier; the same explicit paths/options passed --check. Installed tsc --noEmit and ngc --noEmit passed for frontend/tsconfig.app.json. All 7 changed backend JavaScript files passed node --check. Both unstaged and staged Git whitespace checks passed. Verification report also formatted and checked. Existing Git CRLF conversion notices are non-failing.",
+    "cleanup": "No temporary screenshots, traces, debug scripts or logs created. Existing disposable Mongo fixture stops task-owned processes and removes only verified fixture data. No unrelated/staged user work deleted or reset.",
+    "notRun": [
+      "Full project suites",
+      "Production build",
+      "Browser/theme matrix",
+      "Production migrations",
+      "Live Redis outage acceptance subtest"
+    ]
+  },
+  "remainingRisksAndP1_2BDependencies": [
+    "Replica-set transactions are required. The conservative policy fences can serialize metadata work within a busy organization; no production load/capacity claim is made. Existing unpaginated list shape is retained.",
+    "Creator access without Membership records is an explicit compatibility exception limited to owned jobs. It cannot be used to acquire any team grant. Admin account deactivation or organization suspension still blocks access.",
+    "Legacy owner-only job APIs remain owner-only and do not become team APIs. This policy applies to Recruiter Hub metadata routes, not a general organization-wide authorization rewrite.",
+    "No ownership-transfer feature is added. If another authorized workflow changes recruiterId, metadata rights follow current ownership; immutable application ownership/evidence does not automatically transfer.",
+    "P1.2B must decide applicant consent/disclosure, exact evidence recipients, immutable-version retention, withdrawn applications, owner-transfer handling and revocation semantics before team evidence access is introduced.",
+    "Matching and shortlist collaboration require separate explicit access decisions and linkage rules. Never reuse metadata view/edit capabilities as authorization for applicant evidence, candidates, matching or shortlists.",
+    "Existing non-fatal jsdom canvas and Mongoose option-deprecation warnings are outside this scoped change."
+  ]
+}

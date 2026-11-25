@@ -25,12 +25,19 @@
       </div>
     </div>
 
-    <span class="shortlist-card__status" [class]="'shortlist-card__status shortlist-card__status--' + normalizedStatus">
-      {{ item?.status || 'shortlisted' }}
+    <span
+      class="shortlist-card__status"
+      [class]="'shortlist-card__status shortlist-card__status--' + normalizedStatus"
+    >
+      {{ item?.applicationId ? 'Internal stage: ' : '' }}{{ item?.status || 'shortlisted' }}
     </span>
   </div>
 
-  <div class="stage-stepper" *ngIf="normalizedStatus !== 'rejected'" aria-label="Pipeline stage progress">
+  <div
+    class="stage-stepper"
+    *ngIf="normalizedStatus !== 'rejected'"
+    aria-label="Pipeline stage progress"
+  >
     <div
       class="stage-step"
       *ngFor="let stage of pipelineStages; let i = index"
@@ -42,7 +49,38 @@
     </div>
   </div>
 
-  <div class="shortlist-card__meta">
+  <p class="shortlist-card__ownership" *ngIf="item?.job?.sharedTeam">
+    {{ item?.job?.owner?.name }} · {{ item.job.sharedTeam.name }} ·
+    {{ item?.access?.manage ? 'Can manage evaluations' : 'Read only' }}
+  </p>
+  <div
+    class="shortlist-card__actions"
+    *ngIf="item?.applicationId && !hideActions && item?.access?.manageApplicationStatus"
+    role="group"
+    aria-label="Applicant-visible application status"
+  >
+    <button
+      *ngFor="let status of item.application.permittedStatuses"
+      type="button"
+      class="shortlist-card__btn"
+      [class.shortlist-card__btn--danger]="status === 'rejected'"
+      [class.shortlist-card__btn--primary]="status === 'reviewing'"
+      [disabled]="changingApplication"
+      (click)="applicationStatusChange.emit({ item: item, status: status })"
+    >
+      {{ status === 'rejected' ? 'Reject application' : 'Mark application reviewing' }}
+    </button>
+    <span *ngIf="changingApplication" role="status">Updating application...</span>
+  </div>
+  <div class="shortlist-card__application-bar" *ngIf="item?.applicationId">
+    <span>Direct application · Owner only · Application status: {{ item.application.status }}</span>
+    <a
+      [routerLink]="['/app/recruiter/jobs', jobRouteId]"
+      [queryParams]="{ applicationId: item.applicationId }"
+      >View application &amp; submitted evidence</a
+    >
+  </div>
+  <div class="shortlist-card__meta" *ngIf="!item?.applicationId">
     <span>{{ item?.candidate?.stack || 'Generalist' }}</span>
     <span>{{ item?.candidate?.yearsOfExperience || 0 }} yrs</span>
     <span *ngIf="item?.candidate?.readinessScore || item?.candidate?.score">
@@ -57,7 +95,7 @@
       <button
         type="button"
         class="note-edit-link"
-        *ngIf="!hideActions && !editingNote"
+        *ngIf="!hideActions && item?.access?.manage && !editingNote"
         (click)="startEditNote()"
       >
         Edit Note
@@ -90,11 +128,11 @@
     </div>
   </div>
 
-  <div class="shortlist-card__actions" *ngIf="!hideActions">
+  <div class="shortlist-card__actions" *ngIf="!hideActions && item?.access?.manage">
     <button
       type="button"
       class="shortlist-card__btn shortlist-card__btn--primary"
-      [disabled]="isFinalOrRejected"
+      [disabled]="isFinalOrRejected || (item?.applicationId && !item?.access?.manageStages)"
       (click)="edit.emit(item)"
     >
       {{ normalizedStatus === 'interview' ? 'At Interview Stage' : 'Advance' }}
@@ -104,6 +142,7 @@
       class="stage-select"
       aria-label="Change pipeline stage"
       [ngModel]="normalizedStatus"
+      [disabled]="item?.applicationId && !item?.access?.manageStages"
       (ngModelChange)="onStageSelect($event)"
     >
       <option *ngFor="let stage of stageOptions" [value]="stage.key">{{ stage.label }}</option>
@@ -112,6 +151,7 @@
     <button
       type="button"
       class="shortlist-card__btn shortlist-card__btn--danger"
+      *ngIf="!item?.applicationId"
       (click)="remove.emit(item)"
     >
       Remove

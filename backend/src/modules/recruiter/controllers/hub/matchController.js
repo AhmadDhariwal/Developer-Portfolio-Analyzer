@@ -14,7 +14,7 @@ const generateMatches = async (req, res) => {
     await AuditLog.create({
       actor: scope.recruiterId,
       organizationId: scope.organizationId,
-      teamId: scope.teamIds[0] || null,
+      teamId: result?.job?.teamId || null,
       action: 'RECRUITER_MATCH_GENERATED',
       method: 'POST',
       route: req.originalUrl,
@@ -22,7 +22,8 @@ const generateMatches = async (req, res) => {
       after: {
         jobId: String(result?.job?._id || req.body?.jobId || ''),
         candidateIds: Array.isArray(req.body?.candidateIds) ? req.body.candidateIds : [],
-        generatedCount: Array.isArray(result?.matches) ? result.matches.length : 0
+        generatedCount: Array.isArray(result?.matches) ? result.matches.length : 0,
+        ownerId: String(result?.job?.recruiterId || scope.recruiterId)
       },
       statusCode: 200,
       timestamp: new Date()
@@ -70,13 +71,14 @@ const patchMatchStatus = async (req, res) => {
     const match = await updateMatchStatus({
       ...scope,
       matchId: req.params.id,
-      status: String(req.body?.status || 'generated')
+      status: String(req.body?.status || 'generated'),
+      expectedVersion: req.body?.expectedVersion
     });
     if (!match) return res.status(404).json({ message: 'Match not found.' });
     await AuditLog.create({
       actor: scope.recruiterId,
       organizationId: scope.organizationId,
-      teamId: scope.teamIds[0] || null,
+      teamId: match?.teamId || null,
       action: 'RECRUITER_MATCH_STATUS_UPDATED',
       method: 'PATCH',
       route: req.originalUrl,

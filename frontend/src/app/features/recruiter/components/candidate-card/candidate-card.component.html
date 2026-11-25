@@ -7,10 +7,19 @@
         <p>{{ candidate?.headline || candidate?.stack || 'Developer profile' }}</p>
       </div>
     </div>
-    <div [class]="scoreToneClass">
+    <div
+      [class]="scoreToneClass"
+      *ngIf="
+        candidate?.readinessScore !== null && candidate?.readinessScore !== undefined;
+        else readinessUnavailable
+      "
+    >
       <strong>{{ overallScore }}</strong>
       <span>Readiness</span>
     </div>
+    <ng-template #readinessUnavailable
+      ><span class="unavailable-pill">Readiness unavailable</span></ng-template
+    >
   </div>
 
   <div class="candidate-card__meta">
@@ -22,7 +31,12 @@
   <div class="candidate-card__metrics">
     <div class="metric-cell">
       <label>GitHub</label>
-      <strong *ngIf="candidate?.githubScore !== null && candidate?.githubScore !== undefined; else githubUnavailable">
+      <strong
+        *ngIf="
+          candidate?.githubScore !== null && candidate?.githubScore !== undefined;
+          else githubUnavailable
+        "
+      >
         {{ candidate.githubScore }}
       </strong>
       <ng-template #githubUnavailable>
@@ -31,7 +45,16 @@
     </div>
     <div class="metric-cell">
       <label>Resume</label>
-      <strong>{{ candidate?.resumeScore || 0 }}</strong>
+      <strong
+        *ngIf="
+          candidate?.resumeScore !== null && candidate?.resumeScore !== undefined;
+          else resumeUnavailable
+        "
+        >{{ candidate.resumeScore }}</strong
+      >
+      <ng-template #resumeUnavailable
+        ><span class="unavailable-pill">Unavailable</span></ng-template
+      >
     </div>
     <div class="metric-cell">
       <label>Consistency</label>

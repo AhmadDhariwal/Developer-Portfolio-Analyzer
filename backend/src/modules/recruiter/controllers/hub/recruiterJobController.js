@@ -1,6 +1,6 @@
 const {
-  listRecruiterJobs,
-  getRecruiterJobDetails,
+  listRecruiterJobWorkspace,
+  getAccessibleRecruiterJob,
   createRecruiterJob,
   updateRecruiterJob,
   archiveRecruiterJob,
@@ -12,8 +12,8 @@ const AuditLog = require("../../../admin/models/auditLog");
 const listJobs = async (req, res) => {
   try {
     const scope = await getRecruiterScope(req);
-    const jobs = await listRecruiterJobs(scope);
-    return res.status(200).json({ jobs });
+    const workspace = await listRecruiterJobWorkspace(scope);
+    return res.status(200).json(workspace);
   } catch (error) {
     console.error("Recruiter hub jobs error:", error.message);
     return res.status(error.statusCode || 500).json({
@@ -26,7 +26,7 @@ const listJobs = async (req, res) => {
 const getJobDetails = async (req, res) => {
   try {
     const scope = await getRecruiterScope(req);
-    const job = await getRecruiterJobDetails({
+    const job = await getAccessibleRecruiterJob({
       ...scope,
       jobId: req.params.id,
     });
@@ -57,6 +57,9 @@ const createJob = async (req, res) => {
         jobId: String(job?._id || ""),
         title: String(job?.title || ""),
         status: String(job?.status || ""),
+        teamId: job?.teamId || null,
+        teamShared: job?.teamShared === true,
+        evaluationShared: job?.evaluationShared === true,
       },
       statusCode: 201,
       timestamp: new Date(),
@@ -93,6 +96,9 @@ const updateJob = async (req, res) => {
         jobId: String(job?._id || req.params.id || ""),
         title: String(job?.title || ""),
         status: String(job?.status || ""),
+        teamId: job?.teamId || null,
+        teamShared: job?.teamShared === true,
+        evaluationShared: job?.evaluationShared === true,
       },
       statusCode: 200,
       timestamp: new Date(),
@@ -125,6 +131,9 @@ const archiveJob = async (req, res) => {
         jobId: String(job?._id || req.params.id || ""),
         title: String(job?.title || ""),
         status: String(job?.status || ""),
+        teamId: job?.teamId || null,
+        teamShared: job?.teamShared === true,
+        evaluationShared: job?.evaluationShared === true,
       },
       statusCode: 200,
       timestamp: new Date(),

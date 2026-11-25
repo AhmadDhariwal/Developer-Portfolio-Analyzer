@@ -72,12 +72,17 @@ const jobSchema = new mongoose.Schema(
     archivedAt: {
       type: Date,
       default: null
-    }
+    },
+    published: { type: Boolean, default: false, index: true },
+    // Historical team assignment is metadata only; collaboration requires opt-in.
+    teamShared: { type: Boolean, default: false },
+    evaluationShared: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
 
 jobSchema.index({ organizationId: 1, recruiterId: 1, updatedAt: -1 });
 jobSchema.index({ organizationId: 1, status: 1, updatedAt: -1 });
+jobSchema.index({ organizationId: 1, teamShared: 1, teamId: 1, updatedAt: -1 });
 
 module.exports = mongoose.model('Job', jobSchema);

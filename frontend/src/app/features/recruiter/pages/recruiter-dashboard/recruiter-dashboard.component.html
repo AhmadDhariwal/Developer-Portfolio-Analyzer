@@ -35,12 +35,10 @@
     (retry)="loadDashboard()"
   />
 
-  <app-recruiter-loader
-    *ngIf="loading && !metricsReady"
-    label="Loading recruiter dashboard..."
-    variant="stats"
-    [count]="8"
-  />
+  <div class="dashboard-loading" *ngIf="loading && !metricsReady">
+    <app-recruiter-loader label="Loading recruiter dashboard..." variant="stats" [count]="8" />
+    <app-recruiter-loader label="Preparing pipeline analytics..." variant="charts" [count]="2" />
+  </div>
 
   <ng-container *ngIf="metricsReady">
     <section class="section-shell">
@@ -243,9 +241,11 @@
         />
         <app-recruiter-performance-chart
           title="Supply vs Demand"
+          [subtitle]="supplyVsDemandSubtitle"
           tone="green"
           mode="dual"
           [height]="220"
+          [seriesLabels]="['Candidate Supply', 'Job Demand']"
           [items]="dashboard.charts.supplyVsDemand"
         />
         <app-recruiter-performance-chart

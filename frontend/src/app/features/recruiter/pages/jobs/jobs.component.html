@@ -3,9 +3,7 @@
     <div class="page-header__copy">
       <span class="page-header__eyebrow">Recruiter Hub · Requisitions</span>
       <h1>Jobs</h1>
-      <p>
-        Create, update, archive, and manage recruiter-owned requisitions with live backend data.
-      </p>
+      <p>Manage your jobs and explicitly shared team requisitions.</p>
     </div>
 
     <div class="page-header__actions">
@@ -36,7 +34,7 @@
       label="All Jobs"
       [value]="jobs.length"
       tone="blue"
-      hint="Current recruiter-owned roles"
+      hint="Owned and shared team roles"
     />
     <app-recruiter-stat-card
       label="Open"
@@ -131,6 +129,41 @@
       <button type="button" class="btn-secondary" (click)="toggleEditor()">Close</button>
     </div>
 
+    <fieldset class="sharing-controls" *ngIf="canManageSharing" [disabled]="saving">
+      <legend>Team sharing (optional)</legend>
+      <label for="job-sharing-team">Team</label>
+      <select
+        id="job-sharing-team"
+        formControlName="teamId"
+        (change)="jobForm.controls.evaluationShared.setValue(false)"
+      >
+        <option value="">No team</option>
+        <option *ngIf="unavailableTeam" [value]="jobForm.controls.teamId.value">
+          Current team unavailable
+        </option>
+        <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+      </select>
+      <label class="sharing-choice">
+        <input
+          type="checkbox"
+          formControlName="teamShared"
+          (change)="jobForm.controls.evaluationShared.setValue(false)"
+        />
+        <span>Share job details with this team</span>
+      </label>
+      <p class="sharing-hint">
+        Team members can view job details. Team managers can edit, publish and archive. Applications
+        and submitted evidence stay private. Evaluation sharing requires separate permission below.
+      </p>
+      <label class="sharing-choice" *ngIf="jobForm.controls.teamShared.value">
+        <input type="checkbox" formControlName="evaluationShared" />
+        <span>Share public-candidate matches and shortlist notes with this team</span>
+      </label>
+      <p class="sharing-hint" *ngIf="jobForm.controls.teamShared.value">
+        Evaluation sharing includes existing results and notes. Applications and submitted evidence
+        stay private.
+      </p>
+    </fieldset>
     <div class="job-editor__grid">
       <div class="field">
         <label for="job-title">

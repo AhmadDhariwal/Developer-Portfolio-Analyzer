@@ -27,6 +27,8 @@ describe('Recruiter domain services', () => {
       generateRecruiterHubMatches: vi.fn().mockReturnValue(of({ matches: [] })),
       updateRecruiterHubMatchStatus: vi.fn().mockReturnValue(of({ match: { _id: 'm1' } })),
       getRecruiterHubShortlists: vi.fn().mockReturnValue(of({ shortlists: [] })),
+      getRecruiterApplicationShortlists: vi.fn().mockReturnValue(of({ shortlists: [], meta: {} })),
+      updateRecruiterApplicationShortlist: vi.fn().mockReturnValue(of({ shortlist: {} })),
       createRecruiterHubShortlist: vi.fn().mockReturnValue(of({ shortlist: { _id: 's1' } })),
       updateRecruiterHubShortlist: vi.fn().mockReturnValue(of({ shortlist: { _id: 's1' } })),
       deleteRecruiterHubShortlist: vi.fn().mockReturnValue(of({ message: 'Removed' })),
@@ -86,6 +88,10 @@ describe('Recruiter domain services', () => {
     matchService.addToShortlist({ candidateId: 'c1', jobId: 'job-1' }).subscribe();
     matchService.updateShortlist('s1', { status: 'interview', notes: 'Great' }).subscribe();
     matchService.removeShortlist('s1').subscribe();
+    matchService.getApplicationShortlists(6, 20).subscribe();
+    matchService
+      .updateApplicationShortlist('private-1', { notes: 'Owner notes', expectedVersion: 3 })
+      .subscribe();
     matchService.compareCandidates({ candidateIds: ['c1', 'c2'], jobId: 'job-1' }).subscribe();
 
     expect(apiMock['getRecruiterHubMatches']).toHaveBeenCalledWith({ jobId: 'job-1' });
@@ -106,9 +112,48 @@ describe('Recruiter domain services', () => {
       notes: 'Great',
     });
     expect(apiMock['deleteRecruiterHubShortlist']).toHaveBeenCalledWith('s1');
+    expect(apiMock['getRecruiterApplicationShortlists']).toHaveBeenCalledWith(6, 20);
+    expect(apiMock['updateRecruiterApplicationShortlist']).toHaveBeenCalledWith('private-1', {
+      notes: 'Owner notes',
+      expectedVersion: 3,
+    });
     expect(apiMock['compareRecruiterHubCandidates']).toHaveBeenCalledWith({
       candidateIds: ['c1', 'c2'],
       jobId: 'job-1',
     });
+  });
+
+  it('keeps private job pickers owner-only while metadata workspace explicitly includes shared jobs', () => {
+    const jobs = [
+      { _id: 'owned', access: { isOwner: true, matching: true } },
+      { _id: 'shared-manager', access: { isOwner: false, edit: true, matching: false } },
+      { _id: 'unknown' },
+    ];
+    apiMock['getRecruiterHubJobs'].mockReturnValue(of({ jobs, teams: [] }));
+    jobService.listJobs().subscribe((response) => {
+      expect(response.jobs.map((job: any) => job._id)).toEqual(['owned']);
+    });
+    jobService.listJobs(true).subscribe((response) => {
+      expect(response.jobs).toEqual(jobs);
+    });
+  });
+  it('separates evaluation job choices from metadata sharing and private comparison choices', () => {
+    apiMock['getRecruiterHubJobs'].mockReturnValue(
+      of({
+        jobs: [
+          { _id: 'owned', access: { matching: true, evaluationView: true } },
+          { _id: 'metadata', access: { evaluationView: false } },
+          { _id: 'evaluations', access: { matching: false, evaluationView: true } },
+        ],
+      }),
+    );
+    jobService
+      .listEvaluationJobs()
+      .subscribe((response) =>
+        expect(response.jobs.map((job: any) => job._id)).toEqual(['owned', 'evaluations']),
+      );
+    jobService
+      .listJobs()
+      .subscribe((response) => expect(response.jobs.map((job: any) => job._id)).toEqual(['owned']));
   });
 });

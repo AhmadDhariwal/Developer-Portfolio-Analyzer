@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { JobApplicantsComponent } from '../../shared/components/direct-applications/job-applicants.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -36,6 +37,7 @@ import { RecruiterProfileComponent } from './pages/recruiter-profile/recruiter-p
     RecruiterProfileComponent,
   ],
   imports: [
+    JobApplicantsComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

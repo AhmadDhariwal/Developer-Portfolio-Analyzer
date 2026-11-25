@@ -1,0 +1,56 @@
+{
+  "scope": "P1.1A.2 only: audit serialization and PlatformSettings acceptance-session reliability",
+  "date": "2026-11-22",
+  "branch": "fix/P1-project",
+  "integrationTarget": "not applicable",
+  "baseline": "Existing staged P0/P1 work preserved. No commits, staging, pushes, deployments or production mutations.",
+  "rootCauses": {
+    "audit": "POST /api/tenant/organizations returns raw Mongoose Organization and Membership documents to res.json. The response itself serializes successfully and returns 201 after organization, membership and user updates persist. Audit finish handling retained the raw documents and recursively traversed their cyclic internal metadata using deepMask before trimPayload's try/catch. Maximum call stack size exceeded was caught by the finish listener, which logged Audit log write error and skipped AuditLog.create. The successful organization creation event was lost.",
+    "auditReproduction": "A real JWT-authenticated tenant POST against disposable MongoDB returned 201, logged Audit log write error: Maximum call stack size exceeded, and produced zero matching audit records. After the fix the same regression proves one correctly scoped and redacted audit record.",
+    "settings": "The recruiter acceptance fixture did not perform production settings startup synchronization or the index.js request-time authoritative refresh. Once an updateSettings-warmed snapshot passed its 30-second deadline, synchronous signing or recruiter policy guards correctly raised PlatformSettings 503. The original acceptance suite passed on this machine; a deterministic Date-clock expiry regression reproduces the same signing/guard failure without waiting for slow fixture seeding. This is test lifecycle initialization, not a reason to weaken P0.1 runtime fail-closed behavior.",
+    "settingsIsolation": "Multiple disposable databases can share the acceptance process. Each session now persists its own settings document and updates/warms from that MongoDB authority before starting synchronization; it does not reuse another session's still-valid cache."
+  },
+  "implementation": {
+    "audit": "Normalize values using JSON.stringify/parse, allowing Mongoose toJSON, ObjectId strings and ISO dates to match the actual response contract; then recursively mask sensitive keys and apply existing truncation. All serialization/redaction runs inside the existing fallback guard. Truly cyclic/nonserializable values retain an audit record with __nonSerializable instead of losing the event. Successful organization creation uses the created organization ID for audit scope rather than stale user scope or client-supplied organization/team claims. Other route scope behavior, metadata, actions, redaction patterns, recruiter audit deduplication and schemas remain unchanged.",
+    "acceptance": "Initialize each disposable settings session, await startSettingsSynchronization after Mongo connection, await getSettings in request middleware before policy-dependent handlers, and stop synchronization before disconnecting. The existing runtime settings service and token validation are unchanged.",
+    "regressions": "Real organization POST verifies 201, one audit record, authoritative organization ownership despite client scope claims, null team, action/method/route/status, actor lookup, IP/user agent, public JSON response snapshot, nested sensitive-key masking, and preserved owner admin/membership behavior. Serialization unit coverage verifies ObjectId/date conversion, nested response redaction, cyclic fallback and masked truncation. Settings-session coverage verifies stored restrictive policy, configured JWT issuer/audience/algorithm/lifetime/session revision, 503 at expiry, authoritative refresh and continued recruiter denial."
+  },
+  "changedFiles": [
+    "backend/src/core/middleware/auditLogMiddleware.js",
+    "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js"
+  ],
+  "addedSourceFiles": [
+    "backend/src/tests/core/auditLogSerialization.test.js",
+    "backend/src/tests/core/tenantAudit.integration.test.js",
+    "backend/src/tests/core/platformSettingsSession.integration.test.js"
+  ],
+  "retainedEvidence": [
+    "backend/verification/jobs-hub/p1.1a.2-reliability.json",
+    "backend/verification/jobs-hub/p1.1a.2-real-smoke.json",
+    "frontend/verification/jobs-hub/p1.1a.2-real-developer.png"
+  ],
+  "movedSourceFiles": [],
+  "deletedSourceFiles": [],
+  "validation": {
+    "status": "passed",
+    "focusedResults": "5 passed, 0 failed, 1 skipped in the final focused run (Node counts the acceptance parent). Existing PlatformSettings worker test also passed. The skipped case requires a disposable Redis URL.",
+    "focusedCommand": "node --test src/tests/core/auditLogSerialization.test.js src/tests/core/tenantAudit.integration.test.js src/tests/core/platformSettingsSession.integration.test.js src/tests/recruiter/recruiterAcceptance.integration.test.js",
+    "settingsWorkers": "Existing platformSettingsWorkers.test.js passed with Redis disabled, covering independent-worker Mongo convergence, stored maintenance policy at actual API cold start, auth rejection, and fail-closed behavior after expiry during Mongo unavailability.",
+    "sharedDependencySmoke": "Existing smokeDirectApplications.cjs passed without target API interception because shared audit middleware changed: empty collections/auth/RBAC, real Angular consent/resume submission 201, recruiter publication/applicant list/PDF/status 200, Developer reviewing status refresh. Actual backend startup/request logs retained in p1.1a.2-real-smoke.json.",
+    "quality": "All five changed/added JavaScript files formatted in write mode using installed Prettier with singleQuote=true, trailingComma=none, printWidth=100; same-file checks and node --check required. Recruiter acceptance file's existing indentation was normalized by the mandatory formatter; assertions and matching behavior were preserved.",
+    "cleanup": "Smoke-owned Angular/Express/Mongo processes, temporary proxy and PDF removed by the existing smoke fixture. Original accepted smoke JSON restored byte-for-byte from a verified task-owned backup, then that backup removed. Current-run JSON/screenshot retained under P1.1A.2-specific paths. No unrelated source or untracked user files deleted.",
+    "notRun": [
+      "Full project suites",
+      "Frontend component suites",
+      "Production build",
+      "Production migrations",
+      "Live Redis outage acceptance subtest"
+    ]
+  },
+  "remainingRisks": [
+    "Audit writes still follow the existing asynchronous finish/best-effort contract; database failures can still prevent persistence and are logged. No transactional audit redesign was introduced.",
+    "The recruiter Redis outage/recovery subtest is skipped without RECRUITER_TEST_REDIS_URL. Mongo fallback and authoritative policy expiry were verified by the existing settings worker test.",
+    "Existing Mongoose new-option deprecation warnings in recruiter acceptance are outside this change.",
+    "No JobApplication, frontend UI, matching, JWT validation, API response, dependency or runtime PlatformSettings policy changes."
+  ]
+}

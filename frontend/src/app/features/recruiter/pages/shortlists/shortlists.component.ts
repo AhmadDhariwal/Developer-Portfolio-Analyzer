@@ -1,7 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
 import { PerformanceChartItem } from '../../components/recruiter-performance-chart/recruiter-performance-chart.component';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
+import { JobApplicationsService } from '../../../../shared/services/job-applications.service';
 
 export type ShortlistStageFilter =
   | 'all'
@@ -27,6 +29,10 @@ interface ConfirmState {
 })
 export class ShortlistsComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly applications = inject(JobApplicationsService);
+  private readonly route = inject(ActivatedRoute, { optional: true });
+  source: 'public' | 'applications' = 'public';
+  private loadVersion = 0;
   loading = true;
   error = '';
   notice = '';
@@ -35,6 +41,11 @@ export class ShortlistsComponent implements OnInit {
   jobFilter = '';
   searchTerm = '';
   savingNoteId = '';
+  applicationPage = 1;
+  readonly applicationLimit = 20;
+  applicationTotal = 0;
+  applicationPages = 0;
+  changingApplicationId = '';
 
   readonly confirmState = signal<ConfirmState>({
     open: false,
@@ -49,6 +60,22 @@ export class ShortlistsComponent implements OnInit {
   constructor(private matchService: RecruiterMatchService) {}
 
   ngOnInit(): void {
+    if (this.route?.snapshot?.queryParamMap?.get('source') === 'applications')
+      this.source = 'applications';
+    this.loadShortlists();
+  }
+  setSource(source: 'public' | 'applications'): void {
+    if (source === this.source) return;
+    this.source = source;
+    this.applicationPage = 1;
+    this.applicationTotal = 0;
+    this.applicationPages = 0;
+    this.shortlists = [];
+    this.notice = '';
+    this.jobFilter = '';
+    this.searchTerm = '';
+    this.stageFilter = 'all';
+    this.onConfirmCancelled();
     this.loadShortlists();
   }
 
@@ -141,26 +168,108 @@ export class ShortlistsComponent implements OnInit {
     this.stageFilter = stage;
   }
 
-  loadShortlists(): void {
+  changeApplicationPage(page: number): void {
+    if (this.loading || page < 1 || page > this.applicationPages) return;
+    this.applicationPage = page;
+    this.loadShortlists();
+  }
+
+  loadShortlists(message = ''): void {
+    const version = ++this.loadVersion;
+    const source = this.source;
     this.loading = true;
     this.error = '';
+    this.notice = message;
+    this.savingNoteId = '';
+    this.changingApplicationId = '';
+    this.shortlists = [];
+    this.onConfirmCancelled();
 
-    this.matchService
-      .getShortlists()
-      .pipe(finalize(() => this.cdr.markForCheck()))
-      .subscribe({
-        next: (response: any) => {
-          this.shortlists = response?.shortlists || [];
-          this.loading = false;
-        },
-        error: (err) => {
-          this.error = err?.error?.message || 'Unable to load shortlists right now.';
-          this.loading = false;
-        },
+    const request =
+      source === 'applications'
+        ? this.matchService.getApplicationShortlists(this.applicationPage, this.applicationLimit)
+        : this.matchService.getShortlists();
+    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
+      next: (response: any) => {
+        if (version !== this.loadVersion || source !== this.source) return;
+        this.shortlists = response?.shortlists || [];
+        if (source === 'applications') {
+          this.applicationTotal = response?.meta?.total ?? this.shortlists.length;
+          this.applicationPages = response?.meta?.pages ?? 1;
+          if (this.applicationPage > Math.max(1, this.applicationPages)) {
+            this.applicationPage = Math.max(1, this.applicationPages);
+            this.loadShortlists(message);
+            return;
+          }
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        if (version !== this.loadVersion || source !== this.source) return;
+        this.shortlists = [];
+        this.applicationTotal = 0;
+        this.applicationPages = 0;
+        this.error = err?.error?.message || 'Unable to load shortlists right now.';
+        this.loading = false;
+      },
+    });
+  }
+
+  changeApplicationStatus(event: { item: any; status: string }): void {
+    const { item, status } = event;
+    if (
+      this.loading ||
+      this.changingApplicationId ||
+      this.source !== 'applications' ||
+      !this.shortlists.includes(item) ||
+      item?.access?.manageApplicationStatus !== true ||
+      !item.applicationId ||
+      !item.application?.permittedStatuses?.includes(status)
+    )
+      return;
+    const expectedStatus = item.application.status;
+    const version = this.loadVersion;
+    const apply = () => {
+      if (version !== this.loadVersion || this.changingApplicationId) return;
+      this.changingApplicationId = item._id;
+      this.error = '';
+      this.notice = '';
+      this.applications
+        .status(item.jobId, item.applicationId, status, expectedStatus)
+        .pipe(finalize(() => this.cdr.markForCheck()))
+        .subscribe({
+          next: () => {
+            if (version !== this.loadVersion) return;
+            this.loadShortlists(
+              `Application status updated to ${status}. Internal stage is unchanged.`,
+            );
+          },
+          error: (error) => {
+            if (version !== this.loadVersion) return;
+            this.changingApplicationId = '';
+            this.refreshAfterDenied(error);
+            this.error =
+              error?.status === 409
+                ? 'Application changed. Refreshed the current status; review it before trying again.'
+                : error?.error?.message || 'Unable to update application status. Please retry.';
+          },
+        });
+    };
+    if (status === 'rejected') {
+      this.confirmState.set({
+        open: true,
+        title: 'Reject application',
+        message:
+          'Reject this application and notify the applicant? This is terminal. Internal notes and stage are retained.',
+        confirmText: 'Reject application',
+        action: apply,
       });
+    } else apply();
   }
 
   advance(item: any): void {
+    if (item?.access?.manage !== true) return;
+    if (item.applicationId && !item.access.manageStages) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
@@ -185,6 +294,8 @@ export class ShortlistsComponent implements OnInit {
   }
 
   changeStage(event: { item: any; status: string }): void {
+    if (event.item?.access?.manage !== true) return;
+    if (event.item.applicationId && !event.item.access.manageStages) return;
     const { item, status } = event;
     const id = String(item?._id || '').trim();
     if (!id || !status) {
@@ -209,6 +320,7 @@ export class ShortlistsComponent implements OnInit {
   }
 
   updateNotes(event: { item: any; notes: string }): void {
+    if (event.item?.access?.manage !== true) return;
     const id = String(event?.item?._id || '').trim();
     if (!id) {
       return;
@@ -216,25 +328,37 @@ export class ShortlistsComponent implements OnInit {
     this.savingNoteId = id;
     this.error = '';
     this.notice = '';
+    const version = this.loadVersion;
 
-    this.matchService
-      .updateShortlist(id, { notes: event.notes })
-      .pipe(finalize(() => this.cdr.markForCheck()))
-      .subscribe({
-        next: (response: any) => {
-          const updated = response?.shortlist;
-          event.item.notes = updated?.notes ?? event.notes;
-          this.savingNoteId = '';
-          this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
-        },
-        error: (err) => {
-          this.savingNoteId = '';
-          this.error = err?.error?.message || 'Could not update shortlist notes.';
-        },
-      });
+    const request = event.item.applicationId
+      ? this.matchService.updateApplicationShortlist(id, {
+          notes: event.notes,
+          expectedVersion: event.item.version,
+        })
+      : this.matchService.updateShortlist(id, {
+          notes: event.notes,
+          expectedVersion: event.item.version,
+        });
+    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
+      next: (response: any) => {
+        if (version !== this.loadVersion) return;
+        const updated = response?.shortlist;
+        Object.assign(event.item, updated || { notes: event.notes });
+        this.savingNoteId = '';
+        this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
+      },
+      error: (err) => {
+        if (version !== this.loadVersion) return;
+        this.savingNoteId = '';
+        this.refreshAfterDenied(err);
+        this.error = err?.error?.message || 'Could not update shortlist notes.';
+      },
+    });
   }
 
   remove(item: any): void {
+    if (item?.access?.manage !== true) return;
+    if (item.applicationId) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
@@ -258,6 +382,7 @@ export class ShortlistsComponent implements OnInit {
               this.notice = `Removed ${item?.candidate?.name || 'candidate'} from shortlist.`;
             },
             error: (err) => {
+              this.refreshAfterDenied(err);
               this.error = err?.error?.message || 'Could not remove shortlist entry.';
             },
           });
@@ -287,30 +412,52 @@ export class ShortlistsComponent implements OnInit {
     });
   }
 
+  private refreshAfterDenied(error: any): void {
+    if (
+      [403, 404, 409].includes(error?.status) ||
+      (this.source === 'applications' && error?.status === 503)
+    ) {
+      this.shortlists = [];
+      this.loadShortlists();
+    }
+  }
+
   trackByItem(_: number, item: any): string {
     return String(item?._id || _);
   }
 
   private applyStageUpdate(item: any, nextStatus: string): void {
+    if (item?.access?.manage !== true) return;
+    if (item.applicationId && !item.access.manageStages) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
     }
     this.error = '';
     this.notice = '';
+    const version = this.loadVersion;
 
-    this.matchService
-      .updateShortlist(id, { status: nextStatus })
-      .pipe(finalize(() => this.cdr.markForCheck()))
-      .subscribe({
-        next: (response: any) => {
-          const updated = response?.shortlist;
-          item.status = updated?.status || nextStatus;
-          this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
-        },
-        error: (err) => {
-          this.error = err?.error?.message || 'Could not update shortlist stage.';
-        },
-      });
+    const request = item.applicationId
+      ? this.matchService.updateApplicationShortlist(id, {
+          status: nextStatus,
+          expectedVersion: item.version,
+        })
+      : this.matchService.updateShortlist(id, {
+          status: nextStatus,
+          expectedVersion: item.version,
+        });
+    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
+      next: (response: any) => {
+        if (version !== this.loadVersion) return;
+        const updated = response?.shortlist;
+        Object.assign(item, updated || { status: nextStatus });
+        this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
+      },
+      error: (err) => {
+        if (version !== this.loadVersion) return;
+        this.refreshAfterDenied(err);
+        this.error = err?.error?.message || 'Could not update shortlist stage.';
+      },
+    });
   }
 }

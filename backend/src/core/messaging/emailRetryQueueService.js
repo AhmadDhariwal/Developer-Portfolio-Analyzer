@@ -12,6 +12,8 @@ const MAX_BACKOFF_MS = 60 * 60 * 1000;
 const BASE_BACKOFF_MS = 60 * 1000;
 
 let timer = null;
+let activeTick = null;
+let stopping = false;
 let isRunning = false;
 
 const calcBackoff = (attempts) => {
@@ -158,9 +160,12 @@ const processDueJobs = async () => {
       .lean();
 
     for (const job of jobs) {
+      if (stopping) break;
       await handleSingleJob(job);
     }
+    if (stopping) return;
     await require('../../modules/support/services/supportNotificationDeliveryService').processDue();
+    if (stopping) return;
     await require('../../modules/weekly-reports/services/weeklyReportDeliveryService').processDue();
   } catch (error) {
     console.error('Email retry worker error:', error.message);
@@ -170,12 +175,18 @@ const processDueJobs = async () => {
 };
 
 const startEmailRetryWorker = () => {
-  if (timer) return;
+  if (timer) return timer;
+  stopping = false;
 
   timer = setInterval(() => {
-    processDueJobs().catch((error) => {
-      console.error('Email retry worker tick failed:', error.message);
-    });
+    if (activeTick) return;
+    activeTick = processDueJobs()
+      .catch((error) => {
+        console.error('Email retry worker tick failed:', error.message);
+      })
+      .finally(() => {
+        activeTick = null;
+      });
   }, RETRY_INTERVAL_MS);
 
   // Avoid keeping process alive only for this timer.
@@ -186,7 +197,15 @@ const startEmailRetryWorker = () => {
   console.log(`Email retry worker started. Interval: ${RETRY_INTERVAL_MS}ms`);
 };
 
+const stopEmailRetryWorker = () => {
+  stopping = true;
+  clearInterval(timer);
+  timer = null;
+  return activeTick;
+};
+
 module.exports = {
+  stopEmailRetryWorker,
   enqueueInvitationRetry,
   markJobInProgress,
   processDueJobs,

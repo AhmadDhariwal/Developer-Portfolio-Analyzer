@@ -23,7 +23,7 @@
       <button
         type="button"
         class="btn-primary"
-        [disabled]="generating || !selectedJobId"
+        [disabled]="generating || !selectedJobId || !canManageSelectedJob"
         (click)="runMatches()"
       >
         {{ generating ? 'Generating...' : 'Generate Matches' }}

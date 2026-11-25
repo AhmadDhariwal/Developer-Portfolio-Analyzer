@@ -1,0 +1,43 @@
+{
+  "intermediateMeasurements": [
+    {
+      "count": 261,
+      "firstOptimization": "Node SHA pass with original per-row Mongo lookups retained",
+      "baseline": {
+        "requests": 7,
+        "p50Ms": 639.0288,
+        "p95Ms": 5003.8033,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "firstOptimizationResult": {
+        "requests": 7,
+        "p50Ms": 490.8654000000024,
+        "p95Ms": 594.7975000000006,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "explainIssue": "Initial harness attempted explain in a transaction (Mongo error 263); fixed harness runs identical query diagnostics outside transactions."
+    },
+    {
+      "count": 1000,
+      "firstOptimization": "Node SHA pass with original per-row Mongo lookups retained",
+      "baseline": {
+        "requests": 7,
+        "p50Ms": 5069.467299999997,
+        "p95Ms": 5297.042999999998,
+        "failures": 7,
+        "timeoutRate": 1
+      },
+      "firstOptimizationResult": {
+        "requests": 7,
+        "p50Ms": 2083.242200000008,
+        "p95Ms": 2559.7137999999977,
+        "failures": 0,
+        "timeoutRate": 0
+      },
+      "explainIssue": "Initial harness attempted explain in a transaction (Mongo error 263); fixed harness runs identical query diagnostics outside transactions."
+    }
+  ],
+  "fixtureProtocolCorrection": "Initial harness reconnected the same Mongoose/settings singleton to a fresh database; second fixture lacked durable Settings. All final measurements run a fresh process per count. Runtime fail-closed behavior was not changed."
+}

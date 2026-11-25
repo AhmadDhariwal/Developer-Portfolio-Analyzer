@@ -19,33 +19,42 @@ const { validatePasswordAgainstPolicy } = require('../../auth/utils/passwordPoli
 
 const INVITATION_TTL_DAYS = 7;
 
-const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
+const normalizeEmail = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase();
 const normalizePhone = (value) => String(value || '').trim();
 const normalizeLinkedIn = (value) => String(value || '').trim();
 const sanitizeText = (value) => String(value || '').trim();
 const average = (values = []) => {
-  const numeric = values.map((value) => Number(value || 0)).filter((value) => Number.isFinite(value));
+  const numeric = values
+    .map((value) => Number(value || 0))
+    .filter((value) => Number.isFinite(value));
   if (!numeric.length) return 0;
   return Math.round((numeric.reduce((sum, value) => sum + value, 0) / numeric.length) * 10) / 10;
 };
 
 const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(value || 0)));
-const formatAction = (value) => String(value || '')
-  .trim()
-  .replace(/^RECRUITER_/, '')
-  .split('_')
-  .filter(Boolean)
-  .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-  .join(' ');
+const formatAction = (value) =>
+  String(value || '')
+    .trim()
+    .replace(/^RECRUITER_/, '')
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+    .join(' ');
 const buildRecruiterProfileCompleted = (user = {}) => {
   const hasName = Boolean(String(user.name || '').trim());
   const hasPhone = Boolean(normalizePhone(user.phoneNumber));
-  const hasProfessionalLink = Boolean(String(user.githubUsername || '').trim() || normalizeLinkedIn(user.linkedin));
+  const hasProfessionalLink = Boolean(
+    String(user.githubUsername || '').trim() || normalizeLinkedIn(user.linkedin)
+  );
   const hasBasicInfo = Boolean(String(user.jobTitle || '').trim() || String(user.bio || '').trim());
   const hasBackground = Boolean(
     sanitizeText(user.recruiterDetails?.education) ||
     Number(user.recruiterDetails?.yearsOfExperience || 0) > 0 ||
-    (Array.isArray(user.recruiterDetails?.certifications) && user.recruiterDetails.certifications.length > 0)
+    (Array.isArray(user.recruiterDetails?.certifications) &&
+      user.recruiterDetails.certifications.length > 0)
   );
   return hasName && hasPhone && hasProfessionalLink && hasBasicInfo && hasBackground;
 };
@@ -66,12 +75,20 @@ const sanitizeRecruiter = (user, teams = [], organization = null, metrics = {}) 
   bio: user.bio || '',
   recruiterDetails: {
     education: sanitizeText(user.recruiterDetails?.education),
-    certifications: Array.isArray(user.recruiterDetails?.certifications) ? user.recruiterDetails.certifications : [],
+    certifications: Array.isArray(user.recruiterDetails?.certifications)
+      ? user.recruiterDetails.certifications
+      : [],
     yearsOfExperience: Number(user.recruiterDetails?.yearsOfExperience || 0),
     experienceSummary: sanitizeText(user.recruiterDetails?.experienceSummary),
-    specialties: Array.isArray(user.recruiterDetails?.specialties) ? user.recruiterDetails.specialties : [],
-    toolsAndPlatforms: Array.isArray(user.recruiterDetails?.toolsAndPlatforms) ? user.recruiterDetails.toolsAndPlatforms : [],
-    languages: Array.isArray(user.recruiterDetails?.languages) ? user.recruiterDetails.languages : []
+    specialties: Array.isArray(user.recruiterDetails?.specialties)
+      ? user.recruiterDetails.specialties
+      : [],
+    toolsAndPlatforms: Array.isArray(user.recruiterDetails?.toolsAndPlatforms)
+      ? user.recruiterDetails.toolsAndPlatforms
+      : [],
+    languages: Array.isArray(user.recruiterDetails?.languages)
+      ? user.recruiterDetails.languages
+      : []
   },
   isActive: user.isActive !== false,
   profileCompleted: buildRecruiterProfileCompleted(user),
@@ -110,12 +127,14 @@ const loadRecruiterTeams = async (organizationId, recruiterIds = []) => {
 
   return memberships.reduce((map, membership) => {
     const userId = String(membership.userId || '');
-    const team = membership.teamId ? {
-      _id: membership.teamId._id,
-      name: membership.teamId.name,
-      isActive: membership.teamId.isActive !== false,
-      role: membership.role || 'member'
-    } : null;
+    const team = membership.teamId
+      ? {
+          _id: membership.teamId._id,
+          name: membership.teamId.name,
+          isActive: membership.teamId.isActive !== false,
+          role: membership.role || 'member'
+        }
+      : null;
     if (!userId || !team) {
       return map;
     }
@@ -143,7 +162,11 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
     RecruiterMatch.find({ organizationId, recruiterId: { $in: recruiterIds } })
       .select('_id recruiterId status matchScore confidenceScore createdAt updatedAt')
       .lean(),
-    RecruiterShortlist.find({ organizationId, recruiterId: { $in: recruiterIds } })
+    RecruiterShortlist.find({
+      organizationId,
+      recruiterId: { $in: recruiterIds },
+      applicationId: null
+    })
       .select('_id recruiterId status createdAt updatedAt')
       .lean(),
     AuditLog.find({ organizationId, actor: { $in: recruiterIds } })
@@ -192,7 +215,12 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
 
   const maxJobs = Math.max(1, ...[...jobsByRecruiter.values()].map((items) => items.length));
   const maxMatches = Math.max(1, ...[...matchesByRecruiter.values()].map((items) => items.length));
-  const maxAiUsage = Math.max(1, ...[...logsByRecruiter.values()].map((items) => items.filter((log) => /ANALYZED|MATCH/.test(String(log.action || ''))).length));
+  const maxAiUsage = Math.max(
+    1,
+    ...[...logsByRecruiter.values()].map(
+      (items) => items.filter((log) => /ANALYZED|MATCH/.test(String(log.action || ''))).length
+    )
+  );
 
   return recruiters.reduce((map, recruiter) => {
     const recruiterId = String(recruiter._id || '');
@@ -200,41 +228,68 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
     const recruiterMatches = matchesByRecruiter.get(recruiterId) || [];
     const recruiterShortlists = shortlistsByRecruiter.get(recruiterId) || [];
     const recruiterLogs = logsByRecruiter.get(recruiterId) || [];
-    const viewedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_VIEWED').length;
-    const analyzedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED').length;
-    const aiUsageCount = recruiterLogs.filter((log) => /ANALYZED|MATCH/.test(String(log.action || ''))).length;
+    const viewedCount = recruiterLogs.filter(
+      (log) => log.action === 'RECRUITER_CANDIDATE_VIEWED'
+    ).length;
+    const analyzedCount = recruiterLogs.filter(
+      (log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED'
+    ).length;
+    const aiUsageCount = recruiterLogs.filter((log) =>
+      /ANALYZED|MATCH/.test(String(log.action || ''))
+    ).length;
     const activeJobs = recruiterJobs.filter((job) => String(job.status || '') === 'open').length;
     const shortlistedCount = recruiterShortlists.length;
-    const shortlistedMatches = recruiterMatches.filter((match) => String(match.status || '') === 'shortlisted').length;
-    const activityScore = clamp(viewedCount * 2 + analyzedCount * 5 + recruiterJobs.length * 6 + recruiterMatches.length * 3 + shortlistedCount * 4);
+    const shortlistedMatches = recruiterMatches.filter(
+      (match) => String(match.status || '') === 'shortlisted'
+    ).length;
+    const activityScore = clamp(
+      viewedCount * 2 +
+        analyzedCount * 5 +
+        recruiterJobs.length * 6 +
+        recruiterMatches.length * 3 +
+        shortlistedCount * 4
+    );
     const hiringEffectiveness = recruiterMatches.length
       ? clamp(Math.round((shortlistedMatches / recruiterMatches.length) * 100))
       : 0;
-    const recruiterScore = clamp(Math.round(average([
-      activityScore,
-      hiringEffectiveness,
-      (recruiterJobs.length / maxJobs) * 100,
-      (recruiterMatches.length / maxMatches) * 100,
-      (aiUsageCount / maxAiUsage) * 100
-    ])));
-    const teamContribution = clamp(Math.round(average([
-      recruiterJobs.length / maxJobs * 100,
-      recruiterMatches.length / maxMatches * 100,
-      activityScore
-    ])));
-    const profileCompletion = buildRecruiterProfileCompleted(recruiter) ? 100 : clamp(
-      [
-        Boolean(String(recruiter.name || '').trim()),
-        Boolean(normalizePhone(recruiter.phoneNumber)),
-        Boolean(String(recruiter.githubUsername || '').trim() || normalizeLinkedIn(recruiter.linkedin)),
-        Boolean(String(recruiter.jobTitle || '').trim() || String(recruiter.bio || '').trim()),
-        Boolean(
-          sanitizeText(recruiter.recruiterDetails?.education) ||
-          Number(recruiter.recruiterDetails?.yearsOfExperience || 0) > 0 ||
-          (Array.isArray(recruiter.recruiterDetails?.certifications) && recruiter.recruiterDetails.certifications.length > 0)
-        )
-      ].filter(Boolean).length * 20
+    const recruiterScore = clamp(
+      Math.round(
+        average([
+          activityScore,
+          hiringEffectiveness,
+          (recruiterJobs.length / maxJobs) * 100,
+          (recruiterMatches.length / maxMatches) * 100,
+          (aiUsageCount / maxAiUsage) * 100
+        ])
+      )
     );
+    const teamContribution = clamp(
+      Math.round(
+        average([
+          (recruiterJobs.length / maxJobs) * 100,
+          (recruiterMatches.length / maxMatches) * 100,
+          activityScore
+        ])
+      )
+    );
+    const profileCompletion = buildRecruiterProfileCompleted(recruiter)
+      ? 100
+      : clamp(
+          [
+            Boolean(String(recruiter.name || '').trim()),
+            Boolean(normalizePhone(recruiter.phoneNumber)),
+            Boolean(
+              String(recruiter.githubUsername || '').trim() || normalizeLinkedIn(recruiter.linkedin)
+            ),
+            Boolean(String(recruiter.jobTitle || '').trim() || String(recruiter.bio || '').trim()),
+            Boolean(
+              sanitizeText(recruiter.recruiterDetails?.education) ||
+              Number(recruiter.recruiterDetails?.yearsOfExperience || 0) > 0 ||
+              (Array.isArray(recruiter.recruiterDetails?.certifications) &&
+                recruiter.recruiterDetails.certifications.length > 0)
+            )
+          ].filter(Boolean).length * 20
+        );
 
     map.set(recruiterId, {
       profileCompletion,
@@ -273,12 +328,17 @@ const getRecruiters = async (req, res) => {
         role: 'recruiter',
         organizationId: req.organizationId
       })
-        .select('_id name email role organizationId githubUsername linkedin phoneNumber avatar isActive jobTitle location bio recruiterDetails createdAt')
+        .select(
+          '_id name email role organizationId githubUsername linkedin phoneNumber avatar isActive jobTitle location bio recruiterDetails createdAt'
+        )
         .sort({ createdAt: -1 })
         .lean()
     ]);
 
-    const teamMap = await loadRecruiterTeams(req.organizationId, recruiters.map((recruiter) => recruiter._id));
+    const teamMap = await loadRecruiterTeams(
+      req.organizationId,
+      recruiters.map((recruiter) => recruiter._id)
+    );
     const metricsMap = await buildRecruiterMetricsMap(req.organizationId, recruiters, teamMap);
     const organizationPayload = organization?._id
       ? { _id: organization._id, name: organization.name || '' }
@@ -304,7 +364,9 @@ const inviteRecruiter = async (req, res) => {
   try {
     const recruiterSettings = getRecruiterSettingsSync();
     if (recruiterSettings.enableRecruiterAccess === false) {
-      return res.status(403).json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
+      return res
+        .status(403)
+        .json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
     }
 
     const name = String(req.body?.name || '').trim();
@@ -326,15 +388,26 @@ const inviteRecruiter = async (req, res) => {
         expiresAt: { $gt: new Date() }
       }).lean(),
       Organization.findById(req.organizationId).select('name').lean(),
-      User.countDocuments({ role: 'recruiter', organizationId: req.organizationId, isActive: { $ne: false } })
+      User.countDocuments({
+        role: 'recruiter',
+        organizationId: req.organizationId,
+        isActive: { $ne: false }
+      })
     ]);
 
     if (recruiterCount >= Number(organizationSettings.recruiterLimitPerOrg || 5)) {
-      return res.status(400).json({ message: `Recruiter limit (${organizationSettings.recruiterLimitPerOrg}) reached for this organization.` });
+      return res.status(400).json({
+        message: `Recruiter limit (${organizationSettings.recruiterLimitPerOrg}) reached for this organization.`
+      });
     }
 
-    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
-      return res.status(403).json({ message: 'This email is already assigned to another organization.' });
+    if (
+      existingUser?.organizationId &&
+      String(existingUser.organizationId) !== String(req.organizationId)
+    ) {
+      return res
+        .status(403)
+        .json({ message: 'This email is already assigned to another organization.' });
     }
 
     if (existingUser?.role === 'recruiter' && existingUser.isActive !== false) {
@@ -342,13 +415,17 @@ const inviteRecruiter = async (req, res) => {
     }
 
     if (existingPendingInvite) {
-      return res.status(409).json({ message: 'An active recruiter invitation already exists for this email.' });
+      return res
+        .status(409)
+        .json({ message: 'An active recruiter invitation already exists for this email.' });
     }
 
     let team = null;
     const teamId = String(req.body?.teamId || '').trim() || null;
     if (teamId) {
-      team = await Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true }).select('_id name').lean();
+      team = await Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true })
+        .select('_id name')
+        .lean();
       if (!team) {
         return res.status(404).json({ message: 'Team not found in this organization.' });
       }
@@ -370,7 +447,9 @@ const inviteRecruiter = async (req, res) => {
     });
 
     const frontendBase = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
-    const invitationLink = frontendBase ? `${frontendBase}/invitations/accept/${token}` : `/invitations/accept/${token}`;
+    const invitationLink = frontendBase
+      ? `${frontendBase}/invitations/accept/${token}`
+      : `/invitations/accept/${token}`;
 
     const emailResult = await sendRecruiterInvitationEmail({
       to: email,
@@ -419,7 +498,13 @@ const validateDirectRecruiterInput = ({ name, email, password }) => {
   return null;
 };
 
-const upsertDirectRecruiterRecord = async ({ existingUser, organizationId, name, email, password }) => {
+const upsertDirectRecruiterRecord = async ({
+  existingUser,
+  organizationId,
+  name,
+  email,
+  password
+}) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -433,8 +518,10 @@ const upsertDirectRecruiterRecord = async ({ existingUser, organizationId, name,
     recruiter.isVerified = true;
     recruiter.isActive = true;
     recruiter.onboardingCompleted = true;
-    recruiter.activeCareerStack = recruiter.activeCareerStack || recruiter.careerStack || 'Full Stack';
-    recruiter.activeExperienceLevel = recruiter.activeExperienceLevel || recruiter.experienceLevel || 'Student';
+    recruiter.activeCareerStack =
+      recruiter.activeCareerStack || recruiter.careerStack || 'Full Stack';
+    recruiter.activeExperienceLevel =
+      recruiter.activeExperienceLevel || recruiter.experienceLevel || 'Student';
     await recruiter.save();
     return recruiter;
   }
@@ -497,7 +584,9 @@ const addRecruiterDirect = async (req, res) => {
   try {
     const recruiterSettings = getRecruiterSettingsSync();
     if (recruiterSettings.enableRecruiterAccess === false) {
-      return res.status(403).json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
+      return res
+        .status(403)
+        .json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
     }
 
     const name = String(req.body?.name || '').trim();
@@ -514,8 +603,16 @@ const addRecruiterDirect = async (req, res) => {
     const [existingUser, organization, team, recruiterCount] = await Promise.all([
       User.findOne({ email }).lean(),
       Organization.findById(req.organizationId).select('name').lean(),
-      teamId ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true }).select('_id name').lean() : null,
-      User.countDocuments({ role: 'recruiter', organizationId: req.organizationId, isActive: { $ne: false } })
+      teamId
+        ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true })
+            .select('_id name')
+            .lean()
+        : null,
+      User.countDocuments({
+        role: 'recruiter',
+        organizationId: req.organizationId,
+        isActive: { $ne: false }
+      })
     ]);
 
     if (!organization) {
@@ -526,18 +623,29 @@ const addRecruiterDirect = async (req, res) => {
       return res.status(404).json({ message: 'Team not found in this organization.' });
     }
 
-    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
-      return res.status(403).json({ message: 'This email is already assigned to another organization.' });
+    if (
+      existingUser?.organizationId &&
+      String(existingUser.organizationId) !== String(req.organizationId)
+    ) {
+      return res
+        .status(403)
+        .json({ message: 'This email is already assigned to another organization.' });
     }
 
-    if ((!existingUser || String(existingUser.organizationId || '') === String(req.organizationId)) &&
-        recruiterCount >= Number(organizationSettings.recruiterLimitPerOrg || 5)) {
-      return res.status(400).json({ message: `Recruiter limit (${organizationSettings.recruiterLimitPerOrg}) reached for this organization.` });
+    if (
+      (!existingUser || String(existingUser.organizationId || '') === String(req.organizationId)) &&
+      recruiterCount >= Number(organizationSettings.recruiterLimitPerOrg || 5)
+    ) {
+      return res.status(400).json({
+        message: `Recruiter limit (${organizationSettings.recruiterLimitPerOrg}) reached for this organization.`
+      });
     }
 
     const restrictedRole = String(existingUser?.role || '').toLowerCase();
     if (restrictedRole === 'admin' || restrictedRole === 'super_admin') {
-      return res.status(409).json({ message: 'This email is already linked to a restricted account role.' });
+      return res
+        .status(409)
+        .json({ message: 'This email is already linked to a restricted account role.' });
     }
 
     const recruiter = await upsertDirectRecruiterRecord({
@@ -556,7 +664,9 @@ const addRecruiterDirect = async (req, res) => {
     });
 
     const createdRecruiter = await User.findById(recruiter._id)
-      .select('_id name email role organizationId githubUsername linkedin phoneNumber isActive jobTitle bio createdAt')
+      .select(
+        '_id name email role organizationId githubUsername linkedin phoneNumber isActive jobTitle bio createdAt'
+      )
       .lean();
 
     return res.status(201).json({
@@ -594,7 +704,9 @@ const updateRecruiter = async (req, res) => {
     }
 
     if (nextEmail !== recruiter.email) {
-      const emailOwner = await User.findOne({ email: nextEmail, _id: { $ne: recruiter._id } }).select('_id').lean();
+      const emailOwner = await User.findOne({ email: nextEmail, _id: { $ne: recruiter._id } })
+        .select('_id')
+        .lean();
       if (emailOwner) {
         return res.status(409).json({ message: 'Another account already uses this email.' });
       }
@@ -738,7 +850,9 @@ const resendInvitation = async (req, res) => {
 
     const organization = await Organization.findById(req.organizationId).select('name').lean();
     const frontendBase = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
-    const invitationLink = frontendBase ? `${frontendBase}/invitations/accept/${invitation.token}` : `/invitations/accept/${invitation.token}`;
+    const invitationLink = frontendBase
+      ? `${frontendBase}/invitations/accept/${invitation.token}`
+      : `/invitations/accept/${invitation.token}`;
     const emailResult = await sendRecruiterInvitationEmail({
       to: invitation.email,
       inviteeName: invitation.name,

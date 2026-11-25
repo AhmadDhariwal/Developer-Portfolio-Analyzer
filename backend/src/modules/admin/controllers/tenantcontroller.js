@@ -1004,7 +1004,10 @@ const getTeamAnalytics = async (req, res) => {
       Analysis.find({ userId: { $in: userIds } }).lean(),
       Job.find({ teamId: team._id, status: 'open', archivedAt: null }).lean(),
       RecruiterMatch.find({ teamId: team._id }).sort({ updatedAt: -1 }).limit(100).lean(),
-      RecruiterShortlist.find({ teamId: team._id }).sort({ updatedAt: -1 }).limit(100).lean()
+      RecruiterShortlist.find({ teamId: team._id, applicationId: null })
+        .sort({ updatedAt: -1 })
+        .limit(100)
+        .lean()
     ]);
 
     let totalRepos = 0;

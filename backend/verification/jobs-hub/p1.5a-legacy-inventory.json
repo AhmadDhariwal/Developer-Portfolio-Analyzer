@@ -1,0 +1,1165 @@
+{
+  "phase": "P1.5A",
+  "classes": {
+    "A": "Actively required",
+    "B": "Compatibility dependency",
+    "C": "Deprecation candidate",
+    "D": "Proven unused internally / absent paths",
+    "E": "External consumer status unknown"
+  },
+  "searchScope": {
+    "filesScanned": 1455,
+    "roots": [
+      "frontend/src",
+      "backend/src",
+      "backend/scripts",
+      "backend/index.js"
+    ],
+    "coverage": [
+      "Angular routes/components/services including string property references",
+      "backend mounts/controllers/services",
+      "static imports and dynamic account-deletion model loaders",
+      "collection names and model.collection joins",
+      "workers and schedulers (storage cleanup worker -> account deletion)",
+      "maintenance scripts",
+      "tests and verification scripts",
+      "documented/exposed API contracts; external use not asserted"
+    ]
+  },
+  "items": [
+    {
+      "item": "Legacy /api/recruiter/* routes and recruiter.routes.js",
+      "class": "B",
+      "paths": [
+        "backend/index.js",
+        "backend/src/modules/recruiter/routes/recruiter.routes.js",
+        "backend/src/modules/recruiter/controllers/matching/index.js"
+      ],
+      "references": [
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 632,
+          "text": "return this.http.get(`${this.baseUrl}/recruiter/dashboard`);"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 654,
+          "text": "? `${this.baseUrl}/recruiter/candidates?${suffix}`"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 655,
+          "text": ": `${this.baseUrl}/recruiter/candidates`;"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 660,
+          "text": "return this.http.get(`${this.baseUrl}/recruiter/candidate/${encodeURIComponent(candidateId)}`);"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 664,
+          "text": "return this.http.get(`${this.baseUrl}/recruiter/jobs`);"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 668,
+          "text": "return this.http.post(`${this.baseUrl}/recruiter/job`, payload);"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 672,
+          "text": "return this.http.put(`${this.baseUrl}/recruiter/job/${encodeURIComponent(jobId)}`, payload);"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 676,
+          "text": "return this.http.delete(`${this.baseUrl}/recruiter/job/${encodeURIComponent(jobId)}`);"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 680,
+          "text": "return this.http.post(`${this.baseUrl}/recruiter/match`, payload);"
+        },
+        {
+          "path": "frontend/src/app/shared/services/api.service.ts",
+          "line": 689,
+          "text": "return this.http.post(`${this.baseUrl}/recruiter/ai-rank`, payload);"
+        },
+        {
+          "path": "frontend/src/app/shared/services/auth.service.ts",
+          "line": 567,
+          "text": "return '/app/recruiter/dashboard';"
+        },
+        {
+          "path": "frontend/src/app/shared/utils/notification-navigation.spec.ts",
+          "line": 20,
+          "text": "expect(notificationTarget(notice({ target: '/app/recruiter/jobs' }), 'recruiter')).toBe("
+        },
+        {
+          "path": "frontend/src/app/shared/utils/notification-navigation.spec.ts",
+          "line": 21,
+          "text": "'/app/recruiter/jobs',"
+        },
+        {
+          "path": "frontend/src/app/shared/utils/notification-navigation.spec.ts",
+          "line": 23,
+          "text": "expect(notificationTarget(notice({ target: '/app/recruiter/jobs' }), 'developer')).toBe("
+        },
+        {
+          "path": "frontend/src/app/shared/utils/notification-navigation.ts",
+          "line": 22,
+          "text": "if (target === '/app/recruiter/jobs') return role === 'recruiter' ? target : '/app/notifications';"
+        },
+        {
+          "path": "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+          "line": 117,
+          "text": "expect(fixture.nativeElement.querySelector('a[href=\"/app/recruiter/jobs/job-1\"]')).toBeTruthy();"
+        },
+        {
+          "path": "frontend/src/app/shared/components/direct-applications/job-applicants.component.html",
+          "line": 13,
+          "text": "<a class=\"da-btn da-btn--secondary da-btn--sm\" [routerLink]=\"['/app/recruiter/jobs', jobId]\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/recruiter-components.spec.ts",
+          "line": 186,
+          "text": "component.fallbackRoute = '/app/recruiter/jobs';"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/recruiter-components.spec.ts",
+          "line": 188,
+          "text": "expect(navSpy).toHaveBeenCalledWith('/app/recruiter/jobs');"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-pages.spec.ts",
+          "line": 276,
+          "text": "component.openRoute('/app/recruiter/jobs');"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-pages.spec.ts",
+          "line": 277,
+          "text": "expect(navSpy).toHaveBeenCalledWith(['/app/recruiter/jobs']);"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/candidate-details/candidate-details.component.html",
+          "line": 4,
+          "text": "fallbackRoute=\"/app/recruiter/candidates\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/candidates/candidates.component.ts",
+          "line": 259,
+          "text": "this.router.navigate(['/app/recruiter/candidates', id]);"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+          "line": 3,
+          "text": "<app-recruiter-back-button fallbackRoute=\"/app/recruiter/jobs\" label=\"Back to Jobs\" />"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+          "line": 57,
+          "text": "[routerLink]=\"['/app/recruiter/matches']\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+          "line": 127,
+          "text": "[routerLink]=\"['/app/recruiter/matches']\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/job-details/job-details.component.html",
+          "line": 150,
+          "text": "[routerLink]=\"['/app/recruiter/candidates', m.candidateId]\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/job-details/job-details.component.ts",
+          "line": 116,
+          "text": "this.router.navigate(['/app/recruiter/matches'], {"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/jobs/jobs.component.ts",
+          "line": 261,
+          "text": "this.router.navigate(['/app/recruiter/jobs', job._id]);"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 25,
+          "text": "<button type=\"button\" class=\"btn-primary\" (click)=\"openRoute('/app/recruiter/jobs')\">"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 176,
+          "text": "(click)=\"openRoute('/app/recruiter/candidates')\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 184,
+          "text": "<button type=\"button\" class=\"quick-action\" (click)=\"openRoute('/app/recruiter/jobs')\">"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 194,
+          "text": "(click)=\"openRoute('/app/recruiter/matches')\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 282,
+          "text": "<a routerLink=\"/app/recruiter/candidates\" class=\"card-link\">View all &rarr;</a>"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 289,
+          "text": "(click)=\"openRoute('/app/recruiter/candidates/' + candidateIdFor(candidate))\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 312,
+          "text": "<a routerLink=\"/app/recruiter/jobs\" class=\"card-link\">Manage &rarr;</a>"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 319,
+          "text": "(click)=\"openRoute('/app/recruiter/jobs/' + job._id)\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 336,
+          "text": "<a routerLink=\"/app/recruiter/matches\" class=\"card-link\">Matches &rarr;</a>"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 345,
+          "text": "'/app/recruiter/matches',"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.html",
+          "line": 16,
+          "text": "<a class=\"btn-secondary\" routerLink=\"/app/recruiter/candidates\">Browse Candidates</a>"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/activity-timeline/activity-timeline.component.html",
+          "line": 29,
+          "text": "[routerLink]=\"['/app/recruiter/candidates', candidateId(item)]\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/activity-timeline/activity-timeline.component.html",
+          "line": 40,
+          "text": "[routerLink]=\"['/app/recruiter/jobs', jobId(item)]\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/comparison-table/comparison-table.component.html",
+          "line": 12,
+          "text": "[routerLink]=\"['/app/recruiter/candidates', item.id]\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/match-card/match-card.component.html",
+          "line": 18,
+          "text": "[routerLink]=\"['/app/recruiter/candidates', candidateRouteId]\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/match-card/match-card.component.html",
+          "line": 29,
+          "text": "[routerLink]=\"['/app/recruiter/jobs', jobRouteId]\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/recruiter-back-button/recruiter-back-button.component.ts",
+          "line": 12,
+          "text": "@Input() fallbackRoute = '/app/recruiter/dashboard';"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+          "line": 9,
+          "text": "[routerLink]=\"['/app/recruiter/candidates', candidateRouteId]\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+          "line": 18,
+          "text": "<a *ngIf=\"jobRouteId; else plainJob\" [routerLink]=\"['/app/recruiter/jobs', jobRouteId]\">"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+          "line": 78,
+          "text": "[routerLink]=\"['/app/recruiter/jobs', jobRouteId]\""
+        },
+        {
+          "path": "frontend/src/app/core/guards/recruiter-guards.spec.ts",
+          "line": 34,
+          "text": "user?.role === 'recruiter' ? '/app/recruiter/dashboard' : '/app/dashboard',"
+        },
+        {
+          "path": "frontend/src/app/core/guards/recruiter-guards.spec.ts",
+          "line": 54,
+          "text": "expect(await runAuthGuard('/app/recruiter/jobs')).toBe(true);"
+        },
+        {
+          "path": "frontend/src/app/core/guards/recruiter-guards.spec.ts",
+          "line": 65,
+          "text": "const redirected = await runAuthGuard('/app/recruiter/matches');"
+        },
+        {
+          "path": "frontend/src/app/core/guards/recruiter-guards.spec.ts",
+          "line": 76,
+          "text": "{ url: '/app/recruiter/dashboard' } as RouterStateSnapshot,"
+        },
+        {
+          "path": "frontend/src/app/core/guards/recruiter-guards.spec.ts",
+          "line": 85,
+          "text": "{ url: '/app/recruiter/dashboard' } as RouterStateSnapshot,"
+        },
+        {
+          "path": "frontend/src/app/core/layouts/main-layout/main-layout.component.spec.ts",
+          "line": 45,
+          "text": "urlSpy.mockReturnValue('/app/recruiter/dashboard');"
+        },
+        {
+          "path": "frontend/src/app/core/layouts/main-layout/main-layout.component.spec.ts",
+          "line": 53,
+          "text": "urlSpy.mockReturnValue('/app/recruiter/dashboard');"
+        },
+        {
+          "path": "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.ts",
+          "line": 185,
+          "text": "return this.isRecruiter ? '/app/recruiter/dashboard' : '/app/dashboard';"
+        },
+        {
+          "path": "frontend/src/app/core/layouts/main-layout/sidebar/sidebar.component.ts",
+          "line": 441,
+          "text": "route: '/app/recruiter/dashboard',"
+        },
+        {
+          "path": "frontend/src/app/core/layouts/main-layout/sidebar/sidebar.component.ts",
+          "line": 455,
+          "text": "route: '/app/recruiter/candidates',"
+        },
+        {
+          "path": "frontend/src/app/core/layouts/main-layout/sidebar/sidebar.component.ts",
+          "line": 462,
+          "text": "route: '/app/recruiter/jobs',"
+        },
+        {
+          "path": "frontend/src/app/core/layouts/main-layout/sidebar/sidebar.component.ts",
+          "line": 469,
+          "text": "route: '/app/recruiter/matches',"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 42,
+          "text": "const recruiterRoutes = require('../modules/recruiter/routes/recruiter.routes');"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 527,
+          "text": "app.use('/api/recruiter', recruiterRoutes);"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 577,
+          "text": "await page.goto(`${baseUrl}/app/recruiter/jobs`, { waitUntil: 'domcontentloaded' });"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 587,
+          "text": "// Interactive Flow C: Create Job with Empty Description on /app/recruiter/jobs"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 588,
+          "text": "await page.goto(`${baseUrl}/app/recruiter/jobs`, { waitUntil: 'domcontentloaded' });"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 609,
+          "text": "await page.goto(`${baseUrl}/app/recruiter/candidates`, { waitUntil: 'domcontentloaded' });"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 628,
+          "text": "{ name: 'dashboard', path: '/app/recruiter/dashboard' },"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 630,
+          "text": "{ name: 'candidates', path: '/app/recruiter/candidates' },"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 631,
+          "text": "{ name: 'candidate-details', path: `/app/recruiter/candidates/${devs[0]._id}` },"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 632,
+          "text": "{ name: 'jobs', path: '/app/recruiter/jobs' },"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 633,
+          "text": "{ name: 'job-details', path: `/app/recruiter/jobs/${job1._id}` },"
+        },
+        {
+          "path": "backend/src/scripts/verifyRecruiterBrowser.js",
+          "line": 634,
+          "text": "{ name: 'matches', path: '/app/recruiter/matches' },"
+        },
+        {
+          "path": "backend/src/tests/jobs/jobApplications.integration.test.js",
+          "line": 464,
+          "text": "'/app/recruiter/jobs'"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 37,
+          "text": "const legacy = require('../../modules/recruiter/routes/recruiter.routes');"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 71,
+          "text": "app.use('/api/recruiter', legacy);"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 574,
+          "text": "// Legacy 9 routes (/api/recruiter/*)"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 576,
+          "text": "(await apiCall(baseA, '/api/recruiter/dashboard', { token: tokenA() })).status,"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 580,
+          "text": "(await apiCall(baseB, '/api/recruiter/candidates', { token: tokenA() })).status,"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 584,
+          "text": "(await apiCall(baseA, `/api/recruiter/candidate/${primaryCandId}`, { token: tokenA() }))"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 588,
+          "text": "const legCreate = await apiCall(baseB, '/api/recruiter/job', {"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 605,
+          "text": "(await apiCall(baseA, '/api/recruiter/jobs', { token: tokenA() })).status,"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 610,
+          "text": "await apiCall(baseB, `/api/recruiter/job/${legJobId}`, {"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 620,
+          "text": "await apiCall(baseA, '/api/recruiter/match', {"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 630,
+          "text": "await apiCall(baseB, '/api/recruiter/ai-rank', {"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 640,
+          "text": "await apiCall(baseA, `/api/recruiter/job/${legJobId}`, {"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 737,
+          "text": "(await apiCall(baseB, '/api/recruiter/dashboard', { token: tokenA() })).status,"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterHttp.integration.test.js",
+          "line": 27,
+          "text": "const legacy = require('../../modules/recruiter/routes/recruiter.routes');"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterHttp.integration.test.js",
+          "line": 54,
+          "text": "app.use('/api/recruiter', legacy);"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterHttp.integration.test.js",
+          "line": 110,
+          "text": ".replace(/^\\/legacy\\//, '/api/recruiter/');"
+        },
+        {
+          "path": "backend/src/modules/auth/authcontroller.js",
+          "line": 824,
+          "text": "? '/app/recruiter/dashboard'"
+        },
+        {
+          "path": "backend/src/modules/recruiter/controllers/matching/dashboardController.js",
+          "line": 6,
+          "text": "* GET /api/recruiter/dashboard"
+        },
+        {
+          "path": "backend/src/modules/notifications/services/notificationService.js",
+          "line": 47,
+          "text": "'/app/recruiter/jobs'"
+        },
+        {
+          "path": "backend/src/modules/jobs/services/jobApplicationService.js",
+          "line": 296,
+          "text": "meta: { target: recruiterEvent ? '/app/recruiter/jobs' : '/app/jobs?view=internal' }"
+        },
+        {
+          "path": "backend/src/modules/admin/services/adminConsoleService.js",
+          "line": 1036,
+          "text": "'aiRankCalls = /api/recruiter/ai-rank POST count in selected date range',"
+        },
+        {
+          "path": "backend/scripts/verify-candidate-discovery.cjs",
+          "line": 244,
+          "text": "await managerPage.goto(`${origin}/app/recruiter/matches?jobId=${job._id}`);"
+        },
+        {
+          "path": "backend/scripts/verify-candidate-discovery.cjs",
+          "line": 253,
+          "text": "await memberPage.goto(`${origin}/app/recruiter/matches?jobId=${job._id}`);"
+        },
+        {
+          "path": "backend/scripts/verify-candidate-discovery.cjs",
+          "line": 262,
+          "text": "await memberPage.goto(`${origin}/app/recruiter/jobs/${job._id}`);"
+        },
+        {
+          "path": "backend/scripts/verify-candidate-discovery.cjs",
+          "line": 293,
+          "text": "await memberPage.goto(`${origin}/app/recruiter/candidates`);"
+        },
+        {
+          "path": "backend/index.js",
+          "line": 38,
+          "text": "const recruiterroute = require('./src/modules/recruiter/routes/recruiter.routes');"
+        },
+        {
+          "path": "backend/index.js",
+          "line": 228,
+          "text": "app.use('/api/recruiter', recruiterroute);"
+        }
+      ],
+      "reason": "Mounted authenticated tenant-scoped runtime contract; old dashboard/candidate/job/match controllers delegate existing shared services. Compatibility HTTP, acceptance and browser scripts exercise it. External consumers unknown; absence of Angular callers is not retirement evidence."
+    },
+    {
+      "item": "Candidate.js / candidates collection",
+      "class": "A",
+      "references": [
+        {
+          "path": "backend/src/scripts/repairRecruiterLegacyRecords.js",
+          "line": 13,
+          "text": "const Candidate = require('../modules/recruiter/models/Candidate');"
+        },
+        {
+          "path": "backend/src/scripts/repairRecruiterLegacyRecords.js",
+          "line": 43,
+          "text": "const legacyAliasDocs = await Candidate.find({ userId: { $ne: null } })"
+        },
+        {
+          "path": "backend/src/tests/fixtures/recruiterAnalyticsFixture.js",
+          "line": 8,
+          "text": "const Candidate = require('../../modules/recruiter/models/Candidate');"
+        },
+        {
+          "path": "backend/src/tests/notifications/notificationsProduction.test.js",
+          "line": 767,
+          "text": "Candidate: '../../modules/recruiter/models/Candidate',"
+        },
+        {
+          "path": "backend/src/tests/recruiter/applicationShortlists.integration.test.js",
+          "line": 18,
+          "text": "const Candidate = require('../../modules/recruiter/models/Candidate');"
+        },
+        {
+          "path": "backend/src/tests/recruiter/applicationShortlists.integration.test.js",
+          "line": 357,
+          "text": "const alias = await Candidate.create({"
+        },
+        {
+          "path": "backend/src/tests/recruiter/candidateAssessment.test.js",
+          "line": 9,
+          "text": "const Candidate = require('../../modules/recruiter/models/Candidate');"
+        },
+        {
+          "path": "backend/src/tests/recruiter/candidateDiscovery.integration.test.js",
+          "line": 14,
+          "text": "const Candidate = require('../../modules/recruiter/models/Candidate');"
+        },
+        {
+          "path": "backend/src/tests/recruiter/candidateDiscovery.integration.test.js",
+          "line": 197,
+          "text": "await Candidate.collection.insertMany("
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 29,
+          "text": "const Candidate = require('../../modules/recruiter/models/Candidate');"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 808,
+          "text": "const legacyCandThree = await Candidate.create({"
+        },
+        {
+          "path": "backend/src/tests/recruiter/recruiterAcceptance.integration.test.js",
+          "line": 815,
+          "text": "const legacyCandFourConflict = await Candidate.create({"
+        },
+        {
+          "path": "backend/src/modules/recruiter/utils/hub/candidateDiscoveryPipeline.js",
+          "line": 7,
+          "text": "const Candidate = require('../../models/Candidate');"
+        },
+        {
+          "path": "backend/src/modules/recruiter/utils/hub/candidateDiscoveryPipeline.js",
+          "line": 259,
+          "text": "from: Candidate.collection.name,"
+        },
+        {
+          "path": "backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js",
+          "line": 3,
+          "text": "const Candidate = require('../../models/Candidate');"
+        },
+        {
+          "path": "backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js",
+          "line": 101,
+          "text": "const aliases = await Candidate.find({ userId: { $in: [...eligibleIds] }, isActive: true })"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+          "line": 3,
+          "text": "const Candidate = require('../../models/Candidate');"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+          "line": 167,
+          "text": "const aliases = await Candidate.find({ userId: application.applicantId })"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/hub/shortlistService.js",
+          "line": 3,
+          "text": "const Candidate = require('../../models/Candidate');"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/hub/shortlistService.js",
+          "line": 23,
+          "text": "const legacyAliases = await Candidate.find({"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/matching/matchingService.js",
+          "line": 8,
+          "text": "const Candidate = require('../../models/Candidate');"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/matching/matchingService.js",
+          "line": 558,
+          "text": "? await Candidate.find({ isActive: true, userId: { $in: hydratedUserIds } })"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/matching/matchingService.js",
+          "line": 576,
+          "text": "const aliases = await Candidate.find({ _id: { $in: requestedIds }, isActive: true })"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/matching/matchingService.js",
+          "line": 597,
+          "text": "Candidate.find({ userId: { $in: users.map((user) => user._id) }, isActive: true })"
+        },
+        {
+          "path": "backend/src/modules/auth/services/accountDeletionService.js",
+          "line": 75,
+          "text": "Candidate: () => require('../../recruiter/models/Candidate'),"
+        },
+        {
+          "path": "backend/src/modules/auth/services/accountDeletionService.js",
+          "line": 113,
+          "text": "await require('../../recruiter/models/Candidate').deleteMany({ userId: owner }, { session });"
+        }
+      ],
+      "reason": "Active alias/source hydration for matching and public discovery; live consent fences; canonical/legacy evaluation conflict detection; maintenance repair and account deletion. Removing it changes scoring, aliases, consent and historical data cleanup."
+    },
+    {
+      "item": "Recruiter.js / recruiters collection",
+      "class": "B",
+      "references": [
+        {
+          "path": "frontend/src/app/features/super-admin/analytics/sa-analytics.component.ts",
+          "line": 45,
+          "text": "{ value: 'recruiter', label: 'Recruiter' },"
+        },
+        {
+          "path": "frontend/src/app/features/super-admin/recruiters/sa-recruiters.component.ts",
+          "line": 37,
+          "text": "selectedRecruiter: any = null;"
+        },
+        {
+          "path": "frontend/src/app/features/super-admin/shared/components/sa-user-form-modal/sa-user-form-modal.component.ts",
+          "line": 116,
+          "text": "const label = this.role === 'admin' ? 'Admin' : this.role === 'recruiter' ? 'Recruiter' : 'Developer';"
+        },
+        {
+          "path": "frontend/src/app/features/super-admin/pages/activity-logs/activity-logs.component.ts",
+          "line": 126,
+          "text": "{ value: 'recruiter', label: 'Recruiter' },"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 10,
+          "text": "<h1>Welcome back, {{ dashboard.profile.name || 'Recruiter' }}</h1>"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.ts",
+          "line": 239,
+          "text": "name: String(user?.name || '').trim() || 'Recruiter',"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-profile/recruiter-profile.component.html",
+          "line": 13,
+          "text": "[alt]=\"profile?.name || 'Recruiter'\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-profile/recruiter-profile.component.ts",
+          "line": 31,
+          "text": "readonly recruiterRoleLabel = 'Recruiter';"
+        },
+        {
+          "path": "frontend/src/app/features/admin/pages/admin-console/admin-console.component.ts",
+          "line": 66,
+          "text": "selectedRecruiter: AdminRecruiter | null = null;"
+        },
+        {
+          "path": "frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.ts",
+          "line": 190,
+          "text": "['Recruiter', 'Email', 'Status', 'Team Id', 'Total Jobs', 'Recent Jobs', 'AI Calls', 'Candidates', 'Hiring Success %', 'Last Active', 'Score'],"
+        },
+        {
+          "path": "frontend/src/app/features/admin/pages/admin-performance/admin-performance.service.ts",
+          "line": 92,
+          "text": "analysesByRecruiter: RecruiterAnalysisUsage[];"
+        },
+        {
+          "path": "frontend/src/app/features/admin/pages/admin-performance/admin-performance.service.ts",
+          "line": 133,
+          "text": "topRecruiter: string | null;"
+        },
+        {
+          "path": "frontend/src/app/core/guards/recruiter-guards.spec.ts",
+          "line": 28,
+          "text": "currentUser = { _id: 'r1', role: 'recruiter', name: 'Recruiter' };"
+        },
+        {
+          "path": "backend/src/tests/fixtures/recruiterAnalyticsFixture.js",
+          "line": 45,
+          "text": "name: 'Recruiter',"
+        },
+        {
+          "path": "backend/src/modules/recruiter/models/Recruiter.js",
+          "line": 26,
+          "text": "module.exports = mongoose.model('Recruiter', recruiterSchema);"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/hub/candidateAnalyticsService.js",
+          "line": 16,
+          "text": "{ organizationId, recruiterId, sessionRevision, requireRecruiter: true },"
+        },
+        {
+          "path": "backend/src/modules/recruiter/services/hub/recruiterDashboardService.js",
+          "line": 39,
+          "text": "name: req.user?.name || 'Recruiter',"
+        },
+        {
+          "path": "backend/src/modules/public-portfolio/services/publicPortfolioContactService.js",
+          "line": 44,
+          "text": "text: `Recruiter: ${String(sender.name || '').slice(0, 120)}\\nReply to: ${sender.email}\\n\\n${message.trim()}`"
+        },
+        {
+          "path": "backend/src/modules/auth/services/accountDeletionService.js",
+          "line": 30,
+          "text": "'Recruiter',"
+        },
+        {
+          "path": "backend/src/modules/auth/services/accountDeletionService.js",
+          "line": 60,
+          "text": "Recruiter: () => require('../../recruiter/models/Recruiter'),"
+        },
+        {
+          "path": "backend/src/modules/admin/services/adminConsoleService.js",
+          "line": 471,
+          "text": "actorName: recruiter?.name || recruiter?.email || 'Recruiter'"
+        },
+        {
+          "path": "backend/src/modules/admin/services/adminConsoleService.js",
+          "line": 1012,
+          "text": "analysesByRecruiter: recruiterMetrics.map((recruiterMetric) => ({"
+        },
+        {
+          "path": "backend/src/modules/admin/services/adminConsoleService.js",
+          "line": 1027,
+          "text": "actorName: recruiter?.name || recruiter?.email || 'Recruiter'"
+        },
+        {
+          "path": "backend/src/modules/admin/services/adminConsoleService.js",
+          "line": 1097,
+          "text": "topRecruiter: recruiterMetrics[0]?.name || null,"
+        },
+        {
+          "path": "backend/src/modules/admin/services/teamAnalyticsService.js",
+          "line": 211,
+          "text": "actorName: recruiter?.name || recruiter?.email || 'Recruiter'"
+        }
+      ],
+      "reason": "No current profile writer found; Hub uses User.recruiterDetails and recruiterPreferences. Still registered dynamically in account deletion and referenced by production deletion assertions. Retained historical collection cleanup remains required."
+    },
+    {
+      "item": "dashboard/models/stats.js / stats collection",
+      "class": "B",
+      "references": [
+        {
+          "path": "frontend/src/app/features/super-admin/pages/team-management/team-management.component.html",
+          "line": 163,
+          "text": "<div *ngIf=\"teamAnalytics\" class=\"stats\">"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html",
+          "line": 32,
+          "text": "variant=\"stats\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/pages/recruiter-dashboard/recruiter-dashboard.component.html",
+          "line": 41,
+          "text": "variant=\"stats\""
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/loader/loader.component.html",
+          "line": 8,
+          "text": "<div class=\"loader__stats\" *ngSwitchCase=\"'stats'\">"
+        },
+        {
+          "path": "frontend/src/app/features/recruiter/components/loader/loader.component.ts",
+          "line": 10,
+          "text": "| 'stats'"
+        },
+        {
+          "path": "backend/src/tests/fixtures/integrationScalabilityWorker.js",
+          "line": 78,
+          "text": "} else if (message.action === 'stats') {"
+        },
+        {
+          "path": "backend/src/tests/integrations/integrationPublicSnapshot.test.js",
+          "line": 367,
+          "text": "evidence.baseline = await baseline.request('stats');"
+        },
+        {
+          "path": "backend/src/tests/integrations/integrationPublicSnapshot.test.js",
+          "line": 388,
+          "text": "const interim = await Promise.all([a.request('stats'), b.request('stats')]);"
+        },
+        {
+          "path": "backend/src/tests/integrations/integrationPublicSnapshot.test.js",
+          "line": 398,
+          "text": "const workerStats = await Promise.all([a.request('stats'), b.request('stats')]);"
+        },
+        {
+          "path": "backend/src/tests/integrations/integrationPublicSnapshot.test.js",
+          "line": 444,
+          "text": "assert.equal((await recovered.request('stats')).calls, 0);"
+        },
+        {
+          "path": "backend/src/modules/dashboard/models/stats.js",
+          "line": 20,
+          "text": "module.exports = mongoose.model('Stats', statsSchema);"
+        },
+        {
+          "path": "backend/src/modules/auth/services/accountDeletionService.js",
+          "line": 18,
+          "text": "'stats',"
+        },
+        {
+          "path": "backend/src/modules/auth/services/accountDeletionService.js",
+          "line": 47,
+          "text": "stats: () => require('../../dashboard/models/stats'),"
+        }
+      ],
+      "reason": "No current dashboard reader/writer found. Dynamic account-deletion loader still removes legacy owned records; deleting the model would break that path or abandon historical data."
+    },
+    {
+      "item": "Legacy Angular ApiService methods",
+      "class": "C",
+      "methods": [
+        {
+          "name": "getRecruiterDashboard",
+          "internalCallersOutsideApiService": []
+        },
+        {
+          "name": "getRecruiterCandidates",
+          "internalCallersOutsideApiService": []
+        },
+        {
+          "name": "getRecruiterCandidateById",
+          "internalCallersOutsideApiService": []
+        },
+        {
+          "name": "getRecruiterJobs",
+          "internalCallersOutsideApiService": []
+        },
+        {
+          "name": "createRecruiterJob",
+          "internalCallersOutsideApiService": []
+        },
+        {
+          "name": "updateRecruiterJob",
+          "internalCallersOutsideApiService": []
+        },
+        {
+          "name": "deleteRecruiterJob",
+          "internalCallersOutsideApiService": []
+        },
+        {
+          "name": "matchRecruiterCandidates",
+          "internalCallersOutsideApiService": []
+        },
+        {
+          "name": "aiRankCandidates",
+          "internalCallersOutsideApiService": []
+        }
+      ],
+      "reason": "All nine obsolete wrapper methods remain exposed but no internal Angular callers found, including string/property references. Existing Hub domain services call /recruiter-hub methods. Candidate for separately approved wrapper retirement after integration/consumer notice."
+    },
+    {
+      "item": "Admin recruiter CRUD and Admin Console/tenant team surfaces",
+      "class": "A",
+      "paths": [
+        "backend/src/modules/admin/routes/admin.routes.js",
+        "backend/src/modules/admin/routes/adminConsole.routes.js",
+        "backend/src/modules/admin/routes/tenant.routes.js",
+        "frontend/src/app/features/admin/admin-routing.module.ts",
+        "frontend/src/app/features/admin/services/admin-hiring.service.ts",
+        "frontend/src/app/features/admin/pages/admin-console/admin-console.service.ts"
+      ],
+      "reason": "Different active role/tenant management contracts and metrics, not redundant Recruiter ownership permissions. Old POST /recruiter and POST /invite-recruiter aliases overlap but external use remains unknown. Consolidation belongs to later approved Admin/P2 work."
+    },
+    {
+      "item": "backend/src/services and backend/src/jobSources directories",
+      "class": "D",
+      "directories": [
+        {
+          "path": "backend/src/services",
+          "exists": false,
+          "files": []
+        },
+        {
+          "path": "backend/src/jobSources",
+          "exists": false,
+          "files": []
+        }
+      ],
+      "reason": "Neither path currently exists in this checkout. No source deletion or cleanup action is available."
+    },
+    {
+      "item": "Public/external consumer status",
+      "class": "E",
+      "reason": "Repository searches cannot establish deployed SDK clients, bookmarks, scripts, webhooks or third-party use. No production traffic, databases or deployments inspected. Require gateway/access-log evidence and owner sign-off/deprecation period before retiring any mounted API."
+    }
+  ],
+  "dynamicAndWorkerReferences": [
+    {
+      "path": "backend/src/tests/core/b2Storage.test.js",
+      "line": 205,
+      "text": "const deletion = require(\"../../modules/auth/services/accountDeletionService\");"
+    },
+    {
+      "path": "backend/src/tests/core/b2Storage.test.js",
+      "line": 228,
+      "text": "await deletion.resolveOwnedModel(name).createCollection();"
+    },
+    {
+      "path": "backend/src/tests/core/b2Storage.test.js",
+      "line": 871,
+      "text": "await deletion.processCleanup(racing._id);"
+    },
+    {
+      "path": "backend/src/tests/core/b2Storage.test.js",
+      "line": 912,
+      "text": "await deletion.processCleanup(user._id);"
+    },
+    {
+      "path": "backend/src/tests/core/storageSecurityFinal.test.js",
+      "line": 40,
+      "text": "'./accountDeletionService': {"
+    },
+    {
+      "path": "backend/src/tests/core/storageSecurityFinal.test.js",
+      "line": 41,
+      "text": "processCleanup: async (id, options) => {"
+    },
+    {
+      "path": "backend/src/tests/core/storageSecurityFinal.test.js",
+      "line": 197,
+      "text": "'./accountDeletionService': {"
+    },
+    {
+      "path": "backend/src/tests/core/storageSecurityFinal.test.js",
+      "line": 198,
+      "text": "processCleanup: async (id) => {"
+    },
+    {
+      "path": "backend/src/tests/notifications/notificationsProduction.test.js",
+      "line": 737,
+      "text": "const deletion = require('../../modules/auth/services/accountDeletionService');"
+    },
+    {
+      "path": "backend/src/tests/notifications/notificationsProduction.test.js",
+      "line": 782,
+      "text": ": deletion.resolveOwnedModel(name);"
+    },
+    {
+      "path": "backend/src/tests/profile/profileSettingsProduction.test.js",
+      "line": 211,
+      "text": "const deletion = require('../../modules/auth/services/accountDeletionService');"
+    },
+    {
+      "path": "backend/src/tests/profile/profileSettingsProduction.test.js",
+      "line": 232,
+      "text": "for (const name of new Set(models)) await deletion.resolveOwnedModel(name).createCollection();"
+    },
+    {
+      "path": "backend/src/tests/profile/profileSettingsProduction.test.js",
+      "line": 459,
+      "text": "const Model = deletion.resolveOwnedModel(name);"
+    },
+    {
+      "path": "backend/src/tests/profile/profileSettingsProduction.test.js",
+      "line": 475,
+      "text": "const Model = deletion.resolveOwnedModel(name);"
+    },
+    {
+      "path": "backend/src/tests/profile/profileSettingsProduction.test.js",
+      "line": 487,
+      "text": "await assert.rejects(deletion.processCleanup(owner._id), /Fixture storage outage/);"
+    },
+    {
+      "path": "backend/src/tests/profile/profileSettingsProduction.test.js",
+      "line": 490,
+      "text": "await deletion.processCleanup(owner._id);"
+    },
+    {
+      "path": "backend/src/tests/support/supportAdmission.test.js",
+      "line": 14,
+      "text": "const accountDeletionService = require('../../modules/auth/services/accountDeletionService');"
+    },
+    {
+      "path": "backend/src/tests/support/supportAdmission.test.js",
+      "line": 365,
+      "text": "accountDeletionService.ownedModels.includes(name),"
+    },
+    {
+      "path": "backend/src/modules/profile/profilecontroller.js",
+      "line": 646,
+      "text": "await require('../auth/services/accountDeletionService').deleteAccount(req.user._id);"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 35,
+      "text": "const MODEL_LOADERS = {"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 84,
+      "text": "const resolveOwnedModel = (name) => {"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 85,
+      "text": "const loadModel = MODEL_LOADERS[name];"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 99,
+      "text": "await resolveOwnedModel(name).deleteMany({ profileId: { $in: ids } }, { session });"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 112,
+      "text": "await resolveOwnedModel(name).deleteMany({ userId: owner }, { session });"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 116,
+      "text": "await resolveOwnedModel(name).deleteMany({ _id: owner }, { session });"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 118,
+      "text": "await resolveOwnedModel(name).deleteMany("
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 134,
+      "text": "await processCleanup(owner, { deferObjects: true }).catch(() =>"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 138,
+      "text": "async function processCleanup(owner, { deferObjects = false } = {}) {"
+    },
+    {
+      "path": "backend/src/modules/auth/services/accountDeletionService.js",
+      "line": 177,
+      "text": "module.exports = { deleteAccount, removeOwnedData, processCleanup, ownedModels, resolveOwnedModel };"
+    },
+    {
+      "path": "backend/src/core/storage/storageCleanupWorkerService.js",
+      "line": 3,
+      "text": "const accounts = require('../../modules/auth/services/accountDeletionService');"
+    },
+    {
+      "path": "backend/src/core/storage/storageCleanupWorkerService.js",
+      "line": 35,
+      "text": "await accounts.processCleanup(job._id, { deferObjects: true });"
+    }
+  ],
+  "scheduledTaskConclusion": "No direct Candidate/Recruiter/Stats import found in scheduled producers. Storage cleanup worker dynamically invokes accountDeletionService, which resolves those models; worker registration/shutdown remains required. No worker or schedule modified.",
+  "cleanupProposal": [
+    {
+      "candidate": "Nine legacy frontend ApiService wrappers",
+      "preconditions": [
+        "Confirm no externally distributed client consumers; approve removal scope.",
+        "Retain Hub methods, existing route behavior and test coverage; run TypeScript and recruiter/notification regressions."
+      ],
+      "actionThisPhase": "none"
+    },
+    {
+      "candidate": "Mounted /api/recruiter routes and matching controller adapters",
+      "preconditions": [
+        "Collect authorized external traffic/consumer inventory.",
+        "Publish deprecation plan and replacement parity map, including old response shapes and errors.",
+        "Approve compatibility window/rollback and route removal; retain shared services used by Hub."
+      ],
+      "actionThisPhase": "none"
+    },
+    {
+      "candidate": "Recruiter and Stats compatibility models",
+      "preconditions": [
+        "Inspect historical collection usage under a separately authorized read-only data audit.",
+        "Approve retention and account-deletion compatibility strategy before model retirement."
+      ],
+      "actionThisPhase": "none"
+    },
+    {
+      "candidate": "Admin aliases/duplicate UI surfaces",
+      "preconditions": [
+        "Separate Admin/Super Admin finalization authorization and permissions/API parity review."
+      ],
+      "actionThisPhase": "none"
+    },
+    {
+      "candidate": "Candidate model",
+      "decision": "Not a cleanup candidate: active source/alias and consent dependency."
+    }
+  ],
+  "sourceFilesDeleted": [],
+  "productionDataAccessed": false
+}

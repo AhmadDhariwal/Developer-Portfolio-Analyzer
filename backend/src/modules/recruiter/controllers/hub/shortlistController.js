@@ -14,7 +14,7 @@ const createShortlist = async (req, res) => {
     await AuditLog.create({
       actor: scope.recruiterId,
       organizationId: scope.organizationId,
-      teamId: scope.teamIds[0] || null,
+      teamId: shortlist?.teamId || null,
       action: 'RECRUITER_SHORTLIST_CREATED',
       method: 'POST',
       route: req.originalUrl,
@@ -23,7 +23,8 @@ const createShortlist = async (req, res) => {
         shortlistId: String(shortlist?._id || ''),
         candidateId: String(shortlist?.candidateId || req.body?.candidateId || ''),
         jobId: String(shortlist?.jobId || req.body?.jobId || ''),
-        status: String(shortlist?.status || '')
+        status: String(shortlist?.status || ''),
+        ownerId: String(shortlist?.recruiterId || scope.recruiterId)
       },
       statusCode: 201,
       timestamp: new Date()
@@ -63,7 +64,7 @@ const patchShortlist = async (req, res) => {
     await AuditLog.create({
       actor: scope.recruiterId,
       organizationId: scope.organizationId,
-      teamId: scope.teamIds[0] || null,
+      teamId: shortlist?.teamId || null,
       action: 'RECRUITER_SHORTLIST_UPDATED',
       method: 'PATCH',
       route: req.originalUrl,
@@ -72,7 +73,8 @@ const patchShortlist = async (req, res) => {
         shortlistId: String(shortlist?._id || req.params.id || ''),
         candidateId: String(shortlist?.candidateId || ''),
         jobId: String(shortlist?.jobId || ''),
-        status: String(shortlist?.status || '')
+        status: String(shortlist?.status || ''),
+        ownerId: String(shortlist?.recruiterId || scope.recruiterId)
       },
       statusCode: 200,
       timestamp: new Date()
@@ -95,7 +97,7 @@ const deleteShortlist = async (req, res) => {
     await AuditLog.create({
       actor: scope.recruiterId,
       organizationId: scope.organizationId,
-      teamId: scope.teamIds[0] || null,
+      teamId: shortlist?.teamId || null,
       action: 'RECRUITER_SHORTLIST_REMOVED',
       method: 'DELETE',
       route: req.originalUrl,

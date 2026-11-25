@@ -61,6 +61,7 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
   @Input() emptyMessage = 'No data available yet.';
   @Input() height = 240;
   @Input() valueSuffix = '';
+  @Input() minAxisMax = 10;
   @Input() seriesLabels: [string, string] = ['Supply', 'Demand'];
   @Input() labels: string[] = [];
   @Input() datasets: PerformanceChartDataset[] = [];
@@ -91,7 +92,9 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
       changes['datasets'] ||
       changes['labels'] ||
       changes['mode'] ||
-      changes['tone']
+      changes['tone'] ||
+      changes['minAxisMax'] ||
+      changes['valueSuffix']
     ) {
       this.scheduleChart();
     }
@@ -172,9 +175,21 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
     return this.gaugeCircumference - (this.gaugeValue / 100) * this.gaugeCircumference;
   }
 
+  get effectiveAxisMinMax(): number {
+    if (this.valueSuffix === '%') {
+      return 100;
+    }
+    const configured = Number(this.minAxisMax);
+    return Number.isFinite(configured) && configured >= 1 ? configured : 10;
+  }
+
   get funnelBaseline(): number {
     const first = this.numericValue(this.items[0] || {});
-    return Math.max(first, ...this.items.map((item) => this.numericValue(item)), 1);
+    return Math.max(
+      this.effectiveAxisMinMax,
+      first,
+      ...this.items.map((item) => this.numericValue(item)),
+    );
   }
 
   funnelPercent(item: PerformanceChartItem): number {
@@ -326,9 +341,7 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
           data: {
             labels: this.labels,
             datasets: this.datasets.map((ds, idx) => {
-              const color = ds.tone
-                ? this.resolveToneHex(style, ds.tone)
-                : this.paletteColor(idx);
+              const color = ds.tone ? this.resolveToneHex(style, ds.tone) : this.paletteColor(idx);
               return {
                 label: ds.label,
                 data: ds.values.map((v) => (v === null || v === undefined ? null : Number(v))),
@@ -393,7 +406,7 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
                     },
                     y: {
                       beginAtZero: true,
-                      suggestedMax: 100,
+                      suggestedMax: this.effectiveAxisMinMax,
                       grid: { color: gridColor },
                       ticks: { color: tickColor, font: { family: font, size: 11.5 } },
                     },
@@ -456,6 +469,7 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
               },
               y: {
                 beginAtZero: true,
+                suggestedMax: this.effectiveAxisMinMax,
                 grid: { color: gridColor },
                 ticks: { precision: 0, color: tickColor, font: { family: font, size: 11.5 } },
               },
@@ -500,6 +514,7 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
               },
               y: {
                 beginAtZero: true,
+                suggestedMax: this.effectiveAxisMinMax,
                 grid: { color: gridColor },
                 ticks: { precision: 0, color: tickColor, font: { family: font, size: 11.5 } },
               },
@@ -512,6 +527,7 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
 
       // Default 'bars' (horizontal) or 'column' (vertical)
       const isHorizontal = mode === 'bars';
+      const suggestedScaleMax = this.effectiveAxisMinMax;
       const cfg: ChartConfiguration<'bar'> = {
         type: 'bar',
         data: {
@@ -545,6 +561,7 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
           scales: {
             x: {
               beginAtZero: true,
+              ...(isHorizontal ? { suggestedMax: suggestedScaleMax } : {}),
               grid: { color: isHorizontal ? gridColor : 'transparent', display: isHorizontal },
               ticks: {
                 precision: isHorizontal ? 0 : undefined,
@@ -554,6 +571,7 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
             },
             y: {
               beginAtZero: !isHorizontal,
+              ...(!isHorizontal ? { suggestedMax: suggestedScaleMax } : {}),
               grid: { color: isHorizontal ? 'transparent' : gridColor, display: !isHorizontal },
               ticks: {
                 precision: !isHorizontal ? 0 : undefined,
@@ -583,6 +601,6 @@ export class RecruiterPerformanceChartComponent implements AfterViewInit, OnChan
         Number(item?.demand ?? 0),
       ])
       .filter((val) => Number.isFinite(val) && val >= 0);
-    return Math.max(...values, 1);
+    return Math.max(...values, this.effectiveAxisMinMax);
   }
 }

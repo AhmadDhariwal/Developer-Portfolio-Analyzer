@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, map, of, Subscription, switchMap } from 'rxjs';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
@@ -17,10 +17,15 @@ export class JobDetailsComponent implements OnInit {
 
   loading = true;
   generating = false;
+  publishing = false;
   error = '';
   job: any = null;
   jobMatches: any[] = [];
   private currentJobId = '';
+  private request?: Subscription;
+  get selectedApplicationId(): string {
+    return this.route.snapshot?.queryParamMap?.get('applicationId') || '';
+  }
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -58,6 +63,9 @@ export class JobDetailsComponent implements OnInit {
   }
 
   loadJob(): void {
+    this.request?.unsubscribe();
+    this.job = null;
+    this.jobMatches = [];
     if (!this.currentJobId) {
       this.loading = false;
       this.error = 'Job identifier is missing.';
@@ -67,30 +75,38 @@ export class JobDetailsComponent implements OnInit {
 
     this.loading = true;
     this.error = '';
-    forkJoin({
-      jobResponse: this.jobService.getJob(this.currentJobId),
-      matchesResponse: this.matchService
-        .listMatches({ jobId: this.currentJobId })
-        .pipe(catchError(() => of({ matches: [] }))),
-    }).subscribe({
-      next: ({ jobResponse, matchesResponse }) => {
-        this.job = jobResponse?.job || null;
-        this.jobMatches = (matchesResponse?.matches || []).slice(0, 5);
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.job = null;
-        this.jobMatches = [];
-        this.error = err?.error?.message || 'Unable to load this job.';
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
+    this.request = this.jobService
+      .getJob(this.currentJobId)
+      .pipe(
+        switchMap((jobResponse) =>
+          (jobResponse?.job?.access?.evaluationView
+            ? this.matchService
+                .listMatches({ jobId: this.currentJobId })
+                .pipe(catchError(() => of({ matches: [] })))
+            : of({ matches: [] })
+          ).pipe(map((matchesResponse) => ({ jobResponse, matchesResponse }))),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: ({ jobResponse, matchesResponse }) => {
+          this.job = jobResponse?.job || null;
+          this.jobMatches = (matchesResponse?.matches || []).slice(0, 5);
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.job = null;
+          this.jobMatches = [];
+          this.error = err?.error?.message || 'Unable to load this job.';
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   generateMatches(): void {
-    if (!this.job?._id || this.generating) return;
+    if (!this.job?._id || !this.job?.access?.evaluationManage || this.generating) return;
     this.generating = true;
     this.error = '';
     this.matchService.generateMatches({ jobId: this.job._id }).subscribe({
@@ -107,5 +123,30 @@ export class JobDetailsComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  togglePublication(): void {
+    if (!this.job?.access?.publish || this.publishing) return;
+    this.publishing = true;
+    this.error = '';
+    this.jobService
+      .updateJob(this.job._id, {
+        published: !this.job.published,
+        expectedVersion: this.job.version,
+      })
+      .subscribe({
+        next: (response) => {
+          this.job = response.job;
+          this.publishing = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Unable to update publication.';
+          this.publishing = false;
+          if ([403, 404, 409].includes(error.status)) this.loadJob();
+          this.error = message;
+          this.cdr.markForCheck();
+        },
+      });
   }
 }

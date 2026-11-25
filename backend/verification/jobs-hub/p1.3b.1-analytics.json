@@ -1,0 +1,545 @@
+{
+  "phase": "P1.3B.1",
+  "fixtureEligible": 5200,
+  "status": "passed",
+  "accuracy": {
+    "exact": {
+      "total": 5200,
+      "avgCandidateScore": 37.6,
+      "scoreDistribution": [
+        {
+          "label": "90-100",
+          "min": 90,
+          "max": 100,
+          "count": 0
+        },
+        {
+          "label": "80-89",
+          "min": 80,
+          "max": 89.999,
+          "count": 0
+        },
+        {
+          "label": "70-79",
+          "min": 70,
+          "max": 79.999,
+          "count": 64
+        },
+        {
+          "label": "60-69",
+          "min": 60,
+          "max": 69.999,
+          "count": 357
+        },
+        {
+          "label": "Below 60",
+          "min": null,
+          "max": 59.999,
+          "count": 4779
+        }
+      ],
+      "experienceDistribution": [
+        {
+          "label": "0-2 Years",
+          "min": 0,
+          "max": 2,
+          "count": 1392
+        },
+        {
+          "label": "2-5 Years",
+          "min": 2,
+          "max": 5,
+          "count": 1281
+        },
+        {
+          "label": "5-8 Years",
+          "min": 5,
+          "max": 8,
+          "count": 1437
+        },
+        {
+          "label": "8+ Years",
+          "min": 8,
+          "max": null,
+          "count": 1090
+        }
+      ],
+      "candidatesByStack": [
+        {
+          "label": "Backend",
+          "count": 1920
+        },
+        {
+          "label": "Full Stack",
+          "count": 960
+        },
+        {
+          "label": "AI/ML",
+          "count": 960
+        },
+        {
+          "label": "Frontend",
+          "count": 959
+        },
+        {
+          "label": "Legacy Backend",
+          "count": 400
+        },
+        {
+          "label": "Zero evidence",
+          "count": 1
+        }
+      ],
+      "supplyVsDemand": [
+        {
+          "label": "TypeScript",
+          "supply": 4948,
+          "demand": 2
+        },
+        {
+          "label": "Node.js",
+          "supply": 4925,
+          "demand": 2
+        },
+        {
+          "label": "LegacySkill",
+          "supply": 401,
+          "demand": 1
+        },
+        {
+          "label": "typescript",
+          "supply": 1231,
+          "demand": 1
+        },
+        {
+          "label": "Beyond240",
+          "supply": 1,
+          "demand": 1
+        },
+        {
+          "label": "PRIVATE_SUPPLY_SECRET",
+          "supply": 0,
+          "demand": 1
+        }
+      ]
+    },
+    "previousSample": {
+      "total": 240,
+      "avgCandidateScore": 67.4,
+      "scoreDistribution": [
+        {
+          "label": "90-100",
+          "min": 90,
+          "max": 100,
+          "count": 0
+        },
+        {
+          "label": "80-89",
+          "min": 80,
+          "max": 89.999,
+          "count": 0
+        },
+        {
+          "label": "70-79",
+          "min": 70,
+          "max": 79.999,
+          "count": 49
+        },
+        {
+          "label": "60-69",
+          "min": 60,
+          "max": 69.999,
+          "count": 191
+        },
+        {
+          "label": "Below 60",
+          "min": null,
+          "max": 59.999,
+          "count": 0
+        }
+      ],
+      "experienceDistribution": [
+        {
+          "label": "0-2 Years",
+          "min": 0,
+          "max": 2,
+          "count": 50
+        },
+        {
+          "label": "2-5 Years",
+          "min": 2,
+          "max": 5,
+          "count": 70
+        },
+        {
+          "label": "5-8 Years",
+          "min": 5,
+          "max": 8,
+          "count": 81
+        },
+        {
+          "label": "8+ Years",
+          "min": 8,
+          "max": null,
+          "count": 39
+        }
+      ],
+      "candidatesByStack": [
+        {
+          "label": "Backend",
+          "count": 155
+        },
+        {
+          "label": "Full Stack",
+          "count": 35
+        },
+        {
+          "label": "Legacy Backend",
+          "count": 23
+        },
+        {
+          "label": "Frontend",
+          "count": 18
+        },
+        {
+          "label": "AI/ML",
+          "count": 9
+        }
+      ],
+      "supplyVsDemand": [
+        {
+          "label": "TypeScript",
+          "supply": 240,
+          "demand": 2
+        },
+        {
+          "label": "Node.js",
+          "supply": 240,
+          "demand": 2
+        },
+        {
+          "label": "LegacySkill",
+          "supply": 23,
+          "demand": 1
+        },
+        {
+          "label": "typescript",
+          "supply": 76,
+          "demand": 1
+        },
+        {
+          "label": "Beyond240",
+          "supply": 0,
+          "demand": 1
+        },
+        {
+          "label": "PRIVATE_SUPPLY_SECRET",
+          "supply": 0,
+          "demand": 1
+        }
+      ]
+    },
+    "independentComparison": "all six candidate population outputs equal",
+    "populationQueries": 1,
+    "hydrationQueries": 1,
+    "maximumCardsHydrated": 240,
+    "zeroMissingOrderAndFallback": true
+  },
+  "security": {
+    "httpContract": true,
+    "liveConsentProfileActivityAndOrganization": true,
+    "actorMembershipSuspensionSettingsAndSession": true,
+    "queryBudgetFailsClosed": true
+  },
+  "measurements": {
+    "scope": "Candidate calculation only, same fixture/process/hardware; warm interleaved runs. Before metrics sample 240, after metrics exact 5200. No latency improvement claim.",
+    "memory": "10ms process RSS/heap polling; retained fixture/reference and driver/GC affect absolute memory. Not server RSS.",
+    "runs": {
+      "before": [
+        {
+          "durationMs": 981,
+          "rssBefore": 286674944,
+          "peakRss": 287109120,
+          "peakHeapDelta": 13299952,
+          "resultBytes": 348992
+        },
+        {
+          "durationMs": 1180,
+          "rssBefore": 287977472,
+          "peakRss": 290586624,
+          "peakHeapDelta": 13050920,
+          "resultBytes": 348992
+        },
+        {
+          "durationMs": 1079,
+          "rssBefore": 287354880,
+          "peakRss": 287571968,
+          "peakHeapDelta": 12858312,
+          "resultBytes": 348992
+        }
+      ],
+      "after": [
+        {
+          "durationMs": 1447,
+          "rssBefore": 287944704,
+          "peakRss": 287977472,
+          "peakHeapDelta": 12302344,
+          "resultBytes": 349039
+        },
+        {
+          "durationMs": 1923,
+          "rssBefore": 287227904,
+          "peakRss": 287346688,
+          "peakHeapDelta": 12177552,
+          "resultBytes": 349039
+        },
+        {
+          "durationMs": 1771,
+          "rssBefore": 287571968,
+          "peakRss": 289038336,
+          "peakHeapDelta": 12295304,
+          "resultBytes": 349039
+        }
+      ]
+    },
+    "beforePlan": {
+      "serverVersion": "8.2.6",
+      "executionTimeMillis": 999,
+      "documentsExamined": 21772,
+      "keysExamined": 5204,
+      "joins": [
+        {
+          "collection": "integration_live_acceptance.candidates",
+          "strategy": "HashJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.weeklyreports",
+          "strategy": "HashJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.careersprints",
+          "strategy": "HashJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.publicprofiles",
+          "strategy": "HashJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.resumeanalyses",
+          "strategy": "HashJoin",
+          "index": "userId_1_analyzedAt_-1"
+        },
+        {
+          "collection": "integration_live_acceptance.analyses",
+          "strategy": "HashJoin",
+          "index": "userId_1_githubAnalysisVersion_1_updatedAt_-1"
+        }
+      ],
+      "indexes": [
+        "userId_1",
+        "userId_1_analyzedAt_-1",
+        "userId_1_githubAnalysisVersion_1_updatedAt_-1",
+        "isPublic_1"
+      ],
+      "stages": [
+        {
+          "stage": "$cursor",
+          "elapsedEstimateMs": 361
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 376
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 391
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 391
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 408
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 454
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 454
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 469
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 514
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 606
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 653
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 685
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 859
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 920
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 935
+        },
+        {
+          "stage": "$project",
+          "elapsedEstimateMs": 952
+        },
+        {
+          "stage": "$facet",
+          "elapsedEstimateMs": 984
+        }
+      ]
+    },
+    "afterPlan": {
+      "serverVersion": "8.2.6",
+      "executionTimeMillis": 1818,
+      "documentsExamined": 21769,
+      "keysExamined": 21769,
+      "joins": [
+        {
+          "collection": "integration_live_acceptance.candidates",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.weeklyreports",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.careersprints",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.publicprofiles",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1"
+        },
+        {
+          "collection": "integration_live_acceptance.resumeanalyses",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1_analyzedAt_-1"
+        },
+        {
+          "collection": "integration_live_acceptance.analyses",
+          "strategy": "IndexedLoopJoin",
+          "index": "userId_1_githubAnalysisVersion_1_updatedAt_-1"
+        }
+      ],
+      "indexes": [
+        "userId_1",
+        "userId_1_analyzedAt_-1",
+        "userId_1_githubAnalysisVersion_1_updatedAt_-1",
+        "isPublic_1"
+      ],
+      "stages": [
+        {
+          "stage": "$cursor",
+          "elapsedEstimateMs": 983
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1121
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1121
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1195
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 1195
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1211
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1211
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1227
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1275
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1385
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1413
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 1429
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1539
+        },
+        {
+          "stage": "$match",
+          "elapsedEstimateMs": 1587
+        },
+        {
+          "stage": "$set",
+          "elapsedEstimateMs": 1604
+        },
+        {
+          "stage": "$project",
+          "elapsedEstimateMs": 1717
+        },
+        {
+          "stage": "$sort",
+          "elapsedEstimateMs": 1733,
+          "usedDisk": false,
+          "spills": 0
+        },
+        {
+          "stage": "$facet",
+          "elapsedEstimateMs": 1796
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 227,
+    "productionDataUsed": false
+  }
+}

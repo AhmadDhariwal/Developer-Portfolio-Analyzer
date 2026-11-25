@@ -10,13 +10,39 @@
     </div>
 
     <div class="page-header__actions">
-      <span class="count-pill">{{ shortlists.length }} saved profiles</span>
+      <span class="count-pill"
+        >{{ source === 'applications' ? applicationTotal : shortlists.length }} saved profiles</span
+      >
       <a class="btn-secondary" routerLink="/app/recruiter/candidates">Browse Candidates</a>
       <button type="button" class="btn-primary" [disabled]="loading" (click)="loadShortlists()">
         {{ loading ? 'Refreshing...' : 'Refresh' }}
       </button>
     </div>
   </header>
+
+  <div class="segmented-tabs" role="group" aria-label="Shortlist source">
+    <button
+      type="button"
+      [attr.aria-pressed]="source === 'public'"
+      [class.is-active]="source === 'public'"
+      (click)="setSource('public')"
+    >
+      Public candidates
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="source === 'applications'"
+      [class.is-active]="source === 'applications'"
+      (click)="setSource('applications')"
+    >
+      Direct applications · owner only
+    </button>
+  </div>
+  <div class="callout-note callout-note--primary" *ngIf="source === 'applications'">
+    Application evaluations are owner only. Notes and internal stages do not change the application
+    status or notify the applicant. Explicit application status actions notify the applicant. Stage
+    filters, search and pipeline metrics apply to the current page.
+  </div>
 
   <app-ui-error-state
     *ngIf="error && !shortlists.length && !loading"
@@ -32,10 +58,14 @@
 
   <div class="metric-grid">
     <app-recruiter-stat-card
-      label="Total Saved"
+      [label]="source === 'applications' ? 'Saved on this page' : 'Total Saved'"
       [value]="shortlists.length"
       tone="indigo"
-      hint="All shortlisted candidates"
+      [hint]="
+        source === 'applications'
+          ? 'Application evaluations on this page'
+          : 'All shortlisted candidates'
+      "
     />
     <app-recruiter-stat-card
       label="Active Pipeline"
@@ -160,6 +190,8 @@
       *ngFor="let item of filteredShortlists; trackBy: trackByItem"
       [item]="item"
       [savingNotes]="savingNoteId === item._id"
+      [changingApplication]="!!changingApplicationId"
+      (applicationStatusChange)="changeApplicationStatus($event)"
       (edit)="advanceStage($event)"
       (statusChange)="changeStage($event)"
       (saveNotes)="updateNotes($event)"
@@ -173,9 +205,40 @@
     [message]="
       shortlists.length
         ? 'Adjust your stage tab, requisition filter, or search query.'
-        : 'Shortlist strong candidates from the Candidates or Matches workspace to track outreach and interviews.'
+        : source === 'applications'
+          ? 'Add an active application to the internal shortlist from Job Applicants.'
+          : 'Shortlist strong candidates from the Candidates or Matches workspace to track outreach and interviews.'
     "
   />
+
+  <nav
+    *ngIf="source === 'applications' && !loading && !error && applicationPages > 0"
+    class="pager"
+    aria-label="Application evaluation pages"
+  >
+    <span class="pager__summary" role="status">
+      Page {{ applicationPage }} of {{ applicationPages }} · {{ applicationTotal }} evaluations
+    </span>
+
+    <div class="pager__controls">
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="applicationPage <= 1"
+        (click)="changeApplicationPage(applicationPage - 1)"
+      >
+        Previous page
+      </button>
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="applicationPage >= applicationPages"
+        (click)="changeApplicationPage(applicationPage + 1)"
+      >
+        Next page
+      </button>
+    </div>
+  </nav>
 
   <app-confirm-dialog
     [open]="confirmState().open"

@@ -1,5 +1,8 @@
 const path = require('node:path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
+require('dotenv').config({
+  path: path.resolve(__dirname, '.env'),
+  quiet: true,
+});
 const { validateEnv } = require('./src/core/config/env');
 const env = validateEnv();
 const localApiOnly = process.argv.includes('--api-only');
@@ -52,18 +55,37 @@ const { globalRateLimiter } = require('./src/core/middleware/securityMiddleware'
 const { metricsMiddleware, metricsHandler } = require('./src/core/observability/metricsService');
 const { initTracing, shutdownTracing } = require('./src/core/observability/tracingService');
 const superAdminRoutes = require('./src/modules/super-admin/routes/super-admin.routes');
-const { startEmailRetryWorker } = require('./src/core/messaging/emailRetryQueueService');
-const { startIntegrationSyncWorker } = require('./src/modules/integrations/services/integrationSyncService');
-const { startJobSourceSyncWorker } = require('./src/modules/jobs/services/jobSourceSyncService');
-const { startWeeklyReportScheduler } = require('./src/modules/weekly-reports/services/weeklyReportService');
+const {
+  startEmailRetryWorker,
+  stopEmailRetryWorker,
+} = require('./src/core/messaging/emailRetryQueueService');
+const {
+  startIntegrationSyncWorker,
+  stopIntegrationSyncWorker,
+} = require('./src/modules/integrations/services/integrationSyncService');
+const {
+  startJobSourceSyncWorker,
+  stopJobSourceSyncWorker,
+} = require('./src/modules/jobs/services/jobSourceSyncService');
+const {
+  startWeeklyReportScheduler,
+  stopWeeklyReportScheduler,
+} = require('./src/modules/weekly-reports/services/weeklyReportService');
 const { initRedisCache, closeRedisCache } = require('./src/core/cache/redisCacheService');
 const {
   startInterviewQuestionIngestionScheduler,
+  stopInterviewQuestionIngestionScheduler,
 } = require('./src/modules/interview-prep/services/interviewQuestionIngestionService');
 const {
   startInterviewQuestionMaintenanceScheduler,
+  stopInterviewQuestionMaintenanceScheduler,
 } = require('./src/modules/interview-prep/services/interviewQuestionMaintenanceService');
-const { getSettingsSnapshotSync, getSettings } = require('./src/modules/super-admin/services/platformSettingsService');
+const {
+  getSettingsSnapshotSync,
+  getSettings,
+  startSettingsSynchronization,
+  stopSettingsSynchronization,
+} = require('./src/modules/super-admin/services/platformSettingsService');
 
 const app = express();
 const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
@@ -120,10 +142,21 @@ app.use(
   }),
 );
 app.use(cors());
+app.use(async (_req, res, next) => {
+  try {
+    await getSettings();
+    return next();
+  } catch {
+    return res.status(503).json({ message: 'Platform settings are temporarily unavailable.' });
+  }
+});
 app.use(globalRateLimiter);
 app.use(requestContextMiddleware);
 app.use(
-  express.json({ limit: '100kb', verify: require('./src/modules/integrations/middleware/integrationWebhookBody') }),
+  express.json({
+    limit: '100kb',
+    verify: require('./src/modules/integrations/middleware/integrationWebhookBody'),
+  }),
 );
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
@@ -139,11 +172,11 @@ app.use((req, res, next) => {
     if (path.startsWith('/api/auth')) return next();
     if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads')) return next();
 
-    return res
-      .status(503)
-      .json({ message: 'Platform is under maintenance. Please try again later.' });
+    return res.status(503).json({
+      message: 'Platform is under maintenance. Please try again later.',
+    });
   } catch {
-    return next();
+    return res.status(503).json({ message: 'Platform settings are temporarily unavailable.' });
   }
 });
 require('./src/core/storage/b2ObjectStorageService').configuration();
@@ -238,26 +271,60 @@ const initializeRedisAtStartup = async () => {
   }
 };
 
+let server;
+let shutdownPromise;
+const workerStops = [];
+const startWorker = (start, stop) => {
+  if (start() !== null) workerStops.push(stop);
+};
+const closeResources = async () => {
+  await Promise.allSettled([closeRedisCache(), shutdownTracing()]);
+  await require('mongoose').disconnect();
+};
+const startupCancelled = async () => {
+  if (!shutdownPromise) return false;
+  stopSettingsSynchronization();
+  await closeResources();
+  return true;
+};
+
 const startServer = async () => {
   await connectDB();
+  if (await startupCancelled()) return;
   await initializeRedisAtStartup();
+  if (await startupCancelled()) return;
+  let retention;
+  let courses;
+  if (!localApiOnly) {
+    retention = require('./src/modules/notifications/services/notificationRetentionService');
+    if (process.env.COURSES_MAINTENANCE_ENABLED !== 'false') {
+      courses = require('./src/modules/courses/services/courseCatalogMaintenanceService');
+    }
+    await initTracing();
+    if (await startupCancelled()) return;
+  }
+  await startSettingsSynchronization();
+  if (await startupCancelled()) return;
 
-  app.listen(PORT, localApiOnly ? 'localhost' : undefined, () => {
+  server = app.listen(PORT, localApiOnly ? 'localhost' : undefined, () => {
     logger.info('server started', { port: PORT });
     if (localApiOnly) {
       logger.info('development API-only mode: loopback listener; background workers disabled.');
       return;
     }
-    require('./src/modules/notifications/services/notificationRetentionService').start();
-    startEmailRetryWorker();
-    startIntegrationSyncWorker();
-    startJobSourceSyncWorker();
-    startNewsIngestionScheduler();
-    require('./src/modules/courses/services/courseCatalogMaintenanceService').start();
-    initTracing();
-    if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api') startWeeklyReportScheduler();
-    startInterviewQuestionIngestionScheduler();
-    startInterviewQuestionMaintenanceScheduler();
+    startWorker(retention.start, retention.stop);
+    startWorker(startEmailRetryWorker, stopEmailRetryWorker);
+    startWorker(startIntegrationSyncWorker, stopIntegrationSyncWorker);
+    startWorker(startJobSourceSyncWorker, stopJobSourceSyncWorker);
+    startWorker(startNewsIngestionScheduler, stopNewsIngestionScheduler);
+    if (courses) startWorker(courses.start, courses.stop);
+    if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api')
+      startWorker(startWeeklyReportScheduler, stopWeeklyReportScheduler);
+    startWorker(startInterviewQuestionIngestionScheduler, stopInterviewQuestionIngestionScheduler);
+    startWorker(
+      startInterviewQuestionMaintenanceScheduler,
+      stopInterviewQuestionMaintenanceScheduler,
+    );
     getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
@@ -267,19 +334,6 @@ const startServer = async () => {
     } else {
       logger.info('GitHub token detected; using authenticated API quota.');
     }
-    // Jobs Hub source startup validation
-    const { getIntegrationSecretsSync } = require('./src/modules/super-admin/services/platformSettingsService');
-    const integrations = getIntegrationSecretsSync();
-    const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
-
-    const jsearchConfigured =
-      integrations?.jobsEnabled !== false &&
-      Boolean(rapidApiKey && rapidApiKey !== 'your_rapidapi_key');
-    const joobleConfigured = Boolean(String(process.env.JOOBLE_API_KEY || '').trim());
-    const adzunaConfigured = Boolean(
-      String(process.env.ADZUNA_APP_ID || '').trim() &&
-      String(process.env.ADZUNA_APP_KEY || '').trim(),
-    );
     // Jobs Hub cache health startup check
     const { getCacheHealth } = require('./src/modules/jobs/services/jobService');
     getCacheHealth()
@@ -297,19 +351,51 @@ const startServer = async () => {
   });
 };
 
-startServer().catch((error) => {
-  logger.error('server startup failed', { error: error?.message || 'Unknown startup error' });
+startServer().catch(async (error) => {
+  logger.error('server startup failed', {
+    error: error?.message || 'Unknown startup error',
+  });
   process.exitCode = 1;
+  await shutdown();
 });
 
 const shutdown = () => {
-  require('./src/modules/notifications/services/notificationRetentionService').stop();
-  require('./src/modules/notifications/services/notificationStreamService')
-    .stop()
-    .catch(() => {});
-  stopNewsIngestionScheduler();
-  require('./src/modules/courses/services/courseCatalogMaintenanceService').stop();
-  Promise.allSettled([closeRedisCache(), shutdownTracing()]);
+  if (shutdownPromise) return shutdownPromise;
+  stopSettingsSynchronization();
+  // Shutdown must not refresh policy settings after synchronization/storage stop.
+  const deadline = setTimeout(() => {
+    console.error(
+      'shutdown deadline exceeded; unfinished jobs retain their durable recovery leases',
+    );
+    server?.closeAllConnections();
+    process.exit(1);
+  }, 15000);
+  deadline.unref();
+  shutdownPromise = (async () => {
+    const listenerClosed = new Promise((resolve) => {
+      if (!server) return resolve();
+      server.close(resolve);
+      server.closeIdleConnections();
+    });
+    const drains = workerStops.splice(0).map((stop) => Promise.resolve().then(stop));
+    drains.push(require('./src/modules/notifications/services/notificationStreamService').stop());
+    const results = await Promise.allSettled([listenerClosed, ...drains]);
+    if (results.some((result) => result.status === 'rejected')) {
+      console.error('worker drain failed; shutdown deadline remains active');
+      process.exitCode = 1;
+      return;
+    }
+    try {
+      await closeResources();
+    } catch {
+      console.error('resource shutdown failed; shutdown deadline remains active');
+      process.exitCode = 1;
+      return;
+    }
+    clearTimeout(deadline);
+    console.info('server shutdown completed');
+  })();
+  return shutdownPromise;
 };
 
 process.on('SIGTERM', shutdown);

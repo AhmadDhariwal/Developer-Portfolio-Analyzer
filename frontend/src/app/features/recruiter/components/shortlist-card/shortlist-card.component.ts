@@ -14,10 +14,12 @@ export class ShortlistCardComponent {
   @Input() item: any;
   @Input() hideActions = false;
   @Input() savingNotes = false;
+  @Input() changingApplication = false;
   @Output() edit = new EventEmitter<any>();
   @Output() remove = new EventEmitter<any>();
   @Output() saveNotes = new EventEmitter<{ item: any; notes: string }>();
   @Output() statusChange = new EventEmitter<{ item: any; status: string }>();
+  @Output() applicationStatusChange = new EventEmitter<{ item: any; status: string }>();
 
   editingNote = false;
   noteDraft = '';
@@ -29,10 +31,7 @@ export class ShortlistCardComponent {
     { key: 'interview', label: 'Interview' },
   ];
 
-  readonly stageOptions = [
-    ...this.pipelineStages,
-    { key: 'rejected', label: 'Rejected' },
-  ];
+  readonly stageOptions = [...this.pipelineStages, { key: 'rejected', label: 'Rejected' }];
 
   get normalizedStatus(): string {
     return String(this.item?.status || 'shortlisted').toLowerCase();
@@ -47,6 +46,7 @@ export class ShortlistCardComponent {
   }
 
   get candidateRouteId(): string {
+    if (this.item?.applicationId) return '';
     return String(
       this.item?.candidate?.id || this.item?.candidate?.userId || this.item?.candidateId || '',
     ).trim();

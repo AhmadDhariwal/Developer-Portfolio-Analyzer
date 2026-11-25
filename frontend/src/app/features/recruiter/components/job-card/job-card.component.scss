@@ -59,6 +59,20 @@
   }
 }
 
+.job-card__ownership {
+  @include recruiter.ownership-strip;
+}
+
+.ownership-pill {
+  @include recruiter.ownership-badge;
+
+  &--shared {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary-border);
+    color: var(--color-primary-text);
+  }
+}
+
 .job-card__desc {
   margin: 0;
   font-size: 13.5px;

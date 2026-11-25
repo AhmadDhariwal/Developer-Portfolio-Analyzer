@@ -62,9 +62,13 @@ test('independent PDF field golds: standard, changed layout and columns', async 
     shifted = await pdf.extract(bytes('layout-shift'));
   assert.equal(original.text, shifted.text);
   assert.notEqual(pdf.fingerprint(bytes('standard')), pdf.fingerprint(bytes('layout-shift')));
-  fs.mkdirSync(path.resolve(__dirname, '../../../verification/resume'), { recursive: true });
+  const evidenceRoot = path.resolve(
+    process.env.RESUME_VERIFICATION_DIRECTORY ||
+      path.join(__dirname, '../../../verification/resume')
+  );
+  fs.mkdirSync(evidenceRoot, { recursive: true });
   fs.writeFileSync(
-    path.resolve(__dirname, '../../../verification/resume/extraction-accuracy.json'),
+    path.join(evidenceRoot, 'extraction-accuracy.json'),
     JSON.stringify(
       {
         measurements,

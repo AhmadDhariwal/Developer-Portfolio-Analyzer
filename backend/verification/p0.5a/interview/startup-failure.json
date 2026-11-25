@@ -1,0 +1,7 @@
+{
+  "attempt": "interview sandbox startup",
+  "result": "Disposable Mongo exited before readiness",
+  "classification": "infrastructure/prerequisite",
+  "subsequentEvidence": "../interview-local-disk/summary.json",
+  "productionDataUsed": false
+}

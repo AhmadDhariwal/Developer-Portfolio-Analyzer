@@ -1,0 +1,41 @@
+{
+  "backend": [
+    "backend/scripts/smoke-application-shortlists.cjs",
+    "backend/scripts/benchmark-recruiter-contention.cjs",
+    "backend/scripts/verify-recruiter-p15b.cjs",
+    "backend/src/modules/jobs/jobApplicationController.js",
+    "backend/src/modules/jobs/services/jobApplicationService.js",
+    "backend/src/modules/notifications/services/notificationTransactionService.js",
+    "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+    "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+    "backend/src/modules/recruiter/utils/hub/applicationIdentityValidation.js",
+    "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+    "backend/src/modules/recruiter/utils/hub/applicationWorkflowBudget.js",
+    "backend/src/tests/fixtures/applicationPerformanceFixture.js",
+    "backend/src/tests/fixtures/disposableAngular.js",
+    "backend/src/tests/fixtures/recruiterAngularProxy.cjs",
+    "backend/src/tests/recruiter/applicationConcurrency.integration.test.js"
+  ],
+  "frontend": [
+    "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html",
+    "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts",
+    "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+    "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+    "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+    "frontend/src/app/shared/services/api.service.ts"
+  ],
+  "removedMethods": [
+    "getRecruiterDashboard",
+    "getRecruiterCandidates",
+    "getRecruiterCandidateById",
+    "getRecruiterJobs",
+    "createRecruiterJob",
+    "updateRecruiterJob",
+    "deleteRecruiterJob",
+    "matchRecruiterCandidates",
+    "aiRankCandidates"
+  ],
+  "movedFiles": [],
+  "deletedFiles": [],
+  "preexistingStagedFiles": "Preserved exactly as recorded in preflight.json; no staging operations performed."
+}

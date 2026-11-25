@@ -1,0 +1,55 @@
+<div class="portfolio-snapshot" [class.is-empty]="!portfolio">
+  @if (!portfolio) {
+    <div class="snapshot-empty">
+      <span class="snapshot-empty-dot" aria-hidden="true"></span>
+      <span>Portfolio snapshot was not shared.</span>
+    </div>
+  } @else {
+    <div class="snapshot-body">
+      @if (portfolio.headline) {
+        <div class="snapshot-row">
+          <span class="snapshot-label">Headline</span>
+          <p class="snapshot-value snapshot-headline">{{ portfolio.headline }}</p>
+        </div>
+      }
+      @if (portfolio.summary) {
+        <div class="snapshot-row">
+          <span class="snapshot-label">Summary</span>
+          <p class="snapshot-value snapshot-summary">{{ portfolio.summary }}</p>
+        </div>
+      }
+      @if (portfolio.skills.length) {
+        <div class="snapshot-row">
+          <span class="snapshot-label">Skills ({{ portfolio.skills.length }})</span>
+          <div class="snapshot-chips">
+            @for (skill of portfolio.skills; track skill) {
+              <span class="snapshot-chip snapshot-chip--skill">{{ skill }}</span>
+            }
+          </div>
+        </div>
+      }
+      @if (portfolio.projects.length) {
+        <div class="snapshot-row">
+          <span class="snapshot-label">Projects ({{ portfolio.projects.length }})</span>
+          <div class="snapshot-projects">
+            @for (project of portfolio.projects; track project.title) {
+              <div class="snapshot-project">
+                <strong class="project-title">{{ project.title }}</strong>
+                @if (project.description) {
+                  <p class="project-desc">{{ project.description }}</p>
+                }
+                @if (project.tech.length) {
+                  <div class="snapshot-chips">
+                    @for (tech of project.tech; track tech) {
+                      <span class="snapshot-chip">{{ tech }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

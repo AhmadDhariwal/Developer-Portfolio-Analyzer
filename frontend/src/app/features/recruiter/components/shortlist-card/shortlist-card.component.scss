@@ -19,9 +19,10 @@
 
 .shortlist-card__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px 10px;
 }
 
 .shortlist-card__identity {
@@ -29,7 +30,7 @@
   align-items: flex-start;
   gap: 10px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 190px;
 }
 
 .shortlist-card__avatar {
@@ -91,6 +92,9 @@
   @include recruiter.status-pill(primary);
   text-transform: capitalize;
   flex-shrink: 0;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
 
   &--reviewing {
     @include recruiter.status-pill(warning);
@@ -109,6 +113,27 @@
   }
 }
 
+.shortlist-card__ownership {
+  @include recruiter.ownership-badge;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.shortlist-card__application-bar {
+  @include recruiter.callout-note(primary);
+  align-items: center;
+  padding: 10px 12px;
+  font-size: 12.5px;
+
+  a {
+    font-weight: 700;
+    color: var(--color-primary-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+  }
+}
+
 .stage-stepper {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -117,6 +142,11 @@
   border-radius: var(--dev-radius-control, 6px);
   background: var(--surface-secondary);
   border: 1px solid var(--border-color);
+
+  @media (max-width: 420px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 6px;
+  }
 }
 
 .stage-step {
@@ -280,6 +310,14 @@
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+
+  @media (max-width: 440px) {
+    > .shortlist-card__btn,
+    > .stage-select {
+      flex: 1 1 100%;
+      width: 100%;
+    }
+  }
 }
 
 .shortlist-card__btn {
@@ -304,7 +342,7 @@
 .stage-select {
   @include recruiter.field-control;
   width: auto;
-  min-width: 122px;
+  min-width: min(100%, 122px);
   min-height: 36px;
   padding: 0 10px;
   font-size: 12.5px;

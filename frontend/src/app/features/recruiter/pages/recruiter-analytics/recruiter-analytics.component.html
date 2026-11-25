@@ -4,8 +4,8 @@
       <span class="page-header__eyebrow">Recruiter Hub · Telemetry</span>
       <h1>Performance & Pipeline Analytics</h1>
       <p>
-        Live recruiter activity, AI usage trends, requisition demand, and talent pool supply
-        metrics.
+        Live recruiter activity, assessment activity trends, requisition demand, and talent pool
+        supply metrics.
       </p>
     </div>
 
@@ -32,8 +32,18 @@
     variant="stats"
     [count]="6"
   />
+  <app-recruiter-loader
+    *ngIf="loading && !metricsReady"
+    label="Preparing analytics charts..."
+    variant="charts"
+    [count]="2"
+  />
 
   <ng-container *ngIf="metricsReady">
+    <div class="accuracy-callout" aria-live="polite">
+      <p>{{ populationAccuracyHint }}</p>
+      <p *ngIf="boundedAccuracyHint">{{ boundedAccuracyHint }}</p>
+    </div>
     <section class="section-shell">
       <div class="section-head">
         <div>
@@ -55,7 +65,7 @@
           label="Analyzed"
           [value]="analytics.metrics.candidatesAnalyzed"
           tone="cyan"
-          hint="AI-enhanced screenings"
+          hint="Profile fit summaries"
         />
         <app-recruiter-stat-card
           label="Matches"
@@ -157,7 +167,7 @@
               <strong>{{ totalFor(analytics.charts.candidateActivityTrend) }}</strong>
             </div>
             <div class="snapshot-tile">
-              <span>AI Actions</span>
+              <span>Assessment & Match Actions</span>
               <strong>{{ totalFor(analytics.charts.aiUsageGraph) }}</strong>
             </div>
             <div class="snapshot-tile">
@@ -198,8 +208,8 @@
           [trendLabel]="trendLabelFor(analytics.charts.matchGenerationTrend)"
         />
         <app-recruiter-performance-chart
-          title="AI Ranking Usage"
-          subtitle="AI screening & match assist operations"
+          title="Assessment Activity"
+          subtitle="Profile assessments and weighted match runs"
           mode="column"
           tone="cyan"
           [items]="analytics.charts.aiUsageGraph"
@@ -213,7 +223,7 @@
         />
         <app-recruiter-performance-chart
           title="Skill Supply vs Demand"
-          subtitle="Visible developer pool count compared against open job requirements"
+          [subtitle]="supplyVsDemandSubtitle"
           tone="green"
           mode="dual"
           [seriesLabels]="['Candidate Supply', 'Job Demand']"

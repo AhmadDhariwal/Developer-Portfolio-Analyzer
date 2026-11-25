@@ -27,7 +27,7 @@
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  flex: 1 1 360px;
+  flex: 1 1 min(100%, 300px);
   min-width: 0;
 }
 
@@ -71,19 +71,21 @@
 }
 
 .hero-stats {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr));
   gap: 10px;
+  flex: 1 1 min(100%, 420px);
+  min-width: 0;
 }
 
 .hero-stat {
   padding: 10px 14px;
   border-radius: var(--dev-radius-surface, 8px);
-  background: var(--surface-card);
+  background: var(--surface-secondary);
   border: 1px solid var(--border-color);
   display: grid;
   gap: 2px;
-  min-width: 120px;
+  min-width: 0;
 
   span {
     font-size: 11px;
@@ -97,6 +99,7 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--text-primary);
+    overflow-wrap: anywhere;
   }
 }
 
@@ -339,6 +342,14 @@
   border-radius: var(--dev-radius-surface, 8px);
   background: var(--surface-card);
   border: 1px solid var(--border-color);
+
+  @media (max-width: 520px) {
+    justify-content: stretch;
+
+    button {
+      flex: 1 1 100%;
+    }
+  }
 }
 
 .btn-primary {

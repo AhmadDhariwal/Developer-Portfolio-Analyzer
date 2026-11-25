@@ -30,12 +30,17 @@
 }
 
 .dossier-header {
-  @include recruiter.card-surface(22px);
+  @include recruiter.card-surface(20px);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-start;
   gap: 18px;
+
+  @media (max-width: 640px) {
+    padding: 16px;
+    gap: 14px;
+  }
 }
 
 .dossier-identity {
@@ -43,7 +48,7 @@
   align-items: flex-start;
   gap: 16px;
   min-width: 0;
-  flex: 1 1 420px;
+  flex: 1 1 min(100%, 340px);
 }
 
 .dossier-avatar {
@@ -130,13 +135,14 @@
 
 .telemetry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: 18px;
+  min-width: 0;
 }
 
 .score-hero__body {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 20px;
   align-items: center;
 }
@@ -157,7 +163,7 @@
 
 .pillar-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 125px), 1fr));
   gap: 10px;
 }
 
@@ -231,7 +237,7 @@
 
 .insight-columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: 14px;
 }
 
@@ -272,13 +278,13 @@
 
 .evidence-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: 18px;
 }
 
 .github-metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 110px), 1fr));
   gap: 10px;
 }
 

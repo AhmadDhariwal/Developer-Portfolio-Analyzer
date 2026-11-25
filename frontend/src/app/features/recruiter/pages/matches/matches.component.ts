@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { PerformanceChartItem } from '../../components/recruiter-performance-chart/recruiter-performance-chart.component';
 import { CandidateService } from '../../services/candidate.service';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
@@ -31,6 +32,7 @@ export class MatchesComponent implements OnInit {
   selectedCandidateIds = new Set<string>();
   compareIds = new Set<string>();
 
+  private matchesRequest?: Subscription;
   private readonly compareNames = new Map<string, string>();
 
   constructor(
@@ -53,9 +55,16 @@ export class MatchesComponent implements OnInit {
     });
   }
 
+  get canManageSelectedJob(): boolean {
+    return (
+      this.jobs.find((job) => String(job._id || job.id) === this.selectedJobId)?.access
+        ?.evaluationManage === true
+    );
+  }
+
   get jobOptions(): Array<{ label: string; value: string }> {
     return this.jobs.map((job) => ({
-      label: `${job.title} (${job.status || 'open'})`,
+      label: `${job.title}${job.access?.isOwner ? '' : ' · Shared'} (${job.status || 'open'})`,
       value: job._id || job.id,
     }));
   }
@@ -158,17 +167,19 @@ export class MatchesComponent implements OnInit {
   loadJobs(): void {
     this.jobsLoading = true;
     this.jobService
-      .listJobs()
+      .listEvaluationJobs()
       .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: (response: any) => {
           this.jobs = response?.jobs || [];
-          if (!this.selectedJobId && this.jobs.length > 0) {
-            this.selectedJobId = String(this.jobs[0]._id || this.jobs[0].id || '');
+          if (!this.jobs.some((job) => String(job._id || job.id) === this.selectedJobId)) {
+            this.selectedJobId = String(this.jobs[0]?._id || this.jobs[0]?.id || '');
+            this.loadMatches();
           }
           this.jobsLoading = false;
         },
         error: (err) => {
+          this.jobs = [];
           this.error = err?.error?.message || 'Unable to load recruiter jobs.';
           this.jobsLoading = false;
         },
@@ -198,8 +209,10 @@ export class MatchesComponent implements OnInit {
   }
 
   loadMatches(): void {
+    this.matchesRequest?.unsubscribe();
+    this.matches = [];
     this.matchesLoading = true;
-    this.matchService
+    this.matchesRequest = this.matchService
       .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
       .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
@@ -208,6 +221,8 @@ export class MatchesComponent implements OnInit {
           this.matchesLoading = false;
         },
         error: (err) => {
+          this.matches = [];
+          this.clearCompare();
           this.error = err?.error?.message || 'Unable to load saved matches.';
           this.matchesLoading = false;
         },
@@ -241,7 +256,7 @@ export class MatchesComponent implements OnInit {
   }
 
   runMatches(): void {
-    if (!this.selectedJobId || this.generating) {
+    if (!this.selectedJobId || this.generating || !this.canManageSelectedJob) {
       if (!this.selectedJobId) {
         this.error = 'Select a target job before running match scoring.';
       }
@@ -288,6 +303,7 @@ export class MatchesComponent implements OnInit {
   }
 
   shortlist(match: any): void {
+    if (match?.access?.manage !== true) return;
     const candidateId = String(match?.candidate?.id || match?.candidateId || '').trim();
     const jobId = String(match?.job?._id || match?.jobId || this.selectedJobId || '').trim();
     if (!candidateId) {
@@ -305,15 +321,18 @@ export class MatchesComponent implements OnInit {
       .subscribe({
         next: () => {
           match.status = 'shortlisted';
+          this.loadMatches();
           this.notice = `${match?.candidate?.name || 'Candidate'} shortlisted for ${match?.job?.title || 'job'}.`;
         },
         error: (err) => {
+          this.refreshAfterDenied(err);
           this.error = err?.error?.message || 'Could not shortlist candidate.';
         },
       });
   }
 
   updateStatus(match: any, status: 'generated' | 'rejected'): void {
+    if (match?.access?.manage !== true) return;
     const matchId = String(match?._id || match?.id || '').trim();
     if (!matchId) {
       this.error = 'Reload saved matches before updating this match status.';
@@ -323,17 +342,18 @@ export class MatchesComponent implements OnInit {
     this.notice = '';
 
     this.matchService
-      .updateMatchStatus(matchId, status)
+      .updateMatchStatus(matchId, status, match.version)
       .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
-        next: () => {
-          match.status = status;
+        next: (response) => {
+          Object.assign(match, response?.match || { status });
           this.notice =
             status === 'rejected'
               ? `${match?.candidate?.name || 'Match'} marked as rejected.`
               : `${match?.candidate?.name || 'Match'} restored to generated.`;
         },
         error: (err) => {
+          this.refreshAfterDenied(err);
           this.error = err?.error?.message || 'Could not update match status.';
         },
       });
@@ -379,9 +399,21 @@ export class MatchesComponent implements OnInit {
     this.router.navigate(['/app/recruiter/comparison'], {
       queryParams: {
         ids: Array.from(this.compareIds).join(','),
-        jobId: this.selectedJobId || undefined,
+        jobId: this.jobs.find((job) => String(job._id || job.id) === this.selectedJobId)?.access
+          ?.isOwner
+          ? this.selectedJobId
+          : undefined,
       },
     });
+  }
+
+  private refreshAfterDenied(error: any): void {
+    if ([403, 404, 409].includes(error?.status)) {
+      this.matches = [];
+      this.clearCompare();
+      this.loadJobs();
+      this.loadMatches();
+    }
   }
 
   trackByItem(_: number, item: any): string {

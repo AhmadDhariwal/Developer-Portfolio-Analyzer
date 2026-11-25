@@ -39,6 +39,21 @@ describe('Recruiter standalone UI components', () => {
     component.view.subscribe(viewSpy);
     component.view.emit(component.candidate);
     expect(viewSpy).toHaveBeenCalledWith(component.candidate);
+    fixture.componentRef.setInput('candidate', {
+      readinessScore: null,
+      githubScore: null,
+      resumeScore: null,
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Readiness unavailable');
+    expect(fixture.nativeElement.querySelectorAll('.unavailable-pill').length).toBe(3);
+    fixture.componentRef.setInput('candidate', {
+      readinessScore: 0,
+      githubScore: 0,
+      resumeScore: 0,
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.unavailable-pill').length).toBe(0);
   });
 
   it('renders JobCardComponent, ShortlistCardComponent, and MatchCardComponent status helpers', () => {
@@ -66,6 +81,25 @@ describe('Recruiter standalone UI components', () => {
     };
     shortlistFixture.detectChanges();
     expect(shortlistFixture.nativeElement.textContent).toContain('Aliya');
+  });
+
+  it('renders shared ownership labels without encoding artifacts', () => {
+    TestBed.configureTestingModule({
+      imports: [MatchCardComponent, ShortlistCardComponent],
+      providers: [provideRouter([])],
+    });
+    const job = { _id: 'job', owner: { name: 'Owner' }, sharedTeam: { name: 'Team' } };
+    const match = TestBed.createComponent(MatchCardComponent);
+    match.componentRef.setInput('match', { _id: 'm', job, status: 'generated' });
+    match.detectChanges();
+    expect(match.nativeElement.textContent).toContain('Weighted ranking complete.');
+    const shortlist = TestBed.createComponent(ShortlistCardComponent);
+    shortlist.componentRef.setInput('item', { _id: 's', job, status: 'shortlisted' });
+    shortlist.detectChanges();
+    for (const fixture of [match, shortlist]) {
+      expect(fixture.nativeElement.textContent).toContain('Owner · Team ·');
+      expect(fixture.nativeElement.textContent).not.toContain('�');
+    }
   });
 
   it('computes ComparisonTableComponent best metrics and optional match row', () => {

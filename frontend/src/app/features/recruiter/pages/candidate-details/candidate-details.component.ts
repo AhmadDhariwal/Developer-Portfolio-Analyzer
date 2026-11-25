@@ -52,6 +52,8 @@ export class CandidateDetailsComponent implements OnInit {
       return;
     }
     this.currentCandidateId = id;
+    this.analysis = null;
+    this.notice = '';
     this.loadCandidate();
   }
 
@@ -64,20 +66,46 @@ export class CandidateDetailsComponent implements OnInit {
     );
   }
 
-  get readinessScore(): number {
-    return Math.round(Number(this.candidate?.readinessScore ?? this.candidate?.score ?? 0));
+  get readinessScore(): number | null {
+    const score = this.candidate?.readinessScore;
+    return this.isMeasuredScore(score) ? Math.round(score) : null;
   }
 
   get hasGithubScore(): boolean {
-    return this.candidate?.githubScore !== null && this.candidate?.githubScore !== undefined;
+    return this.isMeasuredScore(this.candidate?.githubScore);
   }
 
-  get hasConfidenceScore(): boolean {
-    return (
-      this.analysis?.confidenceScore !== null &&
-      this.analysis?.confidenceScore !== undefined &&
-      Number.isFinite(Number(this.analysis.confidenceScore))
-    );
+  get hasAvailableSignalScore(): boolean {
+    return this.isMeasuredScore(this.analysis?.availableSignalScore);
+  }
+
+  isMeasuredScore(value: unknown): value is number {
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100;
+  }
+
+  get evidenceItems(): Array<{
+    label: string;
+    score: number | null;
+    recordedAt: string | null;
+    explanation: string;
+  }> {
+    return ['readiness', 'github', 'resume'].map((key) => {
+      const entry =
+        this.analysis?.evidence?.find((item: any) => item.key === key) ||
+        this.candidate?.assessmentEvidence?.[key];
+      const score = entry ? entry.score : this.candidate?.[`${key}Score`];
+      const timestamp = entry?.recordedAt;
+      return {
+        label: key === 'github' ? 'GitHub' : key === 'resume' ? 'Resume' : 'Readiness',
+        score: this.isMeasuredScore(score) ? score : null,
+        recordedAt: timestamp && Number.isFinite(new Date(timestamp).getTime()) ? timestamp : null,
+        explanation:
+          entry?.explanation ||
+          (this.isMeasuredScore(score)
+            ? 'Recorded score; source details are unavailable.'
+            : 'No valid measurement is available. Missing evidence does not establish low ability.'),
+      };
+    });
   }
 
   get breakdownChartItems(): PerformanceChartItem[] {
@@ -93,10 +121,7 @@ export class CandidateDetailsComponent implements OnInit {
       { label: 'Profile', raw: this.candidate?.profileCompleteness },
     ];
     return candidates
-      .filter(
-        (entry) =>
-          entry.raw !== null && entry.raw !== undefined && Number.isFinite(Number(entry.raw)),
-      )
+      .filter((entry) => this.isMeasuredScore(entry.raw))
       .map((entry) => ({
         label: entry.label,
         count: Math.round(Number(entry.raw)),
@@ -106,7 +131,7 @@ export class CandidateDetailsComponent implements OnInit {
   get skillScores(): Array<{ name: string; score: number }> {
     const items = Array.isArray(this.candidate?.skillScores) ? this.candidate.skillScores : [];
     return items
-      .filter((item: any) => item?.name)
+      .filter((item: any) => item?.name && this.isMeasuredScore(item.score))
       .map((item: any) => ({
         name: String(item.name),
         score: Math.min(100, Math.max(0, Math.round(Number(item.score ?? 0)))),
@@ -163,7 +188,8 @@ export class CandidateDetailsComponent implements OnInit {
       .subscribe({
         next: (response: any) => {
           this.analysis = response?.analysis || response?.insight || null;
-          this.notice = 'AI candidate analysis updated from verified telemetry.';
+          this.notice =
+            'Deterministic candidate assessment updated from available recorded evidence.';
           this.analyzing = false;
         },
         error: (err) => {
@@ -217,7 +243,7 @@ export class CandidateDetailsComponent implements OnInit {
   }
 
   formatScore(value: number | null | undefined): string {
-    if (value === null || value === undefined || !Number.isFinite(Number(value))) {
+    if (!this.isMeasuredScore(value)) {
       return 'Unavailable';
     }
     return `${Math.round(Number(value))}%`;

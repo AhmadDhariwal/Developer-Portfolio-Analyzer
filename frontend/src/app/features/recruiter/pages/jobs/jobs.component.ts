@@ -22,6 +22,9 @@ export class JobsComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
 
   jobs: any[] = [];
+  teams: { _id: string; name: string }[] = [];
+  editingAccess: Record<string, boolean> | null = null;
+  editingVersion: number | undefined;
   loading = true;
   saving = false;
   editorOpen = false;
@@ -51,6 +54,9 @@ export class JobsComponent implements OnInit {
     minExperienceYears: [0, [Validators.required, Validators.min(0)]],
     requiredSkills: ['', [Validators.required]],
     preferredSkills: [''],
+    teamId: [''],
+    teamShared: [false],
+    evaluationShared: [false],
   });
 
   private pendingConfirmAction: (() => void) | null = null;
@@ -64,12 +70,23 @@ export class JobsComponent implements OnInit {
     this.loadJobs();
   }
 
+  get canManageSharing(): boolean {
+    return !this.editingJobId || this.editingAccess?.['manageSharing'] === true;
+  }
+  get unavailableTeam(): boolean {
+    const id = this.jobForm.controls.teamId.value;
+    return !!id && !this.teams.some((team) => team._id === id);
+  }
   get submitLabel(): string {
     return this.editingJobId ? 'Update Job' : 'Create Job';
   }
 
   get isSubmitDisabled(): boolean {
-    return this.saving || this.jobForm.invalid;
+    return (
+      this.saving ||
+      this.jobForm.invalid ||
+      (!!this.editingJobId && this.editingAccess?.['edit'] !== true)
+    );
   }
 
   get openJobsCount(): number {
@@ -117,11 +134,12 @@ export class JobsComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.jobService
-      .listJobs()
+      .listJobs(true)
       .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: (response) => {
           this.jobs = this.sortJobs(response?.jobs || []);
+          this.teams = response?.teams || [];
           this.loading = false;
         },
         error: (err) => {
@@ -133,6 +151,7 @@ export class JobsComponent implements OnInit {
   }
 
   saveJob(): void {
+    if (this.saving || (this.editingJobId && !this.editingAccess?.['edit'])) return;
     this.clearMessages();
     this.fieldErrors = {};
 
@@ -155,6 +174,9 @@ export class JobsComponent implements OnInit {
   }
 
   editJob(job: any): void {
+    if (!job?.access?.edit) return;
+    this.editingAccess = job.access;
+    this.editingVersion = job.version;
     this.clearMessages();
     this.fieldErrors = {};
     this.editingJobId = String(job?._id || '');
@@ -172,6 +194,9 @@ export class JobsComponent implements OnInit {
         minExperienceYears: Number(job?.minExperienceYears || 0),
         requiredSkills: (job?.requiredSkills || []).join(', '),
         preferredSkills: (job?.preferredSkills || []).join(', '),
+        teamId: job?.teamId || '',
+        teamShared: job?.teamShared === true,
+        evaluationShared: job?.evaluationShared === true,
       },
       { emitEvent: false },
     );
@@ -179,6 +204,7 @@ export class JobsComponent implements OnInit {
   }
 
   archiveJob(job: any): void {
+    if (!job?.access?.archive) return;
     if (String(job?.status || '').toLowerCase() === 'closed') return;
     this.openConfirm(
       'Archive job',
@@ -203,6 +229,7 @@ export class JobsComponent implements OnInit {
   }
 
   deleteJob(job: any): void {
+    if (!job?.access?.delete) return;
     this.openConfirm(
       'Delete job',
       `Delete ${job?.title || 'this job'}? This action cannot be undone.`,
@@ -235,6 +262,8 @@ export class JobsComponent implements OnInit {
   }
 
   resetForm(): void {
+    this.editingAccess = null;
+    this.editingVersion = undefined;
     this.editingJobId = '';
     this.editingJobTitle = '';
     this.fieldErrors = {};
@@ -249,6 +278,9 @@ export class JobsComponent implements OnInit {
       minExperienceYears: 0,
       requiredSkills: '',
       preferredSkills: '',
+      teamId: '',
+      teamShared: false,
+      evaluationShared: false,
     });
     this.jobForm.markAsPristine();
     this.jobForm.markAsUntouched();
@@ -282,12 +314,20 @@ export class JobsComponent implements OnInit {
 
   private persistJob(): void {
     this.saving = true;
-    const payload = {
+    const payload: Record<string, unknown> = {
       ...this.jobForm.getRawValue(),
       requiredSkills: this.toArray(this.jobForm.getRawValue().requiredSkills),
       preferredSkills: this.toArray(this.jobForm.getRawValue().preferredSkills),
     };
 
+    if (this.editingJobId) {
+      payload['expectedVersion'] = this.editingVersion;
+      if (!this.canManageSharing) {
+        delete payload['teamId'];
+        delete payload['teamShared'];
+        delete payload['evaluationShared'];
+      }
+    }
     const request$ = this.editingJobId
       ? this.jobService.updateJob(this.editingJobId, payload)
       : this.jobService.createJob(payload);
@@ -311,6 +351,13 @@ export class JobsComponent implements OnInit {
       error: (err) => {
         this.saving = false;
         this.applyApiErrors(err, 'Unable to save this job.');
+        if ([403, 404, 409].includes(err?.status)) {
+          const message = this.error;
+          this.resetForm();
+          this.editorOpen = false;
+          this.loadJobs();
+          this.error = message;
+        }
       },
     });
   }
