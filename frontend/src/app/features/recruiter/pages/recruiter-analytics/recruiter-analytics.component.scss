@@ -39,10 +39,21 @@
 .section-shell {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .section-head {
   @include recruiter.section-head;
+}
+
+.accuracy-callout {
+  @include recruiter.callout-note(primary);
+  flex-direction: column;
+  gap: 4px;
+
+  p {
+    margin: 0;
+  }
 }
 
 .metric-grid {
@@ -51,8 +62,9 @@
 
 .snapshot-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: 18px;
+  min-width: 0;
 }
 
 .panel {
@@ -60,6 +72,9 @@
   display: grid;
   gap: 14px;
   align-content: start;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .panel__head {
@@ -80,6 +95,7 @@
 .rank-list {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .rank-list__item {
@@ -87,6 +103,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  min-width: 0;
   padding: 10px 12px;
   border-radius: var(--dev-radius-control, 6px);
   background: var(--surface-secondary);
@@ -162,8 +179,9 @@
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: 18px;
+  min-width: 0;
 }
 
 .empty {
@@ -173,6 +191,10 @@
 }
 
 @media (max-width: 480px) {
+  .panel {
+    padding: 16px;
+  }
+
   .snapshot-grid {
     grid-template-columns: 1fr;
   }

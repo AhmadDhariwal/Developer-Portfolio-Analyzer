@@ -3,10 +3,15 @@
 .applicants-panel {
   display: grid;
   gap: 16px;
+  min-width: 0;
   padding: 20px;
   border-radius: var(--dev-radius-surface, 8px);
   border: 1px solid var(--border-color, #e2e8f0);
   background: var(--surface-card, #ffffff);
+
+  @media (max-width: 560px) {
+    padding: 14px;
+  }
 }
 
 .applicants-header {
@@ -84,10 +89,17 @@
 .applicant-card {
   display: grid;
   gap: 14px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   padding: 16px 18px;
   border-radius: var(--dev-radius-surface, 8px);
   border: 1px solid var(--border-color, #e2e8f0);
   background: var(--surface-card, #ffffff);
+
+  @media (max-width: 480px) {
+    padding: 14px;
+  }
 
   &__top {
     display: flex;
@@ -95,6 +107,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
+    min-width: 0;
   }
 
   &__identity {
@@ -102,6 +115,7 @@
     align-items: center;
     gap: 12px;
     min-width: 0;
+    max-width: 100%;
   }
 
   &__name-row {
@@ -130,6 +144,16 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+
+    @media (max-width: 640px) {
+      width: 100%;
+
+      > .da-btn {
+        flex: 1 1 140px;
+        min-height: 38px;
+        white-space: normal;
+      }
+    }
   }
 
   &__evidence-bar {

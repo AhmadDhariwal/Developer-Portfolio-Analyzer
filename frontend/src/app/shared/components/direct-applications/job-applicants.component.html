@@ -86,10 +86,14 @@
   </div>
 
   @if (actionError) {
-    <p role="alert">{{ actionError }}</p>
+    <div class="alert-banner alert-banner--error" role="alert">
+      <span>{{ actionError }}</span>
+    </div>
   }
   @if (notice) {
-    <p role="status">{{ notice }}</p>
+    <div class="alert-banner alert-banner--success" role="status">
+      <span>{{ notice }}</span>
+    </div>
   }
 
   @if (loading) {

@@ -49,7 +49,7 @@
     </div>
   </div>
 
-  <p *ngIf="item?.job?.sharedTeam">
+  <p class="shortlist-card__ownership" *ngIf="item?.job?.sharedTeam">
     {{ item?.job?.owner?.name }} · {{ item.job.sharedTeam.name }} ·
     {{ item?.access?.manage ? 'Can manage evaluations' : 'Read only' }}
   </p>
@@ -72,14 +72,14 @@
     </button>
     <span *ngIf="changingApplication" role="status">Updating application...</span>
   </div>
-  <p *ngIf="item?.applicationId">
-    Direct application · Owner only · Application status: {{ item.application.status }}
+  <div class="shortlist-card__application-bar" *ngIf="item?.applicationId">
+    <span>Direct application · Owner only · Application status: {{ item.application.status }}</span>
     <a
       [routerLink]="['/app/recruiter/jobs', jobRouteId]"
       [queryParams]="{ applicationId: item.applicationId }"
       >View application &amp; submitted evidence</a
     >
-  </p>
+  </div>
   <div class="shortlist-card__meta" *ngIf="!item?.applicationId">
     <span>{{ item?.candidate?.stack || 'Generalist' }}</span>
     <span>{{ item?.candidate?.yearsOfExperience || 0 }} yrs</span>

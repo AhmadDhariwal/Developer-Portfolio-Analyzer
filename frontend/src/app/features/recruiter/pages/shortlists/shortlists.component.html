@@ -38,11 +38,11 @@
       Direct applications · owner only
     </button>
   </div>
-  <p *ngIf="source === 'applications'">
+  <div class="callout-note callout-note--primary" *ngIf="source === 'applications'">
     Application evaluations are owner only. Notes and internal stages do not change the application
     status or notify the applicant. Explicit application status actions notify the applicant. Stage
     filters, search and pipeline metrics apply to the current page.
-  </p>
+  </div>
 
   <app-ui-error-state
     *ngIf="error && !shortlists.length && !loading"
@@ -213,29 +213,31 @@
 
   <nav
     *ngIf="source === 'applications' && !loading && !error && applicationPages > 0"
-    class="page-header__actions"
+    class="pager"
     aria-label="Application evaluation pages"
   >
-    <button
-      type="button"
-      class="btn-secondary"
-      [disabled]="applicationPage <= 1"
-      (click)="changeApplicationPage(applicationPage - 1)"
-    >
-      Previous page
-    </button>
-    <span role="status"
-      >Page {{ applicationPage }} of {{ applicationPages }} ·
-      {{ applicationTotal }} evaluations</span
-    >
-    <button
-      type="button"
-      class="btn-secondary"
-      [disabled]="applicationPage >= applicationPages"
-      (click)="changeApplicationPage(applicationPage + 1)"
-    >
-      Next page
-    </button>
+    <span class="pager__summary" role="status">
+      Page {{ applicationPage }} of {{ applicationPages }} · {{ applicationTotal }} evaluations
+    </span>
+
+    <div class="pager__controls">
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="applicationPage <= 1"
+        (click)="changeApplicationPage(applicationPage - 1)"
+      >
+        Previous page
+      </button>
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="applicationPage >= applicationPages"
+        (click)="changeApplicationPage(applicationPage + 1)"
+      >
+        Next page
+      </button>
+    </div>
   </nav>
 
   <app-confirm-dialog

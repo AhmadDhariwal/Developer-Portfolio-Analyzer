@@ -60,7 +60,7 @@
 
 .controls-grid {
   display: grid;
-  grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(min(100%, 250px), 320px) minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
@@ -116,7 +116,10 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 
   small {
     margin: 0;
@@ -134,18 +137,19 @@
   &.is-selected {
     background: var(--color-primary-soft);
     border-color: var(--color-primary);
-    color: var(--color-primary);
+    color: var(--color-primary-text);
 
     small {
-      color: var(--color-primary);
+      color: var(--color-primary-text);
     }
   }
 }
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 18px;
+  min-width: 0;
 }
 
 .compare-tray {

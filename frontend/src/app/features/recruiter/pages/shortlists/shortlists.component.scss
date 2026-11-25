@@ -32,6 +32,14 @@
   @include recruiter.btn-secondary;
 }
 
+.callout-note {
+  @include recruiter.callout-note(info);
+
+  &--primary {
+    @include recruiter.callout-note(primary);
+  }
+}
+
 .banner--error {
   @include recruiter.banner-error;
 }
@@ -100,7 +108,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  flex: 1 1 280px;
+  flex: 1 1 min(100%, 280px);
   justify-content: flex-end;
 
   select,
@@ -108,7 +116,7 @@
     @include recruiter.field-control;
     min-height: 38px;
     width: auto;
-    min-width: 180px;
+    min-width: min(100%, 170px);
   }
 
   input {
@@ -121,7 +129,32 @@
   @include recruiter.card-grid(340px);
 }
 
-@media (max-width: 720px) {
+.pager {
+  @include recruiter.pager-bar;
+}
+
+.pager__summary {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pager__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.pager__btn {
+  @include recruiter.btn-secondary;
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+@media (max-width: 780px) {
   .toolbar__filters {
     justify-content: stretch;
 

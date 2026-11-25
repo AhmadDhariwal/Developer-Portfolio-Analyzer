@@ -143,23 +143,23 @@
         </option>
         <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
       </select>
-      <label
-        ><input
+      <label class="sharing-choice">
+        <input
           type="checkbox"
           formControlName="teamShared"
           (change)="jobForm.controls.evaluationShared.setValue(false)"
         />
-        Share job details with this team</label
-      >
-      <p>
+        <span>Share job details with this team</span>
+      </label>
+      <p class="sharing-hint">
         Team members can view job details. Team managers can edit, publish and archive. Applications
         and submitted evidence stay private. Evaluation sharing requires separate permission below.
       </p>
       <label class="sharing-choice" *ngIf="jobForm.controls.teamShared.value">
         <input type="checkbox" formControlName="evaluationShared" />
-        Share public-candidate matches and shortlist notes with this team
+        <span>Share public-candidate matches and shortlist notes with this team</span>
       </label>
-      <p *ngIf="jobForm.controls.teamShared.value">
+      <p class="sharing-hint" *ngIf="jobForm.controls.teamShared.value">
         Evaluation sharing includes existing results and notes. Applications and submitted evidence
         stay private.
       </p>

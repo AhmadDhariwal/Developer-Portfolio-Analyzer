@@ -52,7 +52,7 @@
 
 .picker-top {
   display: grid;
-  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(min(100%, 240px), 320px) minmax(0, 1fr);
   gap: 16px;
   align-items: end;
 }
@@ -115,7 +115,9 @@
   background: var(--surface-secondary);
   color: var(--text-primary);
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover {
     background: var(--surface-hover);
@@ -127,7 +129,7 @@
     border-color: var(--color-primary);
 
     .picker-chip__name {
-      color: var(--color-primary);
+      color: var(--color-primary-text);
     }
   }
 }

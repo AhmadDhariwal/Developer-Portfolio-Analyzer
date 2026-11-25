@@ -55,8 +55,15 @@
   min-width: 0;
 }
 
+.dashboard-loading {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
 .section-head {
   @include recruiter.section-head;
+  min-width: 0;
 }
 
 .section-head__badge {
@@ -107,9 +114,16 @@
 .surface-card,
 .list-card {
   @include recruiter.card-surface(18px);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 14px;
+
+  @media (max-width: 480px) {
+    padding: 14px;
+  }
 }
 
 .card-head,
@@ -292,6 +306,11 @@
   transition:
     background-color var(--transition-fast),
     border-color var(--transition-fast);
+
+  @media (max-width: 380px) {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 
   &:hover {
     background: var(--surface-hover);

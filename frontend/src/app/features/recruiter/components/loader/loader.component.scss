@@ -73,7 +73,7 @@
 }
 
 .loader__panel--chart {
-  min-height: 290px;
+  min-height: 278px;
   align-content: space-between;
 }
 
@@ -136,7 +136,12 @@
 .loader__pill {
   height: 44px;
   width: 170px;
+  max-width: 100%;
   border-radius: 8px;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
 }
 
 .loader__table-head,

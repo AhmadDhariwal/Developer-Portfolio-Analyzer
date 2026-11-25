@@ -32,13 +32,17 @@
     variant="stats"
     [count]="6"
   />
+  <app-recruiter-loader
+    *ngIf="loading && !metricsReady"
+    label="Preparing analytics charts..."
+    variant="charts"
+    [count]="2"
+  />
 
   <ng-container *ngIf="metricsReady">
-    <div class="section-head" aria-live="polite">
-      <div>
-        <p>{{ populationAccuracyHint }}</p>
-        <p *ngIf="boundedAccuracyHint">{{ boundedAccuracyHint }}</p>
-      </div>
+    <div class="accuracy-callout" aria-live="polite">
+      <p>{{ populationAccuracyHint }}</p>
+      <p *ngIf="boundedAccuracyHint">{{ boundedAccuracyHint }}</p>
     </div>
     <section class="section-shell">
       <div class="section-head">

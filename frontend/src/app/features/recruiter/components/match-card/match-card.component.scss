@@ -27,6 +27,17 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
+
+  @media (max-width: 380px) {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+.match-card__ownership {
+  @include recruiter.ownership-badge;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .match-card__identity {

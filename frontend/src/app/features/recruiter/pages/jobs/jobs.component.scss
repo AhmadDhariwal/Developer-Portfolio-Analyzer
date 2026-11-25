@@ -147,30 +147,61 @@
 
 .job-editor__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 14px;
 }
 
 .sharing-controls {
   display: grid;
   gap: 10px;
-  padding: 16px;
+  padding: 14px 16px 16px;
+  margin: 0;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--dev-radius-surface, 8px);
   color: var(--text-primary);
-  background: var(--surface-card);
+  background: var(--surface-secondary);
 
   label,
   legend {
     @include recruiter.field-label;
   }
 
+  legend {
+    padding: 2px 8px;
+    border-radius: var(--dev-radius-control, 6px);
+    background: var(--surface-card);
+    border: 1px solid var(--border-color);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
   select {
     @include recruiter.field-control;
   }
 
-  p {
-    color: var(--text-muted);
+  .sharing-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+
+    input[type='checkbox'] {
+      width: 17px;
+      height: 17px;
+      margin-top: 2px;
+      accent-color: var(--color-primary);
+      flex-shrink: 0;
+    }
+  }
+
+  .sharing-hint {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-secondary);
   }
 }
 

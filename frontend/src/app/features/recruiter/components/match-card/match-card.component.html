@@ -55,7 +55,7 @@
     </div>
   </div>
 
-  <p *ngIf="match?.job?.sharedTeam">
+  <p class="match-card__ownership" *ngIf="match?.job?.sharedTeam">
     {{ match?.job?.owner?.name }} · {{ match.job.sharedTeam.name }} ·
     {{ match?.access?.manage ? 'Can manage evaluations' : 'Read only' }}
   </p>
@@ -68,7 +68,7 @@
           else naSkill
         "
       >
-        {{ match.skillMatchPercent }}%
+        {{ match.skillMatchPercent | number: '1.0-1' }}%
       </strong>
       <ng-template #naSkill><span class="unavailable-pill">Unavailable</span></ng-template>
     </div>
