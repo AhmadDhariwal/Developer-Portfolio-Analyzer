@@ -468,15 +468,7 @@
                   </span>
                 </div>
 
-                <details class="evidence-details">
-                  <summary>Status timeline</summary>
-
-                  <ol>
-                    <li *ngFor="let event of application.timeline">
-                      {{ event.status }} - {{ event.at | date: 'medium' }}
-                    </li>
-                  </ol>
-                </details>
+                <app-application-timeline [timeline]="application.timeline" />
 
                 @if (application.status === 'submitted' || application.status === 'reviewing') {
                   <button

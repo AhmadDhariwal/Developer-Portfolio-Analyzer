@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { JobApplicationsService } from '../../services/job-applications.service';
 import { formatInitials, truncateSha256 } from './direct-application-ui.utils';
+import { ApplicationTimelineComponent } from './application-timeline.component';
 import { InternalJobsComponent } from './internal-jobs.component';
 import { JobApplicantsComponent } from './job-applicants.component';
 import { SubmittedPortfolioComponent } from './submitted-portfolio.component';
@@ -177,5 +178,36 @@ describe('Direct applications redesigned UI', () => {
     expect(text).toContain('Systems Lead');
     expect(text).toContain('Broker');
     expect(text).toContain('Go');
+  });
+
+  it('renders ApplicationTimelineComponent empty state vs vertical status steps cleanly', () => {
+    TestBed.configureTestingModule({
+      imports: [ApplicationTimelineComponent],
+    });
+
+    const fixture = TestBed.createComponent(ApplicationTimelineComponent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Status timeline');
+    expect(fixture.nativeElement.textContent).toContain('0 events');
+    expect(fixture.nativeElement.textContent).toContain('No status transitions recorded yet.');
+
+    fixture.componentRef.setInput('timeline', [
+      { status: 'submitted', at: '2026-11-19T15:15:00.000Z' },
+      { status: 'reviewing', at: '2026-11-24T15:15:00.000Z' },
+    ]);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('2 events');
+    expect(text).toContain('Step 1');
+    expect(text).toContain('Step 2');
+    expect(text).toContain('submitted');
+    expect(text).toContain('reviewing');
+
+    const steps = fixture.nativeElement.querySelectorAll('.timeline-step');
+    expect(steps.length).toBe(2);
+    expect(steps[0].classList.contains('timeline-step--submitted')).toBe(true);
+    expect(steps[1].classList.contains('timeline-step--reviewing')).toBe(true);
+    expect(steps[1].classList.contains('timeline-step--latest')).toBe(true);
   });
 });
