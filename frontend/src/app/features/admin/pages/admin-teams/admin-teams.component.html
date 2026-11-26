@@ -235,9 +235,6 @@
       class="team-card"
       *ngFor="let team of teams; trackBy: trackByTeamId"
       (click)="viewDetails(team)"
-      role="button"
-      tabindex="0"
-      [attr.aria-label]="'View details for ' + team.name"
     >
       <div class="team-card__top">
         <div
@@ -267,7 +264,7 @@
             class="team-card__action-btn"
             (click)="viewDetails(team)"
             title="View details"
-            aria-label="View team details"
+            [attr.aria-label]="'View details for ' + team.name"
           >
             <svg
               viewBox="0 0 24 24"
@@ -401,7 +398,7 @@
       <div class="team-card__footer">
         <div class="team-card__score" [attr.data-score]="teamTone(team.performanceScore)">
           <span class="team-card__score-value">{{ team.performanceScore }}</span>
-          <span class="team-card__score-label">Team Score</span>
+          <span class="team-card__score-label">Team Activity Score</span>
         </div>
         <div class="team-card__date">
           <svg
@@ -437,7 +434,7 @@
           <th scope="col">Jobs</th>
           <th scope="col">Candidates</th>
           <th scope="col">Matches</th>
-          <th scope="col">Score</th>
+          <th scope="col">Team Activity Score</th>
           <th scope="col">Created</th>
           <th scope="col">Actions</th>
         </tr>
@@ -447,9 +444,6 @@
           *ngFor="let team of teams; trackBy: trackByTeamId"
           class="teams-table__row"
           (click)="viewDetails(team)"
-          role="button"
-          tabindex="0"
-          [attr.aria-label]="'View details for ' + team.name"
         >
           <td>
             <div class="teams-table__name-cell">
@@ -502,7 +496,7 @@
                 class="teams-table__action"
                 (click)="viewDetails(team)"
                 title="View details"
-                aria-label="View team details"
+                [attr.aria-label]="'View details for ' + team.name"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -682,7 +676,7 @@
     <div class="teams-analytics__grid">
       <!-- Top Teams -->
       <div class="teams-analytics__card">
-        <h3 class="teams-analytics__card-title">Top Teams</h3>
+        <h3 class="teams-analytics__card-title">Top Teams · Performance Composite</h3>
         <div class="teams-analytics__list" *ngIf="topTeams.length > 0; else noDataTop">
           <div class="teams-analytics__item" *ngFor="let t of topTeams; let i = index">
             <span class="teams-analytics__rank">#{{ i + 1 }}</span>
@@ -851,7 +845,7 @@
             </span>
           </div>
           <div class="drawer__kv-item">
-            <span class="drawer__kv-label">Team Score</span>
+            <span class="drawer__kv-label">Team Activity Score</span>
             <span
               class="drawer__kv-value drawer__kv-value--score"
               [attr.data-score]="teamTone(selectedTeam.performanceScore)"

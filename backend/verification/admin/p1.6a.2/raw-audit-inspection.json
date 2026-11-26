@@ -1,0 +1,96 @@
+{
+  "productionDataUsed": false,
+  "rawDocumentsInspected": 4,
+  "syntheticSecretAbsent": true,
+  "records": [
+    {
+      "_id": "6b07f518369b8ceadafadd3c",
+      "actor": "6b07f513369b8ceadafada57",
+      "organizationId": null,
+      "teamId": null,
+      "action": "POST /api/profile?tab=settings",
+      "method": "POST",
+      "route": "/api/profile?tab=settings",
+      "before": {
+        "query": {
+          "tab": "settings"
+        },
+        "body": {
+          "password": "***MASKED***",
+          "nested": {
+            "apiKey": "***MASKED***"
+          }
+        }
+      },
+      "after": {
+        "ok": true
+      },
+      "statusCode": 200,
+      "ipAddress": "127.0.0.1",
+      "userAgent": "node",
+      "deleted": false,
+      "deletedAt": null,
+      "timestamp": "2026-11-26T09:00:08.680Z"
+    },
+    {
+      "_id": "6b07f518369b8ceadafadd3e",
+      "actor": "6b07f513369b8ceadafada57",
+      "organizationId": null,
+      "teamId": null,
+      "action": "POST /api/profile",
+      "method": "POST",
+      "route": "/api/profile",
+      "before": {
+        "body": {
+          "password": "***MASKED***",
+          "nested": {
+            "apiKey": "***MASKED***"
+          }
+        }
+      },
+      "after": {
+        "ok": true
+      },
+      "statusCode": 200,
+      "ipAddress": "127.0.0.1",
+      "userAgent": "node",
+      "deleted": false,
+      "deletedAt": null,
+      "timestamp": "2026-11-26T09:00:08.692Z"
+    },
+    {
+      "_id": "6b07f518369b8ceadafadd40",
+      "actor": "6b07f513369b8ceadafada57",
+      "organizationId": null,
+      "teamId": null,
+      "action": "POST /api/integrations/callback",
+      "method": "POST",
+      "route": "/api/integrations/callback",
+      "before": null,
+      "after": null,
+      "statusCode": 200,
+      "ipAddress": "127.0.0.1",
+      "userAgent": "node",
+      "deleted": false,
+      "deletedAt": null,
+      "timestamp": "2026-11-26T09:00:08.707Z"
+    },
+    {
+      "_id": "6b07f518369b8ceadafadd42",
+      "actor": "6b07f513369b8ceadafada57",
+      "organizationId": null,
+      "teamId": null,
+      "action": "POST /api/recruiter-hub/shortlists?jobId=0123456789abcdef01234567",
+      "method": "POST",
+      "route": "/api/recruiter-hub/shortlists?jobId=0123456789abcdef01234567",
+      "before": null,
+      "after": null,
+      "statusCode": 200,
+      "ipAddress": "127.0.0.1",
+      "userAgent": "node",
+      "deleted": false,
+      "deletedAt": null,
+      "timestamp": "2026-11-26T09:00:08.715Z"
+    }
+  ]
+}

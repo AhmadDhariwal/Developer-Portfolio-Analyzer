@@ -682,7 +682,12 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
         datasets: [
           {
             data: values,
-            backgroundColor: ['#6366f1', '#22d3ee', '#14b8a6', '#f59e0b'],
+            backgroundColor: [
+              this.chartToken('--color-primary'),
+              this.chartToken('--color-info'),
+              this.chartToken('--color-success'),
+              this.chartToken('--color-warning'),
+            ],
             borderColor: this.chartToken('--chart-donut-border'),
             borderWidth: 2,
             hoverOffset: 6,

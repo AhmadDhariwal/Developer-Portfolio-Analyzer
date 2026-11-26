@@ -23,9 +23,45 @@ test('notification logging safely handles a request without a parsed path', () =
   );
 });
 
-test('unrelated module logging is unchanged and similar route names do not match', () => {
-  for (const originalUrl of ['/api/profile?tab=settings', '/api/notifications-extra?value=1']) {
-    assert.equal(requestLogPath({ path: originalUrl.split('?')[0], originalUrl }), originalUrl);
+test('profile logging retains a known diagnostic tab; unknown routes discard queries', () => {
+  assert.equal(requestLogPath({ originalUrl: '/api/profile?tab=settings' }), '/api/profile?tab=settings');
+  // Intentional security contract: unknown routes no longer retain arbitrary queries.
+  assert.equal(
+    requestLogPath({ originalUrl: '/api/notifications-extra?value=1' }),
+    '/api/notifications-extra'
+  );
+});
+
+test('profile diagnostics never log encoded, repeated or malformed secrets', () => {
+  for (const key of [
+    'password',
+    'token',
+    'invitationToken',
+    'otp',
+    'api_key',
+    'authorization',
+    'applicationId',
+    'applicationEvidence',
+    'code',
+    '%74oken',
+    '%2574oken',
+    'token[]'
+  ]) {
+    assert.equal(
+      requestLogPath({ originalUrl: `/api/profile?tab=settings&${key}=synthetic-secret&${key}=again` }),
+      '/api/profile?tab=settings'
+    );
+  }
+  for (const query of [
+    'tab=settings&%74ab=overview',
+    'tab=synthetic-secret',
+    'tab=%2573ettings',
+    'tab=settings&token=%',
+    'tab=settings&%ZZ=synthetic-secret',
+    'tab=settings%00',
+    'tab=settings&token=' + 'a'.repeat(2100)
+  ]) {
+    assert.equal(requestLogPath({ originalUrl: `/api/profile?${query}` }), '/api/profile');
   }
 });
 

@@ -1,0 +1,229 @@
+{
+  "generatedAt": "2026-11-26T12:58:59.205Z",
+  "matrixTotal": 56,
+  "overflowFailureCount": 0,
+  "contrastFailureCount": 0,
+  "clippedFailureCount": 0,
+  "darkCardsInLightCount": 0,
+  "layoutShiftIssueCount": 0,
+  "stuckLoadingIssueCount": 2,
+  "stuckLoadingIssues": [
+    {
+      "profile": "desktop-light",
+      "route": "console",
+      "stuckLoadingSelector": ".oc-loading-bar"
+    },
+    {
+      "profile": "desktop-dark",
+      "route": "console",
+      "stuckLoadingSelector": ".oc-loading-bar"
+    }
+  ],
+  "focusResults": [
+    {
+      "route": "/app/admin/dashboard",
+      "visibleFocusCount": 8,
+      "suppressedOutlineNoShadow": []
+    },
+    {
+      "route": "/app/admin/recruiters",
+      "visibleFocusCount": 8,
+      "suppressedOutlineNoShadow": []
+    },
+    {
+      "route": "/app/admin/console/performance-statistics",
+      "visibleFocusCount": 8,
+      "suppressedOutlineNoShadow": []
+    },
+    {
+      "route": "/app/admin/console",
+      "visibleFocusCount": 8,
+      "suppressedOutlineNoShadow": []
+    }
+  ],
+  "reducedMotion": {
+    "reducedMotionDash": {
+      "matched": true,
+      "transitionDuration": "0s"
+    },
+    "reducedMotionRecruiters": {
+      "transitionDuration": "0.15s, 0.15s, 0.15s"
+    }
+  },
+  "section4Dashboard": {
+    "hiringFunnelCount": 1,
+    "scopeVal": "Nexora Systems · 30d",
+    "rawOrgExposed": false,
+    "ringBg": "rgba(0, 0, 0, 0)",
+    "searchPlaceholder": "Search admin workspace...",
+    "hasOrgSelect": false,
+    "orgPill": "Nexora Systems"
+  },
+  "skeletonCheck": {
+    "skeletonVisible": true,
+    "overflowDuringSkeleton": 0
+  },
+  "searchItems": ["Admin DashboardOrganization command overviewpage"],
+  "activityWorkflow": {
+    "actInitial30d": {
+      "count30d": 2,
+      "activePreset": "Last 30 days"
+    },
+    "actAllDates": 3,
+    "confirmCancelCheck": true,
+    "countAfterCancel": 3,
+    "countAfterConfirmArchive": 2
+  },
+  "notifState": {
+    "open": true,
+    "items": 2
+  },
+  "org1Mutations": {
+    "recruiterUiCheck": {
+      "hasInvited": true,
+      "hasDirect": true
+    },
+    "recruiterDrawerOpen": false,
+    "teamsDrawerOpen": true,
+    "devApiUrls": [
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=2&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&search=Omar&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=10&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?page=1&limit=4&sortBy=lastAnalyzedAt&sortOrder=desc",
+      "/api/admin/developers?limit=20"
+    ],
+    "devPage1": {
+      "text": "Showing 1-10of 12 developersSorted by Recently analyzed",
+      "cardCount": 10,
+      "leaksEmail": false,
+      "includesInactive": false
+    },
+    "devPage2": {
+      "timedOut": true,
+      "text": "",
+      "cardCount": 0,
+      "loadingVisible": false,
+      "pageUrl": "http://127.0.0.1:55472/app/admin/developers"
+    },
+    "devSearch": {
+      "timedOut": true,
+      "cardCount": 2,
+      "hasOmar": false,
+      "leaksOmarEmail": false,
+      "resultsText": "Showing 11-12of 12 developersSorted by Recently analyzed"
+    },
+    "jobErrorState": {
+      "errorText": "Injected QA faultDismiss",
+      "hasCreatedOnFailure": false
+    },
+    "jobRetryCreated": true,
+    "diagToggle": {
+      "initiallyOpen": false,
+      "openAfterClick": true,
+      "showsOrgIdAfterOpen": true
+    },
+    "prefPersistedOnDashboard": true,
+    "perfLabels": {
+      "hasTeamActivityScore": true,
+      "hasHiringCloseRate": true,
+      "hasTotalMembers": true,
+      "hasActiveRecruiters": true,
+      "teamTableText": "Team Performance\n2\nⓘ Engagement score: weighted composite\nExport CSV\nP\n01 Platform Core Engineering\nActive\n2\nTOTAL MEMBERS\n2\nACTIVE\n2\nACTIVE RECRUITERS\n2\nJOBS\n2\nRECENT\nTeam Activity Score\n61.5\nHiring Close Rate\n50%\nView Team Details →\nA\n02 Applied AI Research\n"
+    }
+  },
+  "org3Nano": {
+    "nanoEmptyDash": {
+      "orgHeading": "NanoForge Labs",
+      "orgPill": "NanoForge Labs"
+    },
+    "nanoTeamCreated": true
+  },
+  "org2Cloud": {
+    "orgHeading": "CloudScale AI",
+    "leaksNexoraJob": false,
+    "leaksConfidentialEval": false
+  },
+  "adminSupportUiCheck": {
+    "pathname": "/app/admin/dashboard",
+    "hasAdminWorkspaceClass": true
+  },
+  "sseStability": {
+    "rapidStreamDelta": 0,
+    "status429Count": 0,
+    "sse429Triggered": true
+  },
+  "secChecks": {
+    "foreignAdminReadTeamsStatus": 403,
+    "foreignAdminDeleteAuditStatus": 404,
+    "foreignAuditStillExists": true,
+    "superAdminHitAdminOverview": 403,
+    "recruiterHitAdminOverview": 403,
+    "developerHitAdminOverview": 403,
+    "teamManagerHitAdminOverview": 403,
+    "teamManagerHitOrgMembers": 403,
+    "nexoraSpoofOrgHeaderName": "Nexora Systems",
+    "orgAdminHitGlobalSupport": 403,
+    "devsApiEmailLeak": false,
+    "adminJobsLeakCloudEval": false
+  },
+  "regressions": {
+    "recDashOverflow": 0,
+    "recDashContrast": 0,
+    "recShortlistOverflow": 0,
+    "recMobileOverflow": 0,
+    "recBlockedFromAdmin": true,
+    "devDashOverflow": 0,
+    "devDashContrastCount": 1,
+    "devDashContrastItems": [
+      {
+        "tag": "span",
+        "cls": "",
+        "text": "Refresh dashboard",
+        "ratio": 1.06,
+        "threshold": 4.5,
+        "color": "rgb(255, 255, 255)",
+        "bg": "rgb(246,248,251)",
+        "hasGradientBg": true
+      }
+    ],
+    "devDirectAppCheck": {
+      "trackerText": true,
+      "audit": {
+        "overflow": 0
+      }
+    },
+    "devBlockedFromAdmin": true
+  },
+  "consoleErrors": [],
+  "runtimeErrors": [],
+  "badHttp": [],
+  "overflowFailures": [],
+  "contrastFailures": [],
+  "clippedFailures": [],
+  "layoutShiftIssues": []
+}

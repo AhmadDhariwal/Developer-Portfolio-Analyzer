@@ -6,11 +6,18 @@ import { map } from 'rxjs/operators';
 import { DirectApplication, JobApplicationsService } from '../../services/job-applications.service';
 import { formatInitials, truncateSha256 } from './direct-application-ui.utils';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ApplicationTimelineComponent } from './application-timeline.component';
 import { SubmittedPortfolioComponent } from './submitted-portfolio.component';
 @Component({
   selector: 'app-job-applicants',
   standalone: true,
-  imports: [CommonModule, SubmittedPortfolioComponent, RouterLink, ConfirmDialogComponent],
+  imports: [
+    CommonModule,
+    SubmittedPortfolioComponent,
+    ApplicationTimelineComponent,
+    RouterLink,
+    ConfirmDialogComponent,
+  ],
   templateUrl: './job-applicants.component.html',
   styleUrl: './job-applicants.component.scss',
 })

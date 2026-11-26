@@ -5,6 +5,8 @@
  */
 
 const { body, param, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
+const { isObjectId } = require('../middleware/validateObjectIdParam');
 
 const User = require('../../auth/models/user');
 const Team = require('../models/team');
@@ -14,7 +16,13 @@ const AuditLog = require('../models/auditLog');
 const Organization = require('../models/organization');
 const Job = require('../../recruiter/models/Job');
 const { normalizeSlug } = require('../services/tenantService');
+const {
+  isDuplicateOrganizationTeamSlug,
+  withOrganizationTeamCapacity,
+  withOrganizationCapacityFence
+} = require('../services/teamCapacityService');
 const teamAnalyticsService = require('../services/teamAnalyticsService');
+const { getOrganizationSettingsSync } = require('../../super-admin/services/platformSettingsService');
 
 const {
   normalizeDashboardConfig,
@@ -120,25 +128,40 @@ const getConsoleAnalytics = async (req, res) => {
 
     const recruiterIds = recruiters.map((r) => r._id);
 
-    const [jobs, teams, memberships, recentInvitations] = await Promise.all([
-      Job.find({ organizationId: orgId }).select('recruiterId status createdAt').lean(),
+    const now = new Date();
+    const [jobSummary, teams, memberships, recentInvitations, invitationFunnel] = await Promise.all([
+      Job.aggregate([
+        { $match: { organizationId: new mongoose.Types.ObjectId(orgId) } },
+        {
+          $facet: {
+            byRecruiter: [{ $group: { _id: '$recruiterId', count: { $sum: 1 } } }],
+            byStatus: [{ $group: { _id: '$status', count: { $sum: 1 } } }]
+          }
+        }
+      ]),
       Team.find({ organizationId: orgId }).select('_id name createdAt').lean(),
-      Membership.find({ organizationId: orgId, status: 'active' })
-        .select('userId teamId role')
-        .lean(),
+      Membership.find({ organizationId: orgId, status: 'active' }).select('userId teamId role').lean(),
       Invitation.find({ organizationId: orgId })
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: -1, _id: -1 })
         .limit(20)
         .select('name email role status createdAt expiresAt')
-        .lean()
+        .lean(),
+      Promise.all([
+        Invitation.countDocuments({ organizationId: orgId, status: 'pending', expiresAt: { $gt: now } }),
+        Invitation.countDocuments({
+          organizationId: orgId,
+          $or: [{ status: 'expired' }, { status: 'pending', expiresAt: { $lte: now } }]
+        }),
+        Invitation.countDocuments({ organizationId: orgId, status: 'accepted' }),
+        Invitation.countDocuments({ organizationId: orgId, status: 'revoked' })
+      ])
     ]);
 
     // Jobs per recruiter
-    const jobsByRecruiter = new Map();
-    jobs.forEach((job) => {
-      const key = String(job.recruiterId || '');
-      if (key) jobsByRecruiter.set(key, (jobsByRecruiter.get(key) || 0) + 1);
-    });
+    const summary = jobSummary[0] || { byRecruiter: [], byStatus: [] };
+    const jobsByRecruiter = new Map(
+      summary.byRecruiter.filter((entry) => entry._id).map((entry) => [String(entry._id), entry.count])
+    );
 
     // Members per team
     const membersByTeam = new Map();
@@ -165,26 +188,26 @@ const getConsoleAnalytics = async (req, res) => {
     }));
 
     // Hiring activity: jobs by status
+    const jobsByStatus = new Map(summary.byStatus.map((entry) => [String(entry._id), entry.count]));
     const hiringActivity = {
-      total: jobs.length,
-      open: jobs.filter((j) => j.status === 'open').length,
-      draft: jobs.filter((j) => j.status === 'draft').length,
-      closed: jobs.filter((j) => j.status === 'closed').length
+      total: summary.byStatus.reduce((total, entry) => total + entry.count, 0),
+      open: jobsByStatus.get('open') || 0,
+      draft: jobsByStatus.get('draft') || 0,
+      closed: jobsByStatus.get('closed') || 0
     };
 
-    // Invitation funnel
-    const invitationFunnel = {
-      pending: recentInvitations.filter((i) => i.status === 'pending').length,
-      accepted: recentInvitations.filter((i) => i.status === 'accepted').length,
-      expired: recentInvitations.filter((i) => i.status === 'expired').length,
-      revoked: recentInvitations.filter((i) => i.status === 'revoked').length
-    };
+    const [pendingInvitations, expiredInvitations, acceptedInvitations, revokedInvitations] = invitationFunnel;
 
     return res.json({
       recruiterPerformance,
       teamSummary,
       hiringActivity,
-      invitationFunnel,
+      invitationFunnel: {
+        pending: pendingInvitations,
+        accepted: acceptedInvitations,
+        expired: expiredInvitations,
+        revoked: revokedInvitations
+      },
       recentInvitations: recentInvitations.slice(0, 10)
     });
   } catch (error) {
@@ -201,26 +224,17 @@ const getConsoleActivity = async (req, res) => {
     const limit = Math.max(1, Math.min(50, Number.parseInt(String(req.query.limit || '25'), 10)));
     const skip = (page - 1) * limit;
 
-    // Get all user IDs in this org (admin + recruiters + members)
-    const orgUserIds = await Membership.find({ organizationId: orgId, status: 'active' })
-      .select('userId')
-      .lean()
-      .then((ms) => ms.map((m) => m.userId));
-
-    // Also include the org owner (admin user)
-    const orgAdmin = await User.findOne({ organizationId: orgId, role: 'admin' }).select('_id').lean();
-    if (orgAdmin) orgUserIds.push(orgAdmin._id);
-
-    const uniqueIds = [...new Set(orgUserIds.map((id) => String(id)))];
+    const filter = { organizationId: orgId, deleted: { $ne: true } };
 
     const [logs, total] = await Promise.all([
-      AuditLog.find({ actor: { $in: uniqueIds } })
-        .sort({ timestamp: -1 })
+      AuditLog.find(filter)
+        .sort({ timestamp: -1, _id: -1 })
         .skip(skip)
         .limit(limit)
+        .select('actor organizationId teamId action method route statusCode timestamp')
         .populate('actor', 'name email role')
         .lean(),
-      AuditLog.countDocuments({ actor: { $in: uniqueIds } })
+      AuditLog.countDocuments(filter)
     ]);
 
     return res.json({
@@ -344,6 +358,8 @@ const createConsoleTeam = async (req, res) => {
       return res.status(400).json({ message: 'name is required.' });
     }
 
+    const organizationSettings = getOrganizationSettingsSync();
+    const teamLimit = Number(organizationSettings.maxTeamsPerOrganization || 10);
     const organization = await Organization.findById(orgId).select('_id').lean();
     if (!organization) {
       return res.status(404).json({ message: 'Organization not found.' });
@@ -354,27 +370,54 @@ const createConsoleTeam = async (req, res) => {
       return res.status(409).json({ message: 'Team slug already exists in this organization.' });
     }
 
-    const team = await Team.create({
+    const team = await withOrganizationTeamCapacity({
       organizationId: orgId,
-      name,
-      slug,
-      description,
-      isActive: true,
-      createdBy: req.user._id
-    });
+      limit: teamLimit,
+      create: async (session) => {
+        const duplicate = await Team.findOne({ organizationId: orgId, slug }).session(session).lean();
+        if (duplicate) {
+          const error = new Error('Team slug already exists in this organization.');
+          error.status = 409;
+          throw error;
+        }
 
-    if (recruiterIds.length > 0) {
-      await upsertRecruiterTeamMemberships({
-        organizationId: orgId,
-        teamId: team._id,
-        recruiterIds,
-        invitedBy: req.user._id
-      });
-    }
+        const [createdTeam] = await Team.create(
+          [
+            {
+              organizationId: orgId,
+              name,
+              slug,
+              description,
+              isActive: true,
+              createdBy: req.user._id
+            }
+          ],
+          { session }
+        );
+
+        if (recruiterIds.length > 0) {
+          await upsertRecruiterTeamMemberships({
+            organizationId: orgId,
+            teamId: createdTeam._id,
+            recruiterIds,
+            invitedBy: req.user._id,
+            session
+          });
+        }
+
+        return createdTeam;
+      }
+    });
 
     const [enrichedTeam] = await hydrateTeams(orgId, [team.toObject()]);
     return res.status(201).json({ team: enrichedTeam });
   } catch (error) {
+    if (isDuplicateOrganizationTeamSlug(error)) {
+      return res.status(409).json({ message: 'Team slug already exists in this organization.' });
+    }
+    if (error?.status && error.status < 500) {
+      return res.status(error.status).json({ message: error.message });
+    }
     console.error('Admin console create team error:', error.message);
     return res.status(error.status || 500).json({ message: error.message || 'Failed to create team.' });
   }
@@ -456,74 +499,54 @@ const toggleConsoleTeamActive = async (req, res) => {
 
 const deleteConsoleTeam = async (req, res) => {
   try {
-    const orgId = req.organizationId;
-    const team = await Team.findOne({ _id: req.params.id, organizationId: orgId }).lean();
-    if (!team) {
-      return res.status(404).json({ message: 'Team not found.' });
-    }
-
-    await Promise.all([
-      Team.deleteOne({ _id: team._id, organizationId: orgId }),
-      Membership.deleteMany({ organizationId: orgId, teamId: team._id }),
-      Invitation.updateMany(
-        { organizationId: orgId, teamId: team._id, status: 'pending' },
-        { $set: { status: 'revoked' } }
-      )
-    ]);
-
+    await withOrganizationCapacityFence({
+      organizationId: req.organizationId,
+      mutate: async (session, organizationId) => {
+        const teamId = req.params.id;
+        const result = await Team.deleteOne({ _id: teamId, organizationId }, { session });
+        if (!result.deletedCount) throw Object.assign(new Error('Team not found.'), { status: 404 });
+        await Membership.deleteMany({ organizationId, teamId }, { session });
+        await Invitation.updateMany(
+          { organizationId, teamId, status: 'pending' },
+          { $set: { status: 'revoked' } },
+          { session }
+        );
+      }
+    });
     return res.json({ message: 'Team deleted successfully.' });
   } catch (error) {
-    console.error('Admin console delete team error:', error.message);
-    return res.status(500).json({ message: 'Failed to delete team.' });
+    return res.status(error.status || 500).json({ message: error.status ? error.message : 'Failed to delete team.' });
   }
 };
 
 const assignRecruiterToConsoleTeam = async (req, res) => {
+  const recruiterId = req.body?.recruiterId;
+  if (typeof recruiterId !== 'string' || !/^[a-f\d]{24}$/i.test(recruiterId)) {
+    return res.status(400).json({ message: 'recruiterId is invalid.' });
+  }
+
   try {
-    const orgId = req.organizationId;
-    const team = await Team.findOne({ _id: req.params.id, organizationId: orgId, isActive: true }).lean();
-    if (!team) {
-      return res.status(404).json({ message: 'Team not found.' });
-    }
-
-    const recruiterId = String(req.body?.recruiterId || '').trim();
-    const recruiter = await User.findOne({ _id: recruiterId, organizationId: orgId, role: 'recruiter' }).select('_id').lean();
-    if (!recruiter) {
-      return res.status(404).json({ message: 'Recruiter not found in this organization.' });
-    }
-
-    const existingMembership = await Membership.findOne({
-      organizationId: orgId,
-      userId: recruiter._id,
-      status: 'active',
-      teamId: { $ne: null }
-    })
-      .populate('teamId', 'name')
-      .lean();
-
-    if (existingMembership && String(existingMembership.teamId?._id || existingMembership.teamId) !== String(team._id)) {
-      const assignedName = existingMembership.teamId?.name || 'another team';
-      return res.status(409).json({ message: `Recruiter is already assigned to ${assignedName}.` });
-    }
-
-    await Membership.findOneAndUpdate(
-      { organizationId: orgId, teamId: team._id, userId: recruiter._id },
-      {
-        $set: {
-          role: 'member',
-          status: 'active',
+    const team = await withOrganizationCapacityFence({
+      organizationId: req.organizationId,
+      mutate: async (session, organizationId) => {
+        const team = await Team.findOne({ _id: req.params.id, organizationId, isActive: true }).session(session).lean();
+        if (!team) throw Object.assign(new Error('Team not found.'), { status: 404 });
+        await upsertRecruiterTeamMemberships({
+          organizationId,
+          teamId: team._id,
+          recruiterIds: [recruiterId],
           invitedBy: req.user._id,
-          joinedAt: new Date()
-        }
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
-
-    const [enrichedTeam] = await hydrateTeams(orgId, [team]);
+          session
+        });
+        return team;
+      }
+    });
+    const [enrichedTeam] = await hydrateTeams(req.organizationId, [team]);
     return res.status(201).json({ team: enrichedTeam });
   } catch (error) {
-    console.error('Admin console assign recruiter error:', error.message);
-    return res.status(500).json({ message: 'Failed to assign recruiter to team.' });
+    return res
+      .status(error.status || 500)
+      .json({ message: error.status ? error.message : 'Failed to assign recruiter to team.' });
   }
 };
 
@@ -579,7 +602,17 @@ const updateConsolePreferences = async (req, res) => {
     const orgId = req.organizationId;
     const name = String(req.body?.name || '').trim();
     const description = String(req.body?.description || '').trim();
-    const requestedConfig = normalizeDashboardConfig(req.body?.dashboardConfig || {});
+    const config = req.body?.dashboardConfig;
+    if (config !== undefined && (!config || typeof config !== 'object' || Array.isArray(config))) {
+      return res.status(400).json({ message: 'dashboardConfig is invalid.' });
+    }
+    if (config?.defaultTeamId && !isObjectId(config.defaultTeamId)) {
+      return res.status(400).json({ message: 'defaultTeamId is invalid.' });
+    }
+    if (config?.preferredDateRangeDays !== undefined && ![7, 14, 30, 60, 90].includes(config.preferredDateRangeDays)) {
+      return res.status(400).json({ message: 'preferredDateRangeDays is invalid.' });
+    }
+    const requestedConfig = normalizeDashboardConfig(config || {});
 
     if (!name) {
       return res.status(400).json({ message: 'Organization name is required.' });
@@ -643,6 +676,23 @@ const getConsolePerformance = async (req, res) => {
       return res.status(403).json({ message: 'Organization context is required for this resource.' });
     }
 
+    const { days, teamId, recruiterId, stack, jobStatus } = req.query;
+    if (
+      (days !== undefined &&
+        (typeof days !== 'string' || !/^\d+$/.test(days) || Number(days) < 7 || Number(days) > 90)) ||
+      [teamId, recruiterId].some((id) => id !== undefined && id !== '' && !isObjectId(id)) ||
+      (stack !== undefined && (typeof stack !== 'string' || stack.length > 100)) ||
+      (jobStatus !== undefined && !['', 'open', 'draft', 'closed'].includes(jobStatus))
+    ) {
+      return res.status(400).json({ message: 'Invalid performance filters.' });
+    }
+    const [team, recruiter] = await Promise.all([
+      teamId && Team.exists({ _id: teamId, organizationId: orgId }),
+      recruiterId && User.exists({ _id: recruiterId, organizationId: orgId, role: 'recruiter' })
+    ]);
+    if ((teamId && !team) || (recruiterId && !recruiter)) {
+      return res.status(404).json({ message: 'Performance filter resource not found.' });
+    }
     const payload = await getConsolePerformanceData(orgId, req.query);
     return res.json(payload);
   } catch (error) {

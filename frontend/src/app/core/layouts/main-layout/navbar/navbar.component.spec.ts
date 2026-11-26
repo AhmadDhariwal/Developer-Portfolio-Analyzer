@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { vi } from 'vitest';
 import { Router } from '@angular/router';
 import { NotificationService } from '../../../../shared/services/notification.service';
+import { AuthService } from '../../../../shared/services/auth.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
@@ -71,5 +72,28 @@ describe('Navbar', () => {
     await fixture.whenStable();
     pending.error(new Error('Unavailable'));
     expect(component.unreadNotifications).toBe(2);
+  });
+
+  it('scopes admin navbar routes and search suggestions strictly to permitted Admin pages', () => {
+    const auth = TestBed.inject(AuthService);
+    const userSpy = vi.spyOn(auth, 'getCurrentUser').mockReturnValue({
+      _id: 'admin-1',
+      role: 'admin',
+      name: 'Org Admin',
+      email: 'admin@nexora.dev',
+    } as any);
+
+    expect(component.isAdmin).toBe(true);
+    expect(component.searchPlaceholder).toBe('Search admin workspace...');
+    expect(component.dashboardRoute).toBe('/app/admin/dashboard');
+    expect(component.profileRoute).toBe('/app/admin/console');
+    expect(component.notificationsRoute).toBe('/app/admin/activity-logs');
+
+    component.searchQuery = 'dash';
+    component.runSearch('dash');
+    expect(component.suggestions.some((s) => s.route === '/app/admin/dashboard')).toBe(true);
+    expect(component.suggestions.some((s) => s.route === '/app/dashboard')).toBe(false);
+
+    userSpy.mockRestore();
   });
 });

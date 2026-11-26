@@ -38,8 +38,7 @@ const logEmailDeliveryAudit = async ({
       after: {
         provider: provider || null,
         deliveryStatus: toDeliveryStatus(result),
-        sent: Boolean(result?.sent),
-        reason: result?.reason || null
+        sent: Boolean(result?.sent)
       },
       statusCode: result?.sent ? 200 : 502
     });

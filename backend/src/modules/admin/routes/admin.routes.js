@@ -1,26 +1,36 @@
 const express = require('express');
 const router = express.Router();
 
-const { protect, authorizeRoles } = require('../../../core/middleware/authmiddleware');
+const { protect } = require('../../../core/middleware/authmiddleware');
 const { requireOrganizationContext } = require('../../../core/middleware/orgMiddleware');
+const requireAdminAccountRole = require('../middleware/requireAdminAccountRole');
+const { validateObjectIdParam } = require('../middleware/validateObjectIdParam');
 const { getOrganizationOverview, getDevelopers } = require('../controllers/adminController');
 const {
-	getRecruiters,
-	inviteRecruiter,
-	addRecruiterDirect,
-	updateRecruiter,
-	setRecruiterActive,
-	revokeRecruiterAccess,
-	deleteRecruiter,
-	getPendingInvitations,
-	resendInvitation,
-	revokeInvitation,
-	expireInvitation,
-	deleteInvitation
+  getRecruiters,
+  inviteRecruiter,
+  addRecruiterDirect,
+  updateRecruiter,
+  setRecruiterActive,
+  revokeRecruiterAccess,
+  deleteRecruiter,
+  getPendingInvitations,
+  resendInvitation,
+  revokeInvitation,
+  expireInvitation,
+  deleteInvitation
 } = require('../controllers/recruiterController');
-const { getAdminJobs, createAdminJob, updateAdminJob, closeAdminJob, deleteAdminJob, aiRankCandidates } = require('../controllers/jobController');
+const {
+  getAdminJobs,
+  createAdminJob,
+  updateAdminJob,
+  closeAdminJob,
+  deleteAdminJob,
+  aiRankCandidates
+} = require('../controllers/jobController');
 
-router.use(protect, authorizeRoles('admin'), requireOrganizationContext(['admin']));
+router.use(protect, requireAdminAccountRole, requireOrganizationContext(['admin']));
+router.param('id', validateObjectIdParam);
 
 router.get('/overview', getOrganizationOverview);
 router.get('/recruiters', getRecruiters);

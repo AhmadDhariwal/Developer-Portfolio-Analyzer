@@ -1,0 +1,237 @@
+{
+  "productionDataUsed": false,
+  "sourceBranch": "fix/admin",
+  "integrationTarget": null,
+  "checks": [
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--print-width",
+        "110",
+        "--trailing-comma",
+        "none",
+        "backend/src/core/middleware/auditLogMiddleware.js",
+        "backend/src/core/observability/requestLogPath.js",
+        "backend/src/modules/admin/controllers/recruiterController.js",
+        "backend/src/modules/admin/services/invitationAcceptanceService.js",
+        "backend/src/tests/admin/adminRegressionClosure.integration.test.js",
+        "backend/src/tests/core/applicationEvaluationRequestLogging.test.js",
+        "backend/src/tests/notifications/notificationsRequestLogging.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--print-width",
+        "100",
+        "--trailing-comma",
+        "none",
+        "backend/src/tests/notifications/notificationsProduction.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--config",
+        "frontend/.prettierrc",
+        "--check",
+        "frontend/src/app/core/layouts/main-layout/sidebar/sidebar.component.ts",
+        "frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.html",
+        "frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.html",
+        "frontend/src/app/features/public/pages/accept-invitation/accept-invitation.component.html",
+        "frontend/src/app/shared/services/auth.service.ts"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/core/middleware/auditLogMiddleware.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/core/observability/requestLogPath.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/modules/admin/controllers/recruiterController.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/modules/admin/services/invitationAcceptanceService.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/admin/adminRegressionClosure.integration.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/core/applicationEvaluationRequestLogging.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/notifications/notificationsRequestLogging.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/notifications/notificationsProduction.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "frontend/tsconfig.app.json"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "backend/src/tests/core/applicationEvaluationRequestLogging.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "✔ application evaluation, evidence and mutation routes redact private identifiers and queries (1.0828ms)\n✔ public evaluation routes retain only a validated public job filter (0.8315ms)\n✔ public shortlist diagnostics exclude ambiguous, unbounded and private values (0.4017ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 163.9382\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "backend/src/tests/notifications/notificationsRequestLogging.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "✔ notification log path omits credentials and private search: /api/notifications (1.422ms)\n✔ notification log path omits credentials and private search: /api/notifications/stream (0.2913ms)\n✔ notification log path omits credentials and private search: /api/notifications/STREAM/ (0.098ms)\n✔ notification log path omits credentials and private search: /API/Notifications/stream/ (0.1479ms)\n✔ notification log path omits credentials and private search: /api/notifications/notice/read (0.1475ms)\n✔ notification log path omits credentials and private search: /api/notifications/bulk-delete (0.1472ms)\n✔ notification logging safely handles a request without a parsed path (0.1905ms)\n✔ profile logging retains a known diagnostic tab; unknown routes discard queries (0.291ms)\n✔ profile diagnostics never log encoded, repeated or malformed secrets (0.6282ms)\n✔ mounted notification routers retain a query-free full audit route (0.2904ms)\nℹ tests 10\nℹ suites 0\nℹ pass 10\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 189.7101\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "backend/src/tests/core/auditLogSerialization.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "✔ audit serialization redacts JSON values and safely records unserializable payloads (49.4499ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 2418.1644\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "backend/src/tests/support/supportAdminAuthority.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "✔ organization admins cannot access platform-wide support administration (2.3515ms)\n✔ Super Admin support administration remains authorized (0.4257ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 6031.6002\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of 'backend/src/core/middleware/auditLogMiddleware.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/core/observability/requestLogPath.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/modules/admin/controllers/recruiterController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/modules/admin/services/invitationAcceptanceService.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/core/applicationEvaluationRequestLogging.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/notifications/notificationsProduction.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/notifications/notificationsRequestLogging.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/jobs-hub/p1.4b-workflow-tests.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/jobs-hub/p1.5b/concurrency-tests.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/core/layouts/main-layout/sidebar/sidebar.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/accept-invitation/accept-invitation.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/shared/services/auth.service.ts', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--exit-code"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "passed": true,
+  "frontendValidation": {
+    "affectedTests": 17,
+    "testFiles": 3,
+    "testExitCode": 0,
+    "productionBuildExitCode": 0,
+    "logs": [
+      "frontend/verification/admin-p1.6a.2-angular-tests.log",
+      "frontend/verification/admin-p1.6a.2-build.log"
+    ]
+  }
+}

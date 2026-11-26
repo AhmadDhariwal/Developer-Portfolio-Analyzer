@@ -1,0 +1,19 @@
+{
+  "phase": "baseline",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "checks": {},
+  "profiles": [],
+  "consoleErrors": [],
+  "runtimeErrors": [],
+  "badHttp": [],
+  "expectedFaults": [],
+  "maxConcurrentStreams": 0,
+  "status": "failed",
+  "failure": "TypeError: Cannot read properties of undefined (reading 'createCollection')\n    at NativeConnection.createCollection (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\connection.js:429:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async model.createCollection (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\model.js:1240:7)\n    at async _createCollection (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\model.js:1136:12)",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 107,
+    "productionDataUsed": false
+  }
+}

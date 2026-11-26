@@ -137,14 +137,44 @@ export class Navbar implements OnInit {
     },
     {
       type: 'page',
-      label: 'Admin Console',
-      sublabel: 'Organization hiring control center',
-      route: '/app/admin',
+      label: 'Admin Dashboard',
+      sublabel: 'Organization command overview',
+      route: '/app/admin/dashboard',
+    },
+    {
+      type: 'page',
+      label: 'Recruiters',
+      sublabel: 'Recruiter seats and invitations',
+      route: '/app/admin/recruiters',
+    },
+    {
+      type: 'page',
+      label: 'Teams',
+      sublabel: 'Hiring teams and memberships',
+      route: '/app/admin/teams',
+    },
+    {
+      type: 'page',
+      label: 'Developers',
+      sublabel: 'Public talent directory and assessments',
+      route: '/app/admin/developers',
+    },
+    {
+      type: 'page',
+      label: 'Organization Jobs',
+      sublabel: 'Active postings and candidate matching',
+      route: '/app/admin/jobs',
+    },
+    {
+      type: 'page',
+      label: 'Performance & Statistics',
+      sublabel: 'Team velocity and hiring effectiveness',
+      route: '/app/admin/console/performance-statistics',
     },
     {
       type: 'page',
       label: 'Activity Logs',
-      sublabel: 'My logs, team filters, and date filters',
+      sublabel: 'Organization audit trail and filters',
       route: '/app/admin/activity-logs',
     },
     { type: 'page', label: 'Profile', sublabel: 'Account settings', route: '/app/profile' },
@@ -156,8 +186,8 @@ export class Navbar implements OnInit {
     },
     {
       type: 'page',
-      label: 'User Management',
-      sublabel: 'Org overview, teams, roles, and invitations',
+      label: 'Org Console',
+      sublabel: 'Organization preferences, teams, and invitations',
       route: '/app/admin/console',
     },
     {
@@ -173,19 +203,44 @@ export class Navbar implements OnInit {
     return role === 'super_admin' || role === 'superadmin';
   }
 
+  get isAdmin(): boolean {
+    return String(this.authService.getCurrentUser()?.role || '').toLowerCase() === 'admin';
+  }
+
   get isRecruiter(): boolean {
     return String(this.authService.getCurrentUser()?.role || '').toLowerCase() === 'recruiter';
   }
 
+  get searchPlaceholder(): string {
+    if (this.isAdmin) {
+      return 'Search admin workspace...';
+    }
+    if (this.isRecruiter) {
+      return 'Search recruiter workspace...';
+    }
+    return 'Search repositories, skills...';
+  }
+
+  get profileLabel(): string {
+    return this.isAdmin ? 'Org Console' : 'Profile';
+  }
+
+  get notificationsActionLabel(): string {
+    return this.isAdmin ? 'View Activity Logs' : 'View All Activities';
+  }
+
   get profileRoute(): string {
+    if (this.isAdmin) return '/app/admin/console';
     return this.isRecruiter ? '/app/recruiter/profile' : '/app/profile';
   }
 
   get dashboardRoute(): string {
+    if (this.isAdmin) return '/app/admin/dashboard';
     return this.isRecruiter ? '/app/recruiter/dashboard' : '/app/dashboard';
   }
 
   get notificationsRoute(): string {
+    if (this.isAdmin) return '/app/admin/activity-logs';
     return this.isRecruiter ? '/app/recruiter/notifications' : '/app/notifications';
   }
 
@@ -193,8 +248,17 @@ export class Navbar implements OnInit {
     const role = this.selectedRole;
     const sessionRole = String(this.authService.getCurrentUser()?.role || '').toLowerCase();
     const isSuperAdmin = sessionRole === 'super_admin' || sessionRole === 'superadmin';
-    const isAdmin = role === 'admin' || sessionRole === 'admin';
+    const isAdminSession = sessionRole === 'admin';
+    const isAdmin = role === 'admin' || isAdminSession;
     const isRecruiter = sessionRole === 'recruiter';
+
+    if (isAdminSession) {
+      return this.navPages.filter(
+        (page) =>
+          String(page.route || '').startsWith('/app/admin') &&
+          this.authService.canAccessUrl(page.route || ''),
+      );
+    }
 
     if (isRecruiter) {
       return [
@@ -457,6 +521,9 @@ export class Navbar implements OnInit {
   }
 
   private loadGithubRepos(username: string): void {
+    if (this.isAdmin || this.isRecruiter) {
+      return;
+    }
     const handle = String(username || '').trim();
     // Skip emails / blank handles — GitHub usernames cannot contain '@'.
     if (!handle || handle.includes('@') || /\s/.test(handle)) return;
@@ -510,24 +577,26 @@ export class Navbar implements OnInit {
       .filter((p) => p.label.toLowerCase().includes(q) || p.sublabel?.toLowerCase().includes(q))
       .forEach((p) => results.push(p));
 
-    // Repositories
-    this.cachedRepos
-      .filter((r) => r.name.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q))
-      .slice(0, 5)
-      .forEach((r) =>
-        results.push({
-          type: 'repo',
-          label: r.name,
-          sublabel: r.description || r.language || '',
-          url: r.html_url,
-        }),
-      );
+    if (!this.isAdmin && !this.isRecruiter) {
+      // Repositories
+      this.cachedRepos
+        .filter((r) => r.name.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q))
+        .slice(0, 5)
+        .forEach((r) =>
+          results.push({
+            type: 'repo',
+            label: r.name,
+            sublabel: r.description || r.language || '',
+            url: r.html_url,
+          }),
+        );
 
-    // Skills (languages from repos)
-    this.cachedSkills
-      .filter((s) => s.label.toLowerCase().includes(q))
-      .slice(0, 4)
-      .forEach((s) => results.push(s));
+      // Skills (languages from repos)
+      this.cachedSkills
+        .filter((s) => s.label.toLowerCase().includes(q))
+        .slice(0, 4)
+        .forEach((s) => results.push(s));
+    }
 
     this.suggestions = results;
     this.showSuggestions = results.length > 0;

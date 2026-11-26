@@ -3,7 +3,6 @@
   <div class="gate__backdrop" aria-hidden="true"></div>
 
   <div class="gate__panel" role="dialog" aria-modal="true" aria-labelledby="gate-title">
-
     <!-- Loading -->
     <ng-container *ngIf="loading">
       <div class="icon icon--indigo"><span class="spinner"></span></div>
@@ -14,8 +13,16 @@
     <!-- Invalid / expired token -->
     <ng-container *ngIf="!loading && !details">
       <div class="icon icon--red">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </div>
       <h2 id="gate-title">Invalid Invitation</h2>
@@ -25,13 +32,19 @@
 
     <!-- Onboarding form -->
     <ng-container *ngIf="!loading && details && !accepted">
-
       <div class="icon icon--indigo">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <line x1="19" y1="8" x2="19" y2="14"/>
-          <line x1="22" y1="11" x2="16" y2="11"/>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <line x1="19" y1="8" x2="19" y2="14" />
+          <line x1="22" y1="11" x2="16" y2="11" />
         </svg>
       </div>
 
@@ -46,31 +59,51 @@
 
       <div class="alert" *ngIf="error">{{ error }}</div>
 
-      <fieldset [disabled]="processing">
+      <button
+        *ngIf="details.hasExistingAccount"
+        class="btn btn--primary"
+        type="button"
+        [disabled]="processing"
+        (click)="acceptExistingAccount()"
+      >
+        {{ signedInRecipient ? 'Accept Invitation' : 'Sign In to Accept' }}
+      </button>
 
+      <fieldset *ngIf="!details.hasExistingAccount" [disabled]="processing">
         <!-- Row 1: Name + Phone (both required) -->
         <div class="row">
           <div class="field">
             <label for="g-name">Full Name <span class="req">*</span></label>
-            <input id="g-name" type="text" [(ngModel)]="form.name"
-                   name="name" placeholder="Your full name" />
+            <input
+              id="g-name"
+              type="text"
+              [(ngModel)]="form.name"
+              name="name"
+              placeholder="Your full name"
+            />
           </div>
-          <div class="field">
+          <div class="field" *ngIf="details.role === 'recruiter'">
             <label for="g-phone">Phone Number <span class="req">*</span></label>
-            <input id="g-phone" type="tel" [(ngModel)]="form.phoneNumber"
-                   name="phoneNumber" placeholder="+1 555 000 0000" />
+            <input
+              id="g-phone"
+              type="tel"
+              [(ngModel)]="form.phoneNumber"
+              name="phoneNumber"
+              placeholder="+1 555 000 0000"
+            />
           </div>
         </div>
 
         <!-- Password -->
         <div class="field">
-          <label for="g-password">
-            {{ details.hasExistingAccount ? 'New Password (optional)' : 'Set Password' }}
-            <span class="req" *ngIf="!details.hasExistingAccount">*</span>
-          </label>
-          <input id="g-password" type="password" [(ngModel)]="form.password"
-                 name="password"
-                 [placeholder]="details.hasExistingAccount ? 'Leave blank to keep current' : 'Min. 6 characters'" />
+          <label for="g-password"> Set Password <span class="req">*</span> </label>
+          <input
+            id="g-password"
+            type="password"
+            [(ngModel)]="form.password"
+            name="password"
+            autocomplete="new-password"
+          />
         </div>
 
         <!-- Row 2: GitHub + LinkedIn (both optional) -->
@@ -79,46 +112,68 @@
             <label for="g-github">GitHub <span class="opt">(optional)</span></label>
             <div class="prefix-input">
               <span>github.com/</span>
-              <input id="g-github" type="text" [(ngModel)]="form.githubUsername"
-                     name="githubUsername" placeholder="handle" />
+              <input
+                id="g-github"
+                type="text"
+                [(ngModel)]="form.githubUsername"
+                name="githubUsername"
+                placeholder="handle"
+              />
             </div>
           </div>
           <div class="field">
             <label for="g-linkedin">LinkedIn <span class="opt">(optional)</span></label>
             <div class="prefix-input">
               <span>linkedin.com/</span>
-              <input id="g-linkedin" type="text" [(ngModel)]="form.linkedin"
-                     name="linkedin" placeholder="in/name" />
+              <input
+                id="g-linkedin"
+                type="text"
+                [(ngModel)]="form.linkedin"
+                name="linkedin"
+                placeholder="in/name"
+              />
             </div>
           </div>
         </div>
-
       </fieldset>
 
-      <button class="btn btn--primary" (click)="submit()"
-              [disabled]="!isFormValid || processing">
+      <button
+        *ngIf="!details.hasExistingAccount"
+        class="btn btn--primary"
+        (click)="submit()"
+        [disabled]="!isFormValid || processing"
+      >
         <span *ngIf="processing" class="spinner spinner--sm"></span>
         {{ processing ? 'Setting up…' : 'Complete Setup' }}
       </button>
-
     </ng-container>
 
     <!-- Success -->
     <ng-container *ngIf="!loading && accepted">
       <div class="icon icon--green">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="20 6 9 17 4 12"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <polyline points="20 6 9 17 4 12" />
         </svg>
       </div>
       <h2 id="gate-title">Account Ready!</h2>
-      <p>
-        Your recruiter account for <strong>{{ details?.organizationName }}</strong> is set up.
-        You are now signed in as <strong>{{ details?.email }}</strong>.
+      <p *ngIf="details?.hasExistingAccount">
+        Invitation accepted. Sign in again to start using your organization access.
+      </p>
+      <p *ngIf="!details?.hasExistingAccount">
+        Your account for <strong>{{ details?.organizationName }}</strong> is set up. You are now
+        signed in as <strong>{{ details?.email }}</strong
+        >.
       </p>
       <button class="btn btn--primary" type="button" (click)="goToDashboard()">
-        Go to Dashboard →
+        {{ details?.hasExistingAccount ? 'Sign In' : 'Go to Dashboard →' }}
       </button>
     </ng-container>
-
   </div>
 </div>

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subscription } from 'rxjs';
 import { formatInitials, truncateSha256 } from './direct-application-ui.utils';
+import { ApplicationTimelineComponent } from './application-timeline.component';
 import { SubmittedPortfolioComponent } from './submitted-portfolio.component';
 import {
   ApplicationOptions,
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-internal-jobs',
   standalone: true,
-  imports: [CommonModule, FormsModule, SubmittedPortfolioComponent],
+  imports: [CommonModule, FormsModule, SubmittedPortfolioComponent, ApplicationTimelineComponent],
   templateUrl: './internal-jobs.component.html',
   styleUrl: './internal-jobs.component.scss',
 })

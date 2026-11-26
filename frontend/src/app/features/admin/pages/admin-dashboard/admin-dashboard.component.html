@@ -112,10 +112,8 @@
 
       <div class="overview-band">
         <div class="overview-band__item">
-          <span class="overview-band__label">Org ID</span>
-          <span class="overview-band__value">{{
-            overview.organizationId || preferences?.organization?._id
-          }}</span>
+          <span class="overview-band__label">Scope</span>
+          <span class="overview-band__value">{{ orgName }} · {{ selectedDays }}d</span>
         </div>
         <div class="overview-band__item">
           <span class="overview-band__label">Pending Invitations</span>
@@ -245,7 +243,13 @@
                   {{ team.isActive ? 'Active' : 'Inactive' }}
                 </span>
               </div>
-              <div class="score-ring">
+              <div
+                class="score-ring"
+                [style.--score-pct]="scorePct(team.performanceScore || team.engagementScore)"
+                [attr.title]="
+                  'Hiring Performance Composite: ' + (team.performanceScore || team.engagementScore)
+                "
+              >
                 <span>{{ team.performanceScore || team.engagementScore }}</span>
               </div>
             </div>
@@ -331,7 +335,7 @@
             </div>
 
             <div class="metric-line">
-              <span>Performance</span>
+              <span>Hiring Performance</span>
               <div class="metric-line__track">
                 <div
                   class="metric-line__fill metric-line__fill--indigo"
@@ -519,27 +523,27 @@
       <div class="panel">
         <div class="panel__header">
           <div>
-            <h2>Hiring Funnel</h2>
-            <p>Pipeline and invitation health for the selected scope.</p>
+            <h2>Invitations &amp; Stack Demand</h2>
+            <p>Recruiter seat invitations and technology demand across organization jobs.</p>
           </div>
         </div>
 
         <div class="funnel-grid funnel-grid--wide">
           <div class="funnel-grid__item">
-            <span>Open Jobs</span>
-            <strong>{{ performance.hiringAnalytics.open }}</strong>
-          </div>
-          <div class="funnel-grid__item">
-            <span>Draft Jobs</span>
-            <strong>{{ performance.hiringAnalytics.draft }}</strong>
-          </div>
-          <div class="funnel-grid__item">
-            <span>Closed Jobs</span>
-            <strong>{{ performance.hiringAnalytics.closed }}</strong>
+            <span>Pending Invites</span>
+            <strong>{{ performance.hiringAnalytics.invitationFunnel.pending }}</strong>
           </div>
           <div class="funnel-grid__item">
             <span>Accepted Invites</span>
             <strong>{{ performance.hiringAnalytics.invitationFunnel.accepted }}</strong>
+          </div>
+          <div class="funnel-grid__item">
+            <span>Expired Invites</span>
+            <strong>{{ performance.hiringAnalytics.invitationFunnel.expired }}</strong>
+          </div>
+          <div class="funnel-grid__item">
+            <span>Revoked Invites</span>
+            <strong>{{ performance.hiringAnalytics.invitationFunnel.revoked }}</strong>
           </div>
         </div>
 

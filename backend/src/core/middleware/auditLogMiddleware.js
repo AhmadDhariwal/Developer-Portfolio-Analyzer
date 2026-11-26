@@ -16,6 +16,9 @@ const SENSITIVE_KEY_PATTERNS = [
   /pwd/i,
   /pass[_-]?phrase/i,
   /private[_-]?key/i,
+  /credential|cookie|session|invite(?:link|url)|invitation(?:link|url)/i,
+  /resume|portfolioSnapshot|evaluationNotes|applicationEvidence/i,
+  /^(error|errors|stack|message|details)$/i,
   /access[_-]?token/i,
   /refresh[_-]?token/i,
   /^(code|authorizationCode|oauthCode)$/i
@@ -96,13 +99,9 @@ const parseObjectIdFromUrl = (url, segment) => {
 
 const resolveScope = async (req) => {
   let organizationId = firstValidObjectId(
-    req.body?.organizationId,
-    req.query?.organizationId,
-    req.params?.organizationId,
     req.organizationId,
     req.tenantContext?.organizationId,
-    req.user?.organizationId,
-    parseObjectIdFromUrl(req.originalUrl, 'organizations')
+    req.user?.organizationId
   );
 
   const teamId = firstValidObjectId(
@@ -124,16 +123,21 @@ const auditLogMiddleware = (req, res, next) => {
   if (!MUTATION_METHODS.has(req.method)) return next();
   if (!req.originalUrl.startsWith('/api/')) return next();
   const isRecruiterRoute = /^\/api\/recruiter(?:-hub)?(?:\/|\?|$)/.test(req.originalUrl);
+  const omitPayload =
+    isRecruiterRoute ||
+    /^\/api\/(?:auth|integrations)(?:\/|\?|$)/i.test(req.originalUrl) ||
+    /\/(?:invitations?|invite-recruiter|applications)(?:\/|\?|$)/i.test(req.originalUrl) ||
+    /^\/api\/admin\/recruiter(?:\/|\?|$)/i.test(req.originalUrl);
 
   const actor = req.user?._id || resolveActorFromToken(req) || null;
   const ipAddress =
-    (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() ||
-    null;
+    (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() || null;
   const userAgent = req.headers['user-agent']?.slice(0, 500) || null;
 
   const before = {
     params: req.params || {},
-    query: req.query || {},
+    // Apply the same allowlist to persisted query metadata as to the route.
+    query: Object.fromEntries(new URLSearchParams(requestLogPath(req).split('?')[1] || '')),
     body: req.body || {}
   };
 
@@ -149,10 +153,7 @@ const auditLogMiddleware = (req, res, next) => {
     try {
       if (req.recruiterAuditRecorded && res.statusCode < 400) return;
       const loggedRoute = requestLogPath(req);
-      const action =
-        loggedRoute === '/api/recruiter-hub/private-application-evaluation'
-          ? `${req.method} ${loggedRoute}`
-          : `${req.method} ${req.baseUrl || ''}${req.path || ''}`.trim();
+      const action = `${req.method} ${loggedRoute}`;
       const { organizationId, teamId } = isRecruiterRoute
         ? { organizationId: firstValidObjectId(req.organizationId), teamId: null }
         : req.method === 'POST' &&
@@ -167,8 +168,8 @@ const auditLogMiddleware = (req, res, next) => {
         action,
         method: req.method,
         route: loggedRoute,
-        before: isRecruiterRoute ? null : trimPayload(before),
-        after: isRecruiterRoute ? null : trimPayload(responseBody),
+        before: omitPayload ? null : trimPayload(before),
+        after: omitPayload || res.statusCode >= 400 ? null : trimPayload(responseBody),
         statusCode: res.statusCode,
         ipAddress,
         userAgent,

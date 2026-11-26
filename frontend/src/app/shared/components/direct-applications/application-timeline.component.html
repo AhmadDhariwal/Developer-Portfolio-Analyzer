@@ -1,0 +1,61 @@
+<details class="evidence-details timeline-details">
+  <summary class="timeline-summary">
+    <span class="timeline-summary__left">
+      <svg
+        class="timeline-summary__chevron"
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.25"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+      <span>Status timeline</span>
+    </span>
+
+    <span class="timeline-summary__count">
+      {{ events.length }} {{ events.length === 1 ? 'event' : 'events' }}
+    </span>
+  </summary>
+
+  <div class="evidence-details__body timeline-body">
+    @if (!events.length) {
+      <p class="timeline-empty">No status transitions recorded yet.</p>
+    } @else {
+      <ol class="timeline-list">
+        @for (event of events; track $index; let last = $last) {
+          <li
+            class="timeline-step timeline-step--{{ statusTone(event.status) }}"
+            [class.timeline-step--latest]="last"
+          >
+            <div class="timeline-step__rail" aria-hidden="true">
+              <span class="timeline-step__dot"></span>
+              @if (!last) {
+                <span class="timeline-step__line"></span>
+              }
+            </div>
+
+            <div class="timeline-step__card">
+              <div class="timeline-step__status">
+                <span class="timeline-step__index">Step {{ $index + 1 }}</span>
+                <span class="status-pill status-pill--{{ statusTone(event.status) }}">
+                  {{ event.status }}
+                </span>
+              </div>
+
+              <time class="timeline-step__time" [attr.datetime]="event.at">
+                {{ event.at | date: 'medium' }}
+              </time>
+            </div>
+          </li>
+        }
+      </ol>
+    }
+  </div>
+</details>

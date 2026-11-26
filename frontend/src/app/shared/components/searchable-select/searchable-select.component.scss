@@ -183,14 +183,15 @@
   transform: rotate(180deg);
 }
 
-:host-context(.recruiter-workspace) {
+:host-context(.recruiter-workspace),
+:host-context(.admin-workspace) {
   .searchable-select {
     --select-scroll-thumb: var(--border-strong, #cbd5e1);
     --select-scroll-track: var(--surface-subtle, #f1f5f9);
   }
 
   .searchable-select__trigger {
-    min-height: 38px;
+    min-height: var(--select-control-min-height, 38px);
     padding: 7px 11px;
     border-radius: var(--dev-radius-control, 6px);
     background: var(--surface-input, #ffffff);

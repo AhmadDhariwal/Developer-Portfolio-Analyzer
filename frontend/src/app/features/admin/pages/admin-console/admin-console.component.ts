@@ -9,14 +9,14 @@ import {
   AdminConsoleService,
   ConsoleOverview,
   ConsolePreferences,
-  ConsoleTeam
+  ConsoleTeam,
 } from './admin-console.service';
 import { TenantContextService } from '../../../../shared/services/tenant-context.service';
 import {
   AdminHiringService,
   AdminRecruiter,
   AdminTeamOption,
-  PendingInvitation
+  PendingInvitation,
 } from '../../services/admin-hiring.service';
 
 type Tab = 'overview' | 'teams' | 'recruiters' | 'invitations' | 'activity' | 'preferences';
@@ -35,7 +35,7 @@ interface TabState {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-console.component.html',
-  styleUrl: './admin-console.component.scss'
+  styleUrl: './admin-console.component.scss',
 })
 export class AdminConsolePageComponent implements OnInit {
   activeTab: Tab = 'overview';
@@ -52,12 +52,12 @@ export class AdminConsolePageComponent implements OnInit {
     name: '',
     slug: '',
     description: '',
-    recruiterId: ''
+    recruiterId: '',
   };
   teamEditForm = {
     name: '',
     slug: '',
-    description: ''
+    description: '',
   };
   teamRecruiterSelections: Record<string, string> = {};
 
@@ -75,7 +75,7 @@ export class AdminConsolePageComponent implements OnInit {
     search: '',
     status: 'all',
     teamId: '',
-    sortBy: 'activity'
+    sortBy: 'activity',
   };
 
   confirmOpen = false;
@@ -95,7 +95,7 @@ export class AdminConsolePageComponent implements OnInit {
     showTeamAnalytics: true,
     showRecruiterPerformance: true,
     showJobTrends: true,
-    showActivityFeed: true
+    showActivityFeed: true,
   };
 
   organizationId = '';
@@ -109,10 +109,11 @@ export class AdminConsolePageComponent implements OnInit {
     recruiters: this.createTabState(),
     invitations: this.createTabState(),
     activity: this.createTabState(),
-    preferences: this.createTabState()
+    preferences: this.createTabState(),
   };
   private teamOptionsRequestId = 0;
   private teamOptionsLoading = false;
+  private teamOptionsLoaded = false;
   private mutationCount = 0;
 
   constructor(
@@ -121,49 +122,45 @@ export class AdminConsolePageComponent implements OnInit {
     private readonly tenantContext: TenantContextService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-    this.tenantContext.state$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((ctx) => {
-        const nextOrgId = ctx.organizationId || '';
-        const orgChanged = nextOrgId !== this.organizationId;
+    this.tenantContext.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ctx) => {
+      const nextOrgId = ctx.organizationId || '';
+      const orgChanged = nextOrgId !== this.organizationId;
 
-        this.organizationId = nextOrgId;
-        this.orgName = ctx.organizationName || 'Organization';
+      this.organizationId = nextOrgId;
+      this.orgName = ctx.organizationName || 'Organization';
 
-        if (orgChanged) {
-          this.resetTabData();
-          this.loadTeamOptions(true);
-          this.loadActiveTab(true);
-        }
-      });
+      if (orgChanged) {
+        this.resetTabData();
+        this.loadTeamOptions(true);
+        this.loadActiveTab(true);
+      }
+    });
 
-    this.route.queryParams
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        const tab = params['tab'] as Tab | undefined;
-        const nextTab = tab && this.isValidTab(tab) ? tab : 'overview';
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const tab = params['tab'] as Tab | undefined;
+      const nextTab = tab && this.isValidTab(tab) ? tab : 'overview';
 
-        if (nextTab === 'activity') {
-          this.goToActivityLogs();
-          return;
-        }
+      if (nextTab === 'activity') {
+        this.goToActivityLogs();
+        return;
+      }
 
-        const shouldLoad = this.activeTab !== nextTab || !this.tabStates[nextTab].loaded;
-        this.activeTab = nextTab;
+      const shouldLoad = this.activeTab !== nextTab || !this.tabStates[nextTab].loaded;
+      this.activeTab = nextTab;
 
-        if (!tab) {
-          this.navigateToTab(nextTab, true);
-          return;
-        }
+      if (!tab) {
+        this.navigateToTab(nextTab, true);
+        return;
+      }
 
-        if (shouldLoad) {
-          this.loadActiveTab();
-        }
-      });
+      if (shouldLoad) {
+        this.loadActiveTab();
+      }
+    });
   }
 
   get filteredRecruiters(): AdminRecruiter[] {
@@ -196,7 +193,7 @@ export class AdminConsolePageComponent implements OnInit {
         ...(recruiter.teams || []).map((team) => team.name),
         ...(recruiter.recruiterDetails?.specialties || []),
         ...(recruiter.recruiterDetails?.toolsAndPlatforms || []),
-        ...(recruiter.recruiterDetails?.languages || [])
+        ...(recruiter.recruiterDetails?.languages || []),
       ]
         .filter(Boolean)
         .join(' ')
@@ -205,7 +202,9 @@ export class AdminConsolePageComponent implements OnInit {
       return haystack.includes(search);
     });
 
-    return filtered.sort((left, right) => this.compareRecruiters(left, right, this.recruiterFilters.sortBy));
+    return filtered.sort((left, right) =>
+      this.compareRecruiters(left, right, this.recruiterFilters.sortBy),
+    );
   }
 
   get activeTabError(): string {
@@ -230,6 +229,7 @@ export class AdminConsolePageComponent implements OnInit {
       this.goToActivityLogs();
       return;
     }
+    if (!this.teamOptionsLoaded) this.loadTeamOptions(true);
     this.loadActiveTab(true);
   }
 
@@ -243,22 +243,26 @@ export class AdminConsolePageComponent implements OnInit {
       return;
     }
 
-    this.runMutation(() => this.adminService.inviteRecruiter({
-      name: this.inviteForm.name.trim(),
-      email: this.inviteForm.email.trim(),
-      role: 'recruiter',
-      teamId: this.inviteForm.teamId || undefined
-    }), {
-      success: (result) => {
-        this.inviteForm = { name: '', email: '', teamId: '' };
-        this.successMsg = result.emailSent
-          ? 'Invitation sent successfully.'
-          : `Invitation created. Share this link: ${result.invitationLink}`;
-        this.invalidateTabs(['overview', 'recruiters', 'invitations', 'teams']);
-        this.loadRecruiters(true);
+    this.runMutation(
+      () =>
+        this.adminService.inviteRecruiter({
+          name: this.inviteForm.name.trim(),
+          email: this.inviteForm.email.trim(),
+          role: 'recruiter',
+          teamId: this.inviteForm.teamId || undefined,
+        }),
+      {
+        success: (result) => {
+          this.inviteForm = { name: '', email: '', teamId: '' };
+          this.successMsg = result.emailSent
+            ? 'Invitation sent successfully.'
+            : `Invitation created. Share this link: ${result.invitationLink}`;
+          this.invalidateTabs(['overview', 'recruiters', 'invitations', 'teams']);
+          this.loadRecruiters(true);
+        },
+        failure: 'Failed to invite recruiter.',
       },
-      failure: 'Failed to invite recruiter.'
-    });
+    );
   }
 
   startEdit(recruiter: AdminRecruiter): void {
@@ -268,7 +272,7 @@ export class AdminConsolePageComponent implements OnInit {
       email: recruiter.email,
       githubUsername: recruiter.githubUsername || '',
       linkedin: recruiter.linkedin || '',
-      phoneNumber: recruiter.phoneNumber || ''
+      phoneNumber: recruiter.phoneNumber || '',
     };
   }
 
@@ -282,32 +286,39 @@ export class AdminConsolePageComponent implements OnInit {
       return;
     }
 
-    this.runMutation(() => this.adminService.updateRecruiter(id, {
-      name: this.editForm.name.trim(),
-      email: this.editForm.email.trim(),
-      githubUsername: this.editForm.githubUsername.trim(),
-      linkedin: this.editForm.linkedin.trim(),
-      phoneNumber: this.editForm.phoneNumber.trim()
-    }), {
-      success: () => {
-        this.successMsg = 'Recruiter updated.';
-        this.cancelEdit();
-        this.invalidateTabs(['overview', 'recruiters', 'teams']);
-        this.loadRecruiters(true);
+    this.runMutation(
+      () =>
+        this.adminService.updateRecruiter(id, {
+          name: this.editForm.name.trim(),
+          email: this.editForm.email.trim(),
+          githubUsername: this.editForm.githubUsername.trim(),
+          linkedin: this.editForm.linkedin.trim(),
+          phoneNumber: this.editForm.phoneNumber.trim(),
+        }),
+      {
+        success: () => {
+          this.successMsg = 'Recruiter updated.';
+          this.cancelEdit();
+          this.invalidateTabs(['overview', 'recruiters', 'teams']);
+          this.loadRecruiters(true);
+        },
+        failure: 'Failed to update recruiter.',
       },
-      failure: 'Failed to update recruiter.'
-    });
+    );
   }
 
   toggleActive(recruiter: AdminRecruiter): void {
-    this.runMutation(() => this.adminService.setRecruiterActive(recruiter._id, !recruiter.isActive), {
-      success: () => {
-        this.successMsg = recruiter.isActive ? 'Recruiter deactivated.' : 'Recruiter activated.';
-        this.invalidateTabs(['overview', 'recruiters', 'teams']);
-        this.loadRecruiters(true);
+    this.runMutation(
+      () => this.adminService.setRecruiterActive(recruiter._id, !recruiter.isActive),
+      {
+        success: () => {
+          this.successMsg = recruiter.isActive ? 'Recruiter deactivated.' : 'Recruiter activated.';
+          this.invalidateTabs(['overview', 'recruiters', 'teams']);
+          this.loadRecruiters(true);
+        },
+        failure: 'Failed to update recruiter status.',
       },
-      failure: 'Failed to update recruiter status.'
-    });
+    );
   }
 
   revokeAccess(recruiter: AdminRecruiter): void {
@@ -321,9 +332,9 @@ export class AdminConsolePageComponent implements OnInit {
             this.invalidateTabs(['overview', 'recruiters', 'teams']);
             this.loadRecruiters(true);
           },
-          failure: 'Failed to revoke recruiter access.'
+          failure: 'Failed to revoke recruiter access.',
         });
-      }
+      },
     );
   }
 
@@ -338,7 +349,7 @@ export class AdminConsolePageComponent implements OnInit {
           this.invalidateTabs(['overview', 'recruiters', 'invitations', 'teams']);
           this.loadRecruiters(true);
         },
-        failure: 'Failed to delete recruiter.'
+        failure: 'Failed to delete recruiter.',
       });
     });
   }
@@ -351,7 +362,7 @@ export class AdminConsolePageComponent implements OnInit {
           this.invalidateTabs(['overview', 'recruiters', 'invitations']);
           this.loadInvitations(true);
         },
-        failure: 'Failed to revoke invitation.'
+        failure: 'Failed to revoke invitation.',
       });
     });
   }
@@ -364,7 +375,7 @@ export class AdminConsolePageComponent implements OnInit {
           this.invalidateTabs(['overview', 'recruiters', 'invitations']);
           this.loadInvitations(true);
         },
-        failure: 'Failed to expire invitation.'
+        failure: 'Failed to expire invitation.',
       });
     });
   }
@@ -377,7 +388,7 @@ export class AdminConsolePageComponent implements OnInit {
           this.invalidateTabs(['overview', 'recruiters', 'invitations']);
           this.loadInvitations(true);
         },
-        failure: 'Failed to delete invitation.'
+        failure: 'Failed to delete invitation.',
       });
     });
   }
@@ -392,21 +403,25 @@ export class AdminConsolePageComponent implements OnInit {
       return;
     }
 
-    this.runMutation(() => this.consoleService.createTeam({
-      name: this.teamForm.name.trim(),
-      slug: this.teamForm.slug.trim() || undefined,
-      description: this.teamForm.description.trim(),
-      recruiterId: this.teamForm.recruiterId || undefined
-    }), {
-      success: () => {
-        this.successMsg = 'Team created successfully.';
-        this.teamForm = { name: '', slug: '', description: '', recruiterId: '' };
-        this.invalidateTabs(['overview', 'teams', 'recruiters', 'preferences']);
-        this.loadTeamOptions(true);
-        this.loadTeams(true);
+    this.runMutation(
+      () =>
+        this.consoleService.createTeam({
+          name: this.teamForm.name.trim(),
+          slug: this.teamForm.slug.trim() || undefined,
+          description: this.teamForm.description.trim(),
+          recruiterId: this.teamForm.recruiterId || undefined,
+        }),
+      {
+        success: () => {
+          this.successMsg = 'Team created successfully.';
+          this.teamForm = { name: '', slug: '', description: '', recruiterId: '' };
+          this.invalidateTabs(['overview', 'teams', 'recruiters', 'preferences']);
+          this.loadTeamOptions(true);
+          this.loadTeams(true);
+        },
+        failure: 'Failed to create team.',
       },
-      failure: 'Failed to create team.'
-    });
+    );
   }
 
   startTeamEdit(team: ConsoleTeam): void {
@@ -414,7 +429,7 @@ export class AdminConsolePageComponent implements OnInit {
     this.teamEditForm = {
       name: team.name || '',
       slug: team.slug || '',
-      description: team.description || ''
+      description: team.description || '',
     };
   }
 
@@ -429,20 +444,24 @@ export class AdminConsolePageComponent implements OnInit {
       return;
     }
 
-    this.runMutation(() => this.consoleService.updateTeam(teamId, {
-      name: this.teamEditForm.name.trim(),
-      slug: this.teamEditForm.slug.trim() || undefined,
-      description: this.teamEditForm.description.trim()
-    }), {
-      success: () => {
-        this.successMsg = 'Team updated successfully.';
-        this.cancelTeamEdit();
-        this.invalidateTabs(['overview', 'teams', 'preferences']);
-        this.loadTeamOptions(true);
-        this.loadTeams(true);
+    this.runMutation(
+      () =>
+        this.consoleService.updateTeam(teamId, {
+          name: this.teamEditForm.name.trim(),
+          slug: this.teamEditForm.slug.trim() || undefined,
+          description: this.teamEditForm.description.trim(),
+        }),
+      {
+        success: () => {
+          this.successMsg = 'Team updated successfully.';
+          this.cancelTeamEdit();
+          this.invalidateTabs(['overview', 'teams', 'preferences']);
+          this.loadTeamOptions(true);
+          this.loadTeams(true);
+        },
+        failure: 'Failed to update team.',
       },
-      failure: 'Failed to update team.'
-    });
+    );
   }
 
   toggleTeamActive(team: ConsoleTeam): void {
@@ -453,7 +472,7 @@ export class AdminConsolePageComponent implements OnInit {
         this.loadTeamOptions(true);
         this.loadTeams(true);
       },
-      failure: 'Failed to update team status.'
+      failure: 'Failed to update team status.',
     });
   }
 
@@ -469,7 +488,7 @@ export class AdminConsolePageComponent implements OnInit {
           this.loadTeamOptions(true);
           this.loadTeams(true);
         },
-        failure: 'Failed to delete team.'
+        failure: 'Failed to delete team.',
       });
     });
   }
@@ -489,7 +508,7 @@ export class AdminConsolePageComponent implements OnInit {
         this.loadTeamOptions(true);
         this.loadTeams(true);
       },
-      failure: 'Failed to assign recruiter to team.'
+      failure: 'Failed to assign recruiter to team.',
     });
   }
 
@@ -502,7 +521,7 @@ export class AdminConsolePageComponent implements OnInit {
           this.loadTeamOptions(true);
           this.loadTeams(true);
         },
-        failure: 'Failed to remove recruiter from team.'
+        failure: 'Failed to remove recruiter from team.',
       });
     });
   }
@@ -527,7 +546,9 @@ export class AdminConsolePageComponent implements OnInit {
       return '';
     }
     const assignedTeam = this.recruiterAssignedTeamName(recruiter);
-    return assignedTeam ? `Already assigned to ${assignedTeam}` : 'Already assigned to another team';
+    return assignedTeam
+      ? `Already assigned to ${assignedTeam}`
+      : 'Already assigned to another team';
   }
 
   recruitersForTeamDropdown(team: ConsoleTeam): AdminRecruiter[] {
@@ -541,7 +562,9 @@ export class AdminConsolePageComponent implements OnInit {
   }
 
   recruitersBlockedForTeam(team: ConsoleTeam): AdminRecruiter[] {
-    return this.recruiters.filter((recruiter) => this.recruiterAssignedToAnotherTeam(recruiter, team));
+    return this.recruiters.filter((recruiter) =>
+      this.recruiterAssignedToAnotherTeam(recruiter, team),
+    );
   }
 
   recruiterTeamsLabel(recruiter: AdminRecruiter): string {
@@ -566,7 +589,7 @@ export class AdminConsolePageComponent implements OnInit {
       search: '',
       status: 'all',
       teamId: '',
-      sortBy: 'activity'
+      sortBy: 'activity',
     };
   }
 
@@ -589,48 +612,56 @@ export class AdminConsolePageComponent implements OnInit {
       return;
     }
 
-    if (this.prefForm.defaultTeamId && !this.teamOptions.some((team) => String(team._id) === this.prefForm.defaultTeamId)) {
+    if (
+      this.prefForm.defaultTeamId &&
+      !this.teamOptions.some((team) => String(team._id) === this.prefForm.defaultTeamId)
+    ) {
       this.error = 'Default team must belong to this organization.';
       return;
     }
 
-    this.runMutation(() => this.consoleService.updatePreferences({
-      name: this.prefForm.name.trim(),
-      description: this.prefForm.description.trim(),
-      dashboardConfig: {
-        preferredDateRangeDays: this.prefForm.preferredDateRangeDays,
-        defaultTeamId: this.prefForm.defaultTeamId,
-        showKpiCards: this.prefForm.showKpiCards,
-        showTeamAnalytics: this.prefForm.showTeamAnalytics,
-        showRecruiterPerformance: this.prefForm.showRecruiterPerformance,
-        showJobTrends: this.prefForm.showJobTrends,
-        showActivityFeed: this.prefForm.showActivityFeed
-      }
-    }), {
-      success: (res) => {
-        this.successMsg = res.message || 'Preferences saved.';
-        this.preferences = res;
-        this.prefForm = {
-          name: res.organization.name,
-          description: res.organization.description || '',
-          preferredDateRangeDays: res.organization.dashboardConfig?.preferredDateRangeDays || 30,
-          defaultTeamId: res.organization.dashboardConfig?.defaultTeamId || '',
-          showKpiCards: res.organization.dashboardConfig?.showKpiCards !== false,
-          showTeamAnalytics: res.organization.dashboardConfig?.showTeamAnalytics !== false,
-          showRecruiterPerformance: res.organization.dashboardConfig?.showRecruiterPerformance !== false,
-          showJobTrends: res.organization.dashboardConfig?.showJobTrends !== false,
-          showActivityFeed: res.organization.dashboardConfig?.showActivityFeed !== false
-        };
-        this.tenantContext.syncOrganization({
-          id: res.organization._id,
-          name: res.organization.name,
-          myRole: 'admin'
-        });
-        this.invalidateTabs(['overview', 'preferences']);
-        this.tabStates.preferences.loaded = true;
+    this.runMutation(
+      () =>
+        this.consoleService.updatePreferences({
+          name: this.prefForm.name.trim(),
+          description: this.prefForm.description.trim(),
+          dashboardConfig: {
+            preferredDateRangeDays: this.prefForm.preferredDateRangeDays,
+            defaultTeamId: this.prefForm.defaultTeamId,
+            showKpiCards: this.prefForm.showKpiCards,
+            showTeamAnalytics: this.prefForm.showTeamAnalytics,
+            showRecruiterPerformance: this.prefForm.showRecruiterPerformance,
+            showJobTrends: this.prefForm.showJobTrends,
+            showActivityFeed: this.prefForm.showActivityFeed,
+          },
+        }),
+      {
+        success: (res) => {
+          this.successMsg = res.message || 'Preferences saved.';
+          this.preferences = res;
+          this.prefForm = {
+            name: res.organization.name,
+            description: res.organization.description || '',
+            preferredDateRangeDays: res.organization.dashboardConfig?.preferredDateRangeDays || 30,
+            defaultTeamId: res.organization.dashboardConfig?.defaultTeamId || '',
+            showKpiCards: res.organization.dashboardConfig?.showKpiCards !== false,
+            showTeamAnalytics: res.organization.dashboardConfig?.showTeamAnalytics !== false,
+            showRecruiterPerformance:
+              res.organization.dashboardConfig?.showRecruiterPerformance !== false,
+            showJobTrends: res.organization.dashboardConfig?.showJobTrends !== false,
+            showActivityFeed: res.organization.dashboardConfig?.showActivityFeed !== false,
+          };
+          this.tenantContext.syncOrganization({
+            id: res.organization._id,
+            name: res.organization.name,
+            myRole: 'admin',
+          });
+          this.invalidateTabs(['overview', 'preferences']);
+          this.tabStates.preferences.loaded = true;
+        },
+        failure: 'Failed to save preferences.',
       },
-      failure: 'Failed to save preferences.'
-    });
+    );
   }
 
   onConfirmed(): void {
@@ -670,7 +701,9 @@ export class AdminConsolePageComponent implements OnInit {
   }
 
   private isValidTab(tab: string): tab is Tab {
-    return ['overview', 'teams', 'recruiters', 'invitations', 'activity', 'preferences'].includes(tab);
+    return ['overview', 'teams', 'recruiters', 'invitations', 'activity', 'preferences'].includes(
+      tab,
+    );
   }
 
   private createTabState(): TabState {
@@ -678,7 +711,7 @@ export class AdminConsolePageComponent implements OnInit {
       loading: false,
       loaded: false,
       error: '',
-      requestId: 0
+      requestId: 0,
     };
   }
 
@@ -687,7 +720,7 @@ export class AdminConsolePageComponent implements OnInit {
       relativeTo: this.route,
       queryParams: { tab },
       queryParamsHandling: 'merge',
-      replaceUrl
+      replaceUrl,
     });
   }
 
@@ -719,18 +752,25 @@ export class AdminConsolePageComponent implements OnInit {
     }
 
     const requestId = this.tabStates.overview.requestId;
-    this.consoleService.getOverview().subscribe({
-      next: (data) => {
-        if (!this.isLatestRequest('overview', requestId)) {
-          return;
-        }
-        this.overview = data;
-        this.finishTabRequest('overview', requestId);
-      },
-      error: (err) => {
-        this.failTabRequest('overview', requestId, err?.error?.message || 'Failed to load overview.');
-      }
-    });
+    this.consoleService
+      .getOverview()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          if (!this.isLatestRequest('overview', requestId)) {
+            return;
+          }
+          this.overview = data;
+          this.finishTabRequest('overview', requestId);
+        },
+        error: (err) => {
+          this.failTabRequest(
+            'overview',
+            requestId,
+            err?.error?.message || 'Failed to load overview.',
+          );
+        },
+      });
   }
 
   private loadTeams(force = false): void {
@@ -742,21 +782,23 @@ export class AdminConsolePageComponent implements OnInit {
     forkJoin({
       teamResponse: this.consoleService.getTeams(),
       recruiters: this.adminService.getRecruiters(),
-      teamOptions: this.getTeamOptionsRequest()
-    }).subscribe({
-      next: ({ teamResponse, recruiters, teamOptions }) => {
-        if (!this.isLatestRequest('teams', requestId)) {
-          return;
-        }
-        this.teams = teamResponse.teams || [];
-        this.recruiters = recruiters || [];
-        this.teamOptions = teamOptions || [];
-        this.finishTabRequest('teams', requestId);
-      },
-      error: (err) => {
-        this.failTabRequest('teams', requestId, err?.error?.message || 'Failed to load teams.');
-      }
-    });
+      teamOptions: this.getTeamOptionsRequest(),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ teamResponse, recruiters, teamOptions }) => {
+          if (!this.isLatestRequest('teams', requestId)) {
+            return;
+          }
+          this.teams = teamResponse.teams || [];
+          this.recruiters = recruiters || [];
+          this.teamOptions = teamOptions || [];
+          this.finishTabRequest('teams', requestId);
+        },
+        error: (err) => {
+          this.failTabRequest('teams', requestId, err?.error?.message || 'Failed to load teams.');
+        },
+      });
   }
 
   private loadRecruiters(force = false): void {
@@ -768,24 +810,31 @@ export class AdminConsolePageComponent implements OnInit {
     forkJoin({
       recruiters: this.adminService.getRecruiters(),
       invitations: this.adminService.getPendingInvitations(),
-      teamOptions: this.getTeamOptionsRequest()
-    }).subscribe({
-      next: ({ recruiters, invitations, teamOptions }) => {
-        if (!this.isLatestRequest('recruiters', requestId)) {
-          return;
-        }
-        this.recruiters = recruiters || [];
-        this.pendingInvitations = invitations || [];
-        this.teamOptions = teamOptions || [];
-        if (this.selectedRecruiter?._id) {
-          this.selectedRecruiter = this.recruiters.find((item) => item._id === this.selectedRecruiter?._id) || null;
-        }
-        this.finishTabRequest('recruiters', requestId);
-      },
-      error: (err) => {
-        this.failTabRequest('recruiters', requestId, err?.error?.message || 'Failed to load recruiters.');
-      }
-    });
+      teamOptions: this.getTeamOptionsRequest(),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ recruiters, invitations, teamOptions }) => {
+          if (!this.isLatestRequest('recruiters', requestId)) {
+            return;
+          }
+          this.recruiters = recruiters || [];
+          this.pendingInvitations = invitations || [];
+          this.teamOptions = teamOptions || [];
+          if (this.selectedRecruiter?._id) {
+            this.selectedRecruiter =
+              this.recruiters.find((item) => item._id === this.selectedRecruiter?._id) || null;
+          }
+          this.finishTabRequest('recruiters', requestId);
+        },
+        error: (err) => {
+          this.failTabRequest(
+            'recruiters',
+            requestId,
+            err?.error?.message || 'Failed to load recruiters.',
+          );
+        },
+      });
   }
 
   private loadInvitations(force = false): void {
@@ -794,18 +843,25 @@ export class AdminConsolePageComponent implements OnInit {
     }
 
     const requestId = this.tabStates.invitations.requestId;
-    this.adminService.getPendingInvitations().subscribe({
-      next: (invitations) => {
-        if (!this.isLatestRequest('invitations', requestId)) {
-          return;
-        }
-        this.pendingInvitations = invitations || [];
-        this.finishTabRequest('invitations', requestId);
-      },
-      error: (err) => {
-        this.failTabRequest('invitations', requestId, err?.error?.message || 'Failed to load invitations.');
-      }
-    });
+    this.adminService
+      .getPendingInvitations()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (invitations) => {
+          if (!this.isLatestRequest('invitations', requestId)) {
+            return;
+          }
+          this.pendingInvitations = invitations || [];
+          this.finishTabRequest('invitations', requestId);
+        },
+        error: (err) => {
+          this.failTabRequest(
+            'invitations',
+            requestId,
+            err?.error?.message || 'Failed to load invitations.',
+          );
+        },
+      });
   }
 
   private loadPreferences(force = false): void {
@@ -816,40 +872,46 @@ export class AdminConsolePageComponent implements OnInit {
     const requestId = this.tabStates.preferences.requestId;
     forkJoin({
       preferences: this.consoleService.getPreferences(),
-      teamOptions: this.getTeamOptionsRequest()
-    }).subscribe({
-      next: ({ preferences, teamOptions }) => {
-        if (!this.isLatestRequest('preferences', requestId)) {
-          return;
-        }
-        const config = preferences.organization.dashboardConfig || {
-          preferredDateRangeDays: 30,
-          defaultTeamId: '',
-          showKpiCards: true,
-          showTeamAnalytics: true,
-          showRecruiterPerformance: true,
-          showJobTrends: true,
-          showActivityFeed: true
-        };
-        this.preferences = preferences;
-        this.teamOptions = teamOptions || [];
-        this.prefForm = {
-          name: preferences.organization.name,
-          description: preferences.organization.description || '',
-          preferredDateRangeDays: config.preferredDateRangeDays || 30,
-          defaultTeamId: config.defaultTeamId || '',
-          showKpiCards: config.showKpiCards !== false,
-          showTeamAnalytics: config.showTeamAnalytics !== false,
-          showRecruiterPerformance: config.showRecruiterPerformance !== false,
-          showJobTrends: config.showJobTrends !== false,
-          showActivityFeed: config.showActivityFeed !== false
-        };
-        this.finishTabRequest('preferences', requestId);
-      },
-      error: (err) => {
-        this.failTabRequest('preferences', requestId, err?.error?.message || 'Failed to load preferences.');
-      }
-    });
+      teamOptions: this.getTeamOptionsRequest(),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ preferences, teamOptions }) => {
+          if (!this.isLatestRequest('preferences', requestId)) {
+            return;
+          }
+          const config = preferences.organization.dashboardConfig || {
+            preferredDateRangeDays: 30,
+            defaultTeamId: '',
+            showKpiCards: true,
+            showTeamAnalytics: true,
+            showRecruiterPerformance: true,
+            showJobTrends: true,
+            showActivityFeed: true,
+          };
+          this.preferences = preferences;
+          this.teamOptions = teamOptions || [];
+          this.prefForm = {
+            name: preferences.organization.name,
+            description: preferences.organization.description || '',
+            preferredDateRangeDays: config.preferredDateRangeDays || 30,
+            defaultTeamId: config.defaultTeamId || '',
+            showKpiCards: config.showKpiCards !== false,
+            showTeamAnalytics: config.showTeamAnalytics !== false,
+            showRecruiterPerformance: config.showRecruiterPerformance !== false,
+            showJobTrends: config.showJobTrends !== false,
+            showActivityFeed: config.showActivityFeed !== false,
+          };
+          this.finishTabRequest('preferences', requestId);
+        },
+        error: (err) => {
+          this.failTabRequest(
+            'preferences',
+            requestId,
+            err?.error?.message || 'Failed to load preferences.',
+          );
+        },
+      });
   }
 
   private getTeamOptionsRequest(): Observable<AdminTeamOption[]> {
@@ -862,38 +924,54 @@ export class AdminConsolePageComponent implements OnInit {
   private loadTeamOptions(force = false): void {
     if (!this.organizationId) {
       this.teamOptions = [];
+      this.teamOptionsRequestId += 1;
+      this.teamOptionsLoading = false;
+      this.teamOptionsLoaded = false;
+      this.syncLoading();
       return;
     }
     if (this.teamOptionsLoading && !force) {
       return;
     }
-    if (!force && this.teamOptions.length > 0) {
+    if (!force && this.teamOptionsLoaded) {
       return;
     }
 
     const requestId = ++this.teamOptionsRequestId;
     this.teamOptionsLoading = true;
-    this.adminService.getTeams(this.organizationId).subscribe({
-      next: (teams) => {
-        if (requestId !== this.teamOptionsRequestId) {
-          return;
-        }
-        this.teamOptions = teams || [];
-        this.teamOptionsLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        if (requestId !== this.teamOptionsRequestId) {
-          return;
-        }
-        this.teamOptions = [];
-        this.teamOptionsLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.teamOptionsLoaded = false;
+    this.syncLoading();
+    this.adminService
+      .getTeams(this.organizationId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (teams) => {
+          if (requestId !== this.teamOptionsRequestId) {
+            return;
+          }
+          this.teamOptions = teams || [];
+          this.teamOptionsLoading = false;
+          this.teamOptionsLoaded = true;
+          this.syncLoading();
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          if (requestId !== this.teamOptionsRequestId) {
+            return;
+          }
+          this.teamOptions = [];
+          this.teamOptionsLoading = false;
+          this.syncLoading();
+          this.cdr.markForCheck();
+        },
+      });
   }
 
-  private compareRecruiters(left: AdminRecruiter, right: AdminRecruiter, sortBy: RecruiterSort): number {
+  private compareRecruiters(
+    left: AdminRecruiter,
+    right: AdminRecruiter,
+    sortBy: RecruiterSort,
+  ): number {
     switch (sortBy) {
       case 'name':
         return left.name.localeCompare(right.name);
@@ -902,7 +980,10 @@ export class AdminConsolePageComponent implements OnInit {
       case 'completion':
         return this.recruiterProfileCompletion(right) - this.recruiterProfileCompletion(left);
       case 'recent':
-        return new Date(this.recruiterLastActive(right)).getTime() - new Date(this.recruiterLastActive(left)).getTime();
+        return (
+          new Date(this.recruiterLastActive(right)).getTime() -
+          new Date(this.recruiterLastActive(left)).getTime()
+        );
       case 'activity':
       default:
         return this.recruiterPrimaryMetric(right) - this.recruiterPrimaryMetric(left);
@@ -966,9 +1047,22 @@ export class AdminConsolePageComponent implements OnInit {
   }
 
   private resetTabData(): void {
-    (['overview', 'teams', 'recruiters', 'invitations', 'preferences'] as DataTab[]).forEach((tab) => {
-      this.tabStates[tab] = this.createTabState();
-    });
+    (['overview', 'teams', 'recruiters', 'invitations', 'preferences'] as DataTab[]).forEach(
+      (tab) => {
+        this.tabStates[tab] = {
+          ...this.createTabState(),
+          requestId: this.tabStates[tab].requestId + 1,
+        };
+      },
+    );
+    this.teamOptionsRequestId += 1;
+    this.teamOptionsLoading = false;
+    this.teamOptionsLoaded = false;
+    this.overview = null;
+    this.teams = [];
+    this.recruiters = [];
+    this.pendingInvitations = [];
+    this.preferences = null;
     this.teamOptions = [];
     this.selectedRecruiter = null;
   }
@@ -978,31 +1072,34 @@ export class AdminConsolePageComponent implements OnInit {
     options: {
       success: (result: T) => void;
       failure: string;
-    }
+    },
   ): void {
     this.dismissMessages();
     this.mutationCount += 1;
     this.syncLoading();
 
-    request().subscribe({
-      next: (result) => {
-        this.mutationCount = Math.max(0, this.mutationCount - 1);
-        options.success(result);
-        this.syncLoading();
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.mutationCount = Math.max(0, this.mutationCount - 1);
-        this.error = err?.error?.message || options.failure;
-        this.syncLoading();
-        this.cdr.detectChanges();
-      }
-    });
+    request()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.mutationCount = Math.max(0, this.mutationCount - 1);
+          options.success(result);
+          this.syncLoading();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.mutationCount = Math.max(0, this.mutationCount - 1);
+          this.error = err?.error?.message || options.failure;
+          this.syncLoading();
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   private syncLoading(): void {
     const tabLoading = (Object.values(this.tabStates) as TabState[]).some((state) => state.loading);
     this.loading = tabLoading || this.mutationCount > 0 || this.teamOptionsLoading;
+    this.cdr.markForCheck();
   }
 
   private openConfirm(title: string, message: string, action: () => void): void {

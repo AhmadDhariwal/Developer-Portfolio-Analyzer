@@ -57,6 +57,29 @@ describe('MainLayout', () => {
     user.mockRestore();
   });
 
+  it('scopes adminWorkspace exclusively to admin sessions on /app/admin routes', () => {
+    const auth = TestBed.inject(AuthService);
+    const router = TestBed.inject(Router);
+    const user = vi.spyOn(auth, 'getCurrentUser');
+    const urlSpy = vi.spyOn(router, 'url', 'get');
+
+    user.mockReturnValue({ role: 'admin' });
+    urlSpy.mockReturnValue('/app/admin/dashboard');
+    expect(component.adminWorkspace).toBe(true);
+    expect(component.developerWorkspace).toBe(false);
+    expect(component.recruiterWorkspace).toBe(false);
+
+    urlSpy.mockReturnValue('/app/admin-console/performance-statistics');
+    expect(component.adminWorkspace).toBe(true);
+
+    user.mockReturnValue({ role: 'recruiter' });
+    urlSpy.mockReturnValue('/app/admin/dashboard');
+    expect(component.adminWorkspace).toBe(false);
+
+    urlSpy.mockRestore();
+    user.mockRestore();
+  });
+
   it('locks the background only while the mobile drawer is open and restores focus', async () => {
     component.isMobile.set(true);
     component.sidebarOpen.set(false);

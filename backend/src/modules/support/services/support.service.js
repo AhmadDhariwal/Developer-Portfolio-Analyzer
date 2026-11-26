@@ -451,12 +451,7 @@ const authorizeAdmin = async (actorId, actorRevision, session) => {
     .findOne({ _id: actorId, isActive: { $ne: false } })
     .session(session)
     .lean();
-  if (
-    !actor ||
-    !['admin', 'super_admin'].includes(
-      require('../../../core/middleware/authmiddleware').normalizeUserRole(actor.role)
-    )
-  )
+  if (!actor || require('../../../core/middleware/authmiddleware').normalizeUserRole(actor.role) !== 'super_admin')
     throw supportError('Not authorized.', 403);
   await notificationPersistence.fence(actorId, session, Number(actorRevision));
 };

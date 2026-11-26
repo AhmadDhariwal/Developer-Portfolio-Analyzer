@@ -1,7 +1,6 @@
 const crypto = require('node:crypto');
 const { body, param, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 const developerContext = require('../../../core/developer-context/developerContextService');
 const Organization = require('../models/organization');
@@ -21,18 +20,22 @@ const {
 } = require('../../../core/messaging/invitationEmailService');
 const { enqueueInvitationRetry } = require('../../../core/messaging/emailRetryQueueService');
 const { logEmailDeliveryAudit } = require('../../../core/messaging/emailAuditService');
+const { normalizeSlug, canManageRole, resolveOrganizationRole } = require('../services/tenantService');
 const {
-  normalizeSlug,
-  canManageRole,
-  resolveOrganizationRole
-} = require('../services/tenantService');
+  isDuplicateOrganizationTeamSlug,
+  withOrganizationTeamCapacity,
+  withOrganizationCapacityFence
+} = require('../services/teamCapacityService');
+const { getOrganizationSettingsSync } = require('../../super-admin/services/platformSettingsService');
+const { validatePasswordAgainstPolicy, getSecurityPolicy } = require('../../auth/utils/passwordPolicy');
+
 const {
-  getOrganizationSettingsSync
-} = require('../../super-admin/services/platformSettingsService');
-const {
-  validatePasswordAgainstPolicy,
-  getSecurityPolicy
-} = require('../../auth/utils/passwordPolicy');
+  claimInvitation,
+  assertRecipient,
+  assertRecruiterCapacity,
+  acceptMembership,
+  invitationError
+} = require('../services/invitationAcceptanceService');
 
 const ORGANIZATION_ROLES = ['admin', 'manager', 'member'];
 const getTokenTtl = () => String(getSecurityPolicy().jwtExpiresIn || '20h');
@@ -48,8 +51,7 @@ const validate = (req, res) => {
 
 const roleRank = { member: 1, manager: 2, admin: 3 };
 const higherRole = (a, b) => (roleRank[a] >= roleRank[b] ? a : b);
-const generateAuthToken = (user) =>
-  require('../../auth/utils/authSessionToken').sign(user, getTokenTtl());
+const generateAuthToken = (user) => require('../../auth/utils/authSessionToken').sign(user, getTokenTtl());
 
 const loadValidPendingInvitationByToken = async (token) => {
   const invitation = await Invitation.findOne({ token }).lean();
@@ -61,8 +63,7 @@ const loadValidPendingInvitationByToken = async (token) => {
     return { error: { status: 400, message: 'Invitation is no longer pending.' } };
   }
 
-  if (new Date(invitation.expiresAt).getTime() < Date.now()) {
-    await Invitation.findByIdAndUpdate(invitation._id, { status: 'expired' });
+  if (new Date(invitation.expiresAt).getTime() <= Date.now()) {
     return { error: { status: 400, message: 'Invitation has expired.' } };
   }
 
@@ -70,11 +71,7 @@ const loadValidPendingInvitationByToken = async (token) => {
 };
 
 const createOrganizationValidators = [
-  body('name')
-    .isString()
-    .trim()
-    .isLength({ min: 2, max: 80 })
-    .withMessage('name must be 2-80 characters long.'),
+  body('name').isString().trim().isLength({ min: 2, max: 80 }).withMessage('name must be 2-80 characters long.'),
   body('description')
     .optional()
     .isString()
@@ -88,9 +85,7 @@ const createOrganization = async (req, res) => {
   try {
     const organizationSettings = getOrganizationSettingsSync();
     if (organizationSettings.allowOrgCreation === false) {
-      return res
-        .status(403)
-        .json({ message: 'Organization creation is disabled by Super Admin settings.' });
+      return res.status(403).json({ message: 'Organization creation is disabled by Super Admin settings.' });
     }
 
     const name = req.body.name.trim();
@@ -101,33 +96,42 @@ const createOrganization = async (req, res) => {
 
     const existing = await Organization.findOne({ slug }).lean();
     if (existing) {
-      return res
-        .status(409)
-        .json({ message: 'Organization slug already exists. Try another name.' });
+      return res.status(409).json({ message: 'Organization slug already exists. Try another name.' });
     }
 
-    const organization = await Organization.create({
-      name,
-      slug,
-      description: String(req.body.description || '').trim(),
-      ownerId: req.user._id,
-      createdBy: req.user._id
-    });
-
-    const membership = await Membership.create({
-      organizationId: organization._id,
-      teamId: null,
-      userId: req.user._id,
-      role: 'admin',
-      status: 'active',
-      invitedBy: req.user._id
-    });
-
-    await User.findByIdAndUpdate(req.user._id, {
-      $set: {
-        role: 'admin',
-        organizationId: organization._id
-      }
+    const { organization, membership } = await User.db.transaction(async (session) => {
+      const [organization] = await Organization.create(
+        [
+          {
+            name,
+            slug,
+            description: String(req.body.description || '').trim(),
+            ownerId: req.user._id,
+            createdBy: req.user._id
+          }
+        ],
+        { session }
+      );
+      const account = await User.updateOne(
+        { _id: req.user._id, role: { $ne: 'super_admin' }, isActive: { $ne: false }, organizationId: null },
+        { $set: { role: 'admin', organizationId: organization._id } },
+        { session }
+      );
+      if (!account.matchedCount) throw invitationError(409, 'This account cannot create another organization.');
+      const [membership] = await Membership.create(
+        [
+          {
+            organizationId: organization._id,
+            teamId: null,
+            userId: req.user._id,
+            role: 'admin',
+            status: 'active',
+            invitedBy: req.user._id
+          }
+        ],
+        { session }
+      );
+      return { organization, membership };
     });
 
     return res.status(201).json({
@@ -135,6 +139,10 @@ const createOrganization = async (req, res) => {
       membership
     });
   } catch (error) {
+    if (error?.code === 11000 && error?.keyPattern?.slug) {
+      return res.status(409).json({ message: 'Organization slug already exists. Try another name.' });
+    }
+    if (error.statusCode) return res.status(error.statusCode).json({ message: error.message });
     console.error('Create organization error:', error.message);
     return res.status(500).json({ message: 'Failed to create organization.' });
   }
@@ -175,11 +183,7 @@ const listOrganizations = async (req, res) => {
 
 const createTeamValidators = [
   param('organizationId').isMongoId().withMessage('organizationId is invalid.'),
-  body('name')
-    .isString()
-    .trim()
-    .isLength({ min: 2, max: 80 })
-    .withMessage('name must be 2-80 characters long.'),
+  body('name').isString().trim().isLength({ min: 2, max: 80 }).withMessage('name must be 2-80 characters long.'),
   body('description')
     .optional()
     .isString()
@@ -206,48 +210,72 @@ const createTeam = async (req, res) => {
       return res.status(409).json({ message: 'Team slug already exists in this organization.' });
     }
 
-    const teamCount = await Team.countDocuments({ organizationId });
-    if (teamCount >= Number(organizationSettings.maxTeamsPerOrganization || 10)) {
-      return res.status(400).json({
-        message: `Maximum team limit (${organizationSettings.maxTeamsPerOrganization}) reached for this organization.`
-      });
-    }
-
-    const team = await Team.create({
+    const team = await withOrganizationTeamCapacity({
       organizationId,
-      name,
-      slug,
-      description: String(req.body.description || '').trim(),
-      createdBy: req.user._id
+      limit: Number(organizationSettings.maxTeamsPerOrganization || 10),
+      create: async (session) => {
+        const duplicate = await Team.findOne({ organizationId, slug }).session(session).lean();
+        if (duplicate) {
+          const error = new Error('Team slug already exists in this organization.');
+          error.status = 409;
+          throw error;
+        }
+
+        const [createdTeam] = await Team.create(
+          [
+            {
+              organizationId,
+              name,
+              slug,
+              description: String(req.body.description || '').trim(),
+              createdBy: req.user._id
+            }
+          ],
+          { session }
+        );
+
+        const creatorMembership = await Membership.findOne({
+          organizationId,
+          teamId: createdTeam._id,
+          userId: req.user._id
+        })
+          .session(session)
+          .lean();
+
+        if (!creatorMembership) {
+          await Membership.create(
+            [
+              {
+                organizationId,
+                teamId: createdTeam._id,
+                userId: req.user._id,
+                role: 'manager',
+                status: 'active',
+                invitedBy: req.user._id
+              }
+            ],
+            { session }
+          );
+        }
+
+        return createdTeam;
+      }
     });
-
-    const creatorMembership = await Membership.findOne({
-      organizationId,
-      teamId: team._id,
-      userId: req.user._id
-    }).lean();
-
-    if (!creatorMembership) {
-      await Membership.create({
-        organizationId,
-        teamId: team._id,
-        userId: req.user._id,
-        role: 'manager',
-        status: 'active',
-        invitedBy: req.user._id
-      });
-    }
 
     return res.status(201).json({ team });
   } catch (error) {
+    if (isDuplicateOrganizationTeamSlug(error)) {
+      return res.status(409).json({ message: 'Team slug already exists in this organization.' });
+    }
+    if (error?.status) {
+      return res.status(error.status).json({ message: error.message });
+    }
     console.error('Create team error:', error.message);
     return res.status(500).json({ message: 'Failed to create team.' });
   }
 };
 
-const listTeamsValidators = [
-  param('organizationId').isMongoId().withMessage('organizationId is invalid.')
-];
+const listTeamsValidators = [param('organizationId').isMongoId().withMessage('organizationId is invalid.')];
 
 const listTeams = async (req, res) => {
   if (validate(req, res)) return;
@@ -338,23 +366,51 @@ const inviteUser = async (req, res) => {
     }).lean();
 
     if (existingPending) {
-      return res
-        .status(409)
-        .json({ message: 'An active invitation already exists for this user.' });
+      return res.status(409).json({ message: 'An active invitation already exists for this user.' });
     }
 
     const token = crypto.randomBytes(24).toString('hex');
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    const invitation = await Invitation.create({
+    const invitation = await withOrganizationCapacityFence({
       organizationId,
-      teamId,
-      email,
-      role,
-      token,
-      status: 'pending',
-      invitedBy: req.user._id,
-      expiresAt
+      mutate: async (session) => {
+        const actorRole = await resolveOrganizationRole(req.user._id, organizationId, session);
+        if (!canManageRole(actorRole, role)) throw invitationError(403, 'Invitation permission changed.');
+        if (
+          teamId &&
+          !(await Team.exists({ _id: teamId, organizationId, isActive: { $ne: false } }).session(session))
+        ) {
+          throw invitationError(404, 'Team not found in organization.');
+        }
+        if (
+          await Invitation.exists({
+            organizationId,
+            teamId,
+            email,
+            status: 'pending',
+            expiresAt: { $gt: new Date() }
+          }).session(session)
+        ) {
+          throw invitationError(409, 'An active invitation already exists for this user.');
+        }
+        const [created] = await Invitation.create(
+          [
+            {
+              organizationId,
+              teamId,
+              email,
+              role,
+              token,
+              status: 'pending',
+              invitedBy: req.user._id,
+              expiresAt
+            }
+          ],
+          { session }
+        );
+        return created;
+      }
     });
 
     const emailPayload = buildInvitationPayload({
@@ -377,8 +433,7 @@ const inviteUser = async (req, res) => {
     // If no email provider, return success with the invitation link for manual sharing
     if (!emailProviderStatus.configured) {
       return res.status(201).json({
-        message:
-          'Invitation created. No email provider configured — share the link below manually.',
+        message: 'Invitation created. No email provider configured — share the link below manually.',
         invitation: { ...invitation, token },
         invitationLink,
         emailDelivery: {
@@ -444,42 +499,25 @@ const inviteUser = async (req, res) => {
       }
     });
   } catch (error) {
+    if (error.statusCode) return res.status(error.statusCode).json({ message: error.message });
     console.error('Invite user error:', error.message);
     return res.status(500).json({ message: 'Failed to invite user.' });
   }
 };
 
-const acceptInvitationValidators = [
-  param('invitationId').isMongoId().withMessage('invitationId is invalid.')
-];
+const acceptInvitationValidators = [param('invitationId').isMongoId().withMessage('invitationId is invalid.')];
 
 const acceptInvitationTokenValidators = [
-  param('token')
-    .isString()
-    .trim()
-    .isLength({ min: 24, max: 128 })
-    .withMessage('Invitation token is invalid.')
+  param('token').isString().trim().isLength({ min: 24, max: 128 }).withMessage('Invitation token is invalid.')
 ];
 
 const invitationDetailsValidators = [
-  param('token')
-    .isString()
-    .trim()
-    .isLength({ min: 24, max: 128 })
-    .withMessage('Invitation token is invalid.')
+  param('token').isString().trim().isLength({ min: 24, max: 128 }).withMessage('Invitation token is invalid.')
 ];
 
 const acceptInvitationOnboardValidators = [
-  param('token')
-    .isString()
-    .trim()
-    .isLength({ min: 24, max: 128 })
-    .withMessage('Invitation token is invalid.'),
-  body('name')
-    .isString()
-    .trim()
-    .isLength({ min: 2, max: 80 })
-    .withMessage('name must be 2-80 characters long.'),
+  param('token').isString().trim().isLength({ min: 24, max: 128 }).withMessage('Invitation token is invalid.'),
+  body('name').isString().trim().isLength({ min: 2, max: 80 }).withMessage('name must be 2-80 characters long.'),
   body('password').isString().isLength({ min: 1, max: 128 }).withMessage('password is required.'),
   body('githubUsername')
     .optional()
@@ -489,115 +527,43 @@ const acceptInvitationOnboardValidators = [
     .withMessage('githubUsername must be 2-60 characters long.')
 ];
 
-const activateInvitationForUser = async ({ invitation, userId }) => {
-  const membership = await Membership.findOneAndUpdate(
-    {
-      organizationId: invitation.organizationId,
-      teamId: invitation.teamId,
-      userId
-    },
-    {
-      $set: {
-        role: invitation.role,
-        status: 'active',
-        invitedBy: invitation.invitedBy,
-        joinedAt: new Date()
-      }
-    },
-    {
-      upsert: true,
-      returnDocument: 'after',
-      setDefaultsOnInsert: true
-    }
-  );
-
-  await Invitation.findByIdAndUpdate(invitation._id, {
-    status: 'accepted',
-    acceptedBy: userId
-  });
-
-  return membership;
-};
-
-const acceptInvitation = async (req, res) => {
+const acceptAuthenticatedInvitation = (byToken) => async (req, res) => {
   if (validate(req, res)) return;
-
   try {
-    const invitation = await Invitation.findById(req.params.invitationId).lean();
-    if (!invitation) {
+    const selector = byToken ? { token: req.params.token } : { _id: req.params.invitationId };
+    if (!(await Invitation.exists(selector))) {
       return res.status(404).json({ message: 'Invitation not found.' });
     }
-
-    if (invitation.status !== 'pending') {
-      return res.status(400).json({ message: 'Invitation is no longer pending.' });
-    }
-
-    if (new Date(invitation.expiresAt).getTime() < Date.now()) {
-      await Invitation.findByIdAndUpdate(invitation._id, { status: 'expired' });
-      return res.status(400).json({ message: 'Invitation has expired.' });
-    }
-
-    const me = await User.findById(req.user._id).select('email').lean();
-    if (!me || String(me.email || '').toLowerCase() !== invitation.email) {
-      return res
-        .status(403)
-        .json({ message: 'Invitation email does not match the authenticated user.' });
-    }
-
-    const membership = await activateInvitationForUser({ invitation, userId: req.user._id });
-
-    // ── FIX: ensure organizationId is set on the User record
-    await User.findByIdAndUpdate(req.user._id, {
-      $set: { organizationId: invitation.organizationId }
+    const { invitation, membership } = await User.db.transaction(async (session) => {
+      const invitation = await claimInvitation({ selector, session });
+      const account = await User.findById(req.user._id).session(session);
+      await assertRecipient({ account, invitation, session });
+      if (Number(account.sessionRevision || 0) !== Number(req.user.sessionRevision || 0)) {
+        throw invitationError(401, 'Session is no longer valid.');
+      }
+      if (invitation.role === 'recruiter') {
+        await assertRecruiterCapacity(invitation, account, session);
+        if (account.role !== 'recruiter') account.sessionRevision = Number(account.sessionRevision || 0) + 1;
+        account.role = 'recruiter';
+      }
+      account.organizationId = invitation.organizationId;
+      await account.save({ session });
+      return { invitation, membership: await acceptMembership(invitation, account._id, session) };
     });
-
-    return res.json({
-      message: 'Invitation accepted.',
-      membership
-    });
-  } catch (error) {
-    console.error('Accept invitation error:', error.message);
-    return res.status(500).json({ message: 'Failed to accept invitation.' });
-  }
-};
-
-const acceptInvitationByToken = async (req, res) => {
-  if (validate(req, res)) return;
-
-  try {
-    const token = String(req.params.token || '').trim();
-    const loaded = await loadValidPendingInvitationByToken(token);
-    if (loaded.error) {
-      return res.status(loaded.error.status).json({ message: loaded.error.message });
-    }
-    const invitation = loaded.invitation;
-
-    const me = await User.findById(req.user._id).select('email').lean();
-    if (!me || String(me.email || '').toLowerCase() !== invitation.email) {
-      return res
-        .status(403)
-        .json({ message: 'Invitation email does not match the authenticated user.' });
-    }
-
-    const membership = await activateInvitationForUser({ invitation, userId: req.user._id });
-
-    // ── FIX: ensure organizationId is set on the User record so orgMiddleware
-    //         can resolve context without falling back to a membership lookup.
-    await User.findByIdAndUpdate(req.user._id, {
-      $set: { organizationId: invitation.organizationId }
-    });
-
     return res.json({
       message: 'Invitation accepted.',
       membership,
-      organizationId: invitation.organizationId,
-      teamId: invitation.teamId
+      ...(byToken ? { organizationId: invitation.organizationId, teamId: invitation.teamId } : {})
     });
   } catch (error) {
-    console.error('Accept invitation by token error:', error.message);
-    return res.status(500).json({ message: 'Failed to accept invitation.' });
+    return res.status(error.statusCode || 500).json({
+      message: error.statusCode ? error.message : 'Failed to accept invitation.'
+    });
   }
 };
+
+const acceptInvitation = acceptAuthenticatedInvitation(false);
+const acceptInvitationByToken = acceptAuthenticatedInvitation(true);
 
 const getInvitationDetailsByToken = async (req, res) => {
   if (validate(req, res)) return;
@@ -653,37 +619,32 @@ const acceptInvitationOnboard = async (req, res) => {
       return res.status(400).json({ message: passwordPolicy.message });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    let user = await User.findOne({ email: invitation.email });
-    if (!user) {
-      user = await User.create({
-        name,
-        email: invitation.email,
-        password: hashedPassword,
-        githubUsername,
-        activeGithubUsername: githubUsername,
-        activeCareerStack: 'Full Stack',
-        activeExperienceLevel: 'Student'
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const { user, membership } = await User.db.transaction(async (session) => {
+      const claimed = await claimInvitation({
+        selector: { _id: invitation._id, token, role: { $in: ORGANIZATION_ROLES } },
+        session
       });
-    } else {
-      user.name = name || user.name;
-      user.password = hashedPassword;
-      if (!user.githubUsername) {
-        user.githubUsername = githubUsername;
+      const email = claimed.email.trim().toLowerCase();
+      if (await User.exists({ email }).collation({ locale: 'en', strength: 2 }).session(session)) {
+        throw invitationError(409, 'Sign in to accept this invitation with your existing account.');
       }
-      if (!user.activeGithubUsername) {
-        user.activeGithubUsername = user.githubUsername;
-      }
-      await user.save();
-    }
-
-    const membership = await activateInvitationForUser({ invitation, userId: user._id });
-
-    // ── FIX: ensure organizationId is set on the User record
-    await User.findByIdAndUpdate(user._id, {
-      $set: { organizationId: invitation.organizationId }
+      const [user] = await User.create(
+        [
+          {
+            name,
+            email,
+            organizationId: claimed.organizationId,
+            password: hashedPassword,
+            githubUsername,
+            activeGithubUsername: githubUsername,
+            activeCareerStack: 'Full Stack',
+            activeExperienceLevel: 'Student'
+          }
+        ],
+        { session }
+      );
+      return { user, membership: await acceptMembership(claimed, user._id, session) };
     });
 
     return res.json({
@@ -705,8 +666,11 @@ const acceptInvitationOnboard = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Onboard invitation accept error:', error.message);
-    return res.status(500).json({ message: 'Failed to complete invitation onboarding.' });
+    if (error.code === 11000)
+      return res.status(409).json({ message: 'Sign in to accept this invitation with your existing account.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.statusCode ? error.message : 'Failed to complete invitation onboarding.' });
   }
 };
 
@@ -721,9 +685,7 @@ const listOrganizationMembers = async (req, res) => {
     const organizationId = req.params.organizationId;
 
     const [memberships, teams] = await Promise.all([
-      Membership.find({ organizationId, status: 'active' })
-        .populate('userId', 'name email githubUsername')
-        .lean(),
+      Membership.find({ organizationId, status: 'active' }).populate('userId', 'name email githubUsername').lean(),
       Team.find({ organizationId }).select('_id name slug').lean()
     ]);
 
@@ -811,9 +773,7 @@ const updateMembershipRole = async (req, res) => {
     }
 
     if (!canManageRole(actorRole, membership.role) && actorRole !== 'admin') {
-      return res
-        .status(403)
-        .json({ message: `Role ${actorRole} cannot modify ${membership.role}.` });
+      return res.status(403).json({ message: `Role ${actorRole} cannot modify ${membership.role}.` });
     }
 
     if (!membership.teamId && membership.role === 'admin' && targetRole !== 'admin') {
@@ -889,12 +849,15 @@ const revokeInvitation = async (req, res) => {
     }
 
     if (!canManageRole(actorRole, invitation.role)) {
-      return res
-        .status(403)
-        .json({ message: `Role ${actorRole} cannot revoke ${invitation.role} invitation.` });
+      return res.status(403).json({ message: `Role ${actorRole} cannot revoke ${invitation.role} invitation.` });
     }
 
-    const revoked = await Invitation.findByIdAndDelete(invitation._id).lean();
+    const revoked = await Invitation.findOneAndDelete({
+      _id: invitation._id,
+      organizationId,
+      status: 'pending'
+    }).lean();
+    if (!revoked) return res.status(409).json({ message: 'Invitation is no longer pending.' });
 
     return res.json({
       message: 'Invitation deleted successfully.',
@@ -906,9 +869,7 @@ const revokeInvitation = async (req, res) => {
   }
 };
 
-const getTeamSharedDashboardValidators = [
-  param('teamId').isMongoId().withMessage('teamId is invalid.')
-];
+const getTeamSharedDashboardValidators = [param('teamId').isMongoId().withMessage('teamId is invalid.')];
 
 const getTeamSharedDashboard = async (req, res) => {
   if (validate(req, res)) return;
@@ -965,9 +926,7 @@ const getTeamSharedDashboard = async (req, res) => {
         repositories: Number(analysis?.githubStats?.repos || 0),
         stars: Number(analysis?.githubStats?.stars || 0),
         forks: Number(analysis?.githubStats?.forks || 0),
-        missingSkills: Array.isArray(analysis?.missingSkills)
-          ? analysis.missingSkills.slice(0, 6)
-          : []
+        missingSkills: Array.isArray(analysis?.missingSkills) ? analysis.missingSkills.slice(0, 6) : []
       };
     });
 
@@ -1004,10 +963,7 @@ const getTeamAnalytics = async (req, res) => {
       Analysis.find({ userId: { $in: userIds } }).lean(),
       Job.find({ teamId: team._id, status: 'open', archivedAt: null }).lean(),
       RecruiterMatch.find({ teamId: team._id }).sort({ updatedAt: -1 }).limit(100).lean(),
-      RecruiterShortlist.find({ teamId: team._id, applicationId: null })
-        .sort({ updatedAt: -1 })
-        .limit(100)
-        .lean()
+      RecruiterShortlist.find({ teamId: team._id, applicationId: null }).sort({ updatedAt: -1 }).limit(100).lean()
     ]);
 
     let totalRepos = 0;
@@ -1047,22 +1003,15 @@ const getTeamAnalytics = async (req, res) => {
       .slice(0, 8)
       .map(([skill, count]) => ({ skill, count }));
 
-    const averageReadinessScore =
-      readinessCount > 0 ? Math.round(readinessSum / readinessCount) : 0;
+    const averageReadinessScore = readinessCount > 0 ? Math.round(readinessSum / readinessCount) : 0;
     const teamActivity = Math.round(
-      Math.min(
-        100,
-        (analyses.length / Math.max(memberships.length, 1)) * 55 + Math.min(totalRepos, 45)
-      )
+      Math.min(100, (analyses.length / Math.max(memberships.length, 1)) * 55 + Math.min(totalRepos, 45))
     );
-    const recruiterEngagement = Math.round(
-      Math.min(100, recruiterMatches.length * 4 + shortlists.length * 6)
-    );
+    const recruiterEngagement = Math.round(Math.min(100, recruiterMatches.length * 4 + shortlists.length * 6));
     const hiringPerformance = Math.round(
       Math.min(
         100,
-        openJobs.length * 12 +
-          shortlists.filter((item) => ['contacted', 'interview'].includes(item.status)).length * 10
+        openJobs.length * 12 + shortlists.filter((item) => ['contacted', 'interview'].includes(item.status)).length * 10
       )
     );
 
@@ -1073,10 +1022,7 @@ const getTeamAnalytics = async (req, res) => {
       roleDistribution,
       averageReadinessScore,
       teamScore: Math.round(
-        averageReadinessScore * 0.55 +
-          teamActivity * 0.2 +
-          recruiterEngagement * 0.15 +
-          hiringPerformance * 0.1
+        averageReadinessScore * 0.55 + teamActivity * 0.2 + recruiterEngagement * 0.15 + hiringPerformance * 0.1
       ),
       teamActivity,
       recruiterEngagement,

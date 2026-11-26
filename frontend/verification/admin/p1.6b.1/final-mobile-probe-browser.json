@@ -1,0 +1,102 @@
+{
+  "phase": "final-mobile-probe",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "checks": {
+    "recruiterActionBounds": [
+      {
+        "left": 177.015625,
+        "right": 337,
+        "viewport": 390
+      },
+      {
+        "left": 187.3125,
+        "right": 337,
+        "viewport": 390
+      }
+    ]
+  },
+  "profiles": [],
+  "requests": [
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667311,
+      "finishedAt": 1795704667442
+    },
+    {
+      "path": "/invitations/pending",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667306,
+      "finishedAt": 1795704667465
+    },
+    {
+      "path": "/organizations/6b084752697a2e887a6ab160/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667290,
+      "finishedAt": 1795704667477
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667318,
+      "finishedAt": 1795704667512
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667274,
+      "finishedAt": 1795704667589
+    },
+    {
+      "path": "/organizations/6b084752697a2e887a6ab160/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667647,
+      "finishedAt": 1795704667706
+    },
+    {
+      "path": "/organizations/6b084752697a2e887a6ab160/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667649,
+      "finishedAt": 1795704667709
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667230,
+      "finishedAt": 1795704667724
+    },
+    {
+      "path": "/organizations/6b084752697a2e887a6ab160/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704667710,
+      "finishedAt": 1795704667733
+    }
+  ],
+  "streamRequests": 1,
+  "offlineExternalAssets": [
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css"
+  ],
+  "consoleErrors": [],
+  "runtimeErrors": [],
+  "badHttp": [],
+  "expectedFaults": [],
+  "maxConcurrentStreams": 1,
+  "status": "passed",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 139,
+    "productionDataUsed": false
+  }
+}

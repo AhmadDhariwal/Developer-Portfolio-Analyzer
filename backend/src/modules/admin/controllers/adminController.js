@@ -36,10 +36,8 @@ const buildVisibleDeveloperCountQuery = async () => {
   const publicProfileUserIds = await PublicProfile.distinct('userId', { isPublic: true });
   return {
     role: { $in: DEVELOPER_ROLE_VALUES },
-    $or: [
-      { isPublic: true },
-      { _id: { $in: publicProfileUserIds } }
-    ]
+    isActive: { $ne: false },
+    $or: [{ isPublic: true }, { _id: { $in: publicProfileUserIds } }]
   };
 };
 
@@ -72,7 +70,8 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
   const pipeline = [
     {
       $match: {
-        role: { $in: DEVELOPER_ROLE_VALUES }
+        role: { $in: DEVELOPER_ROLE_VALUES },
+        isActive: { $ne: false }
       }
     },
     {
@@ -83,10 +82,7 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
           {
             $match: {
               $expr: {
-                $and: [
-                  { $eq: ['$userId', '$$userId'] },
-                  { $eq: ['$isPublic', true] }
-                ]
+                $and: [{ $eq: ['$userId', '$$userId'] }, { $eq: ['$isPublic', true] }]
               }
             }
           },
@@ -107,10 +103,7 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
     },
     {
       $match: {
-        $or: [
-          { isPublic: true },
-          { 'publicProfiles.0': { $exists: true } }
-        ]
+        $or: [{ isPublic: true }, { 'publicProfiles.0': { $exists: true } }]
       }
     },
     {
@@ -174,17 +167,11 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
         },
         githubScore: { $ifNull: ['$analysis.githubScore', 0] },
         readinessScore: {
-          $ifNull: [
-            '$analysis.readinessScore',
-            { $ifNull: ['$analysis.githubScore', 0] }
-          ]
+          $ifNull: ['$analysis.readinessScore', { $ifNull: ['$analysis.githubScore', 0] }]
         },
         resumeScore: { $ifNull: ['$resumeAnalysis.atsScore', 0] },
         lastAnalyzedAt: {
-          $ifNull: [
-            '$resumeAnalysis.analyzedAt',
-            { $ifNull: ['$analysis.updatedAt', '$analysis.createdAt'] }
-          ]
+          $ifNull: ['$resumeAnalysis.analyzedAt', { $ifNull: ['$analysis.updatedAt', '$analysis.createdAt'] }]
         },
         publicSkillNames: {
           $map: {
@@ -232,10 +219,7 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
         skills: {
           $slice: [
             {
-              $setUnion: [
-                '$publicSkillNames',
-                '$resumeSkillNames'
-              ]
+              $setUnion: ['$publicSkillNames', '$resumeSkillNames']
             },
             16
           ]
@@ -250,7 +234,6 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
       $match: {
         $or: [
           { name: regex },
-          { email: regex },
           { githubUsername: regex },
           { jobTitle: regex },
           { location: regex },
@@ -306,7 +289,6 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
       $project: {
         _id: 1,
         name: 1,
-        email: 1,
         githubUsername: { $ifNull: ['$githubUsername', ''] },
         jobTitle: { $ifNull: ['$jobTitle', ''] },
         location: { $ifNull: ['$location', ''] },
@@ -320,11 +302,7 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
           ]
         },
         publicProfileSlug: {
-          $cond: [
-            { $gt: [{ $strLenCP: { $ifNull: ['$publicProfile.slug', ''] } }, 0] },
-            '$publicProfile.slug',
-            null
-          ]
+          $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$publicProfile.slug', ''] } }, 0] }, '$publicProfile.slug', null]
         },
         headline: 1,
         summary: 1,
@@ -372,10 +350,7 @@ const buildDeveloperAggregatePipeline = (options = {}) => {
     {
       $facet: {
         metadata: [{ $count: 'total' }],
-        developers: [
-          { $skip: (page - 1) * limit },
-          { $limit: limit }
-        ]
+        developers: [{ $skip: (page - 1) * limit }, { $limit: limit }]
       }
     }
   );
@@ -388,7 +363,14 @@ const getOrganizationOverview = async (req, res) => {
     const organizationId = req.organizationId;
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const [recruitersCount, jobsCount, globalDevelopersCount, pendingInvitationsCount, activeTeamsCount, recentActivity] = await Promise.all([
+    const [
+      recruitersCount,
+      jobsCount,
+      globalDevelopersCount,
+      pendingInvitationsCount,
+      activeTeamsCount,
+      recentActivity
+    ] = await Promise.all([
       User.countDocuments({ role: 'recruiter', organizationId }),
       Job.countDocuments({ organizationId }),
       buildVisibleDeveloperCountQuery().then((query) => User.countDocuments(query)),
@@ -399,7 +381,7 @@ const getOrganizationOverview = async (req, res) => {
         expiresAt: { $gt: new Date() }
       }),
       Team.countDocuments({ organizationId, isActive: { $ne: false } }),
-      AuditLog.find({ organizationId, timestamp: { $gte: since } })
+      AuditLog.find({ organizationId, deleted: { $ne: true }, timestamp: { $gte: since } })
         .sort({ timestamp: -1 })
         .limit(5)
         .populate('actor', 'name email role')

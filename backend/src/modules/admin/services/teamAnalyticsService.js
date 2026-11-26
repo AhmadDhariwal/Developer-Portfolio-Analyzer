@@ -2,10 +2,7 @@ const User = require('../../auth/models/user');
 const Team = require('../models/team');
 const Membership = require('../models/membership');
 const Job = require('../../recruiter/models/Job');
-const {
-  aggregateUsage,
-  listAnalyzedCandidates
-} = require('../../recruiter/services/hub/recruiterReportingService');
+const { aggregateUsage, listAnalyzedCandidates } = require('../../recruiter/services/hub/recruiterReportingService');
 const AuditLog = require('../models/auditLog');
 
 const DEFAULT_DASHBOARD_DATE_RANGE = 30;
@@ -41,12 +38,8 @@ const computeOrgTeamsMetrics = async (orgId) => {
 
   // 1. Fetch main entities
   const [recruiters, teams, memberships] = await Promise.all([
-    User.find({ role: 'recruiter', organizationId: orgId })
-      .select('_id name email isActive createdAt')
-      .lean(),
-    Team.find({ organizationId: orgId })
-      .select('_id name isActive description slug createdAt')
-      .lean(),
+    User.find({ role: 'recruiter', organizationId: orgId }).select('_id name email isActive createdAt').lean(),
+    Team.find({ organizationId: orgId }).select('_id name isActive description slug createdAt').lean(),
     Membership.find({ organizationId: orgId, status: 'active', teamId: { $ne: null } })
       .populate('userId', 'name email role isActive')
       .lean()
@@ -86,9 +79,7 @@ const computeOrgTeamsMetrics = async (orgId) => {
   const allRecruiterIds = recruiters.map((recruiter) => String(recruiter._id));
   const recruiterObjectIds = recruiters.map((recruiter) => recruiter._id);
   const activeRecruiterIdSet = new Set(
-    recruiters
-      .filter((recruiter) => recruiter.isActive !== false)
-      .map((recruiter) => String(recruiter._id))
+    recruiters.filter((recruiter) => recruiter.isActive !== false).map((recruiter) => String(recruiter._id))
   );
 
   // 2. Fetch activity & records
@@ -99,16 +90,18 @@ const computeOrgTeamsMetrics = async (orgId) => {
     listAnalyzedCandidates({
       organizationId: orgId,
       actorIds: recruiterObjectIds,
+      visibleOnly: true,
       since: previousSince
     }),
     AuditLog.find({
       organizationId: orgId,
+      deleted: { $ne: true },
       actor: { $in: recruiterObjectIds },
       timestamp: { $gte: since }
     })
       .select('_id actor teamId action method route statusCode timestamp')
       .lean(),
-    aggregateUsage({ organizationId: orgId, actorIds: recruiterObjectIds, since, previousSince })
+    aggregateUsage({ organizationId: orgId, actorIds: recruiterObjectIds, since, previousSince, visibleOnly: true })
   ]);
 
   // 3. Process jobs
@@ -128,8 +121,7 @@ const computeOrgTeamsMetrics = async (orgId) => {
 
     // Track by recruiter
     jobsByRecruiter.set(recruiterId, (jobsByRecruiter.get(recruiterId) || 0) + 1);
-    if (job.status === 'open')
-      openJobsByRecruiter.set(recruiterId, (openJobsByRecruiter.get(recruiterId) || 0) + 1);
+    if (job.status === 'open') openJobsByRecruiter.set(recruiterId, (openJobsByRecruiter.get(recruiterId) || 0) + 1);
     if (job.status === 'closed')
       closedJobsByRecruiter.set(recruiterId, (closedJobsByRecruiter.get(recruiterId) || 0) + 1);
 
@@ -137,8 +129,7 @@ const computeOrgTeamsMetrics = async (orgId) => {
     if (teamId) {
       jobsByTeam.set(teamId, (jobsByTeam.get(teamId) || 0) + 1);
       if (job.status === 'open') openJobsByTeam.set(teamId, (openJobsByTeam.get(teamId) || 0) + 1);
-      if (job.status === 'closed')
-        closedJobsByTeam.set(teamId, (closedJobsByTeam.get(teamId) || 0) + 1);
+      if (job.status === 'closed') closedJobsByTeam.set(teamId, (closedJobsByTeam.get(teamId) || 0) + 1);
 
       const jobSummary = {
         _id: job._id,
@@ -248,7 +239,7 @@ const computeOrgTeamsMetrics = async (orgId) => {
   const teamMetrics = teams.map((team) => {
     const teamId = String(team._id);
     const teamMembers = membersByTeam.get(teamId) || [];
-    const recruiterIdsForTeam = teamMembers.map((m) => String(m._id));
+    const recruiterIdsForTeam = teamMembers.map((m) => String(m._id)).filter((id) => activeRecruiterIdSet.has(id));
 
     // Stats
     const openJobs = openJobsByTeam.get(teamId) || 0;
@@ -256,14 +247,8 @@ const computeOrgTeamsMetrics = async (orgId) => {
     const totalJobs = jobsByTeam.get(teamId) || 0;
 
     const candidatesAnalyzed = candidatesByTeam.get(teamId) || 0;
-    const aiUsage = recruiterIdsForTeam.reduce(
-      (sum, rId) => sum + (aiRankCallsByRecruiter.get(rId) || 0),
-      0
-    );
-    const matchesGenerated = recruiterIdsForTeam.reduce(
-      (sum, rId) => sum + (matchCallsByRecruiter.get(rId) || 0),
-      0
-    );
+    const aiUsage = recruiterIdsForTeam.reduce((sum, rId) => sum + (aiRankCallsByRecruiter.get(rId) || 0), 0);
+    const matchesGenerated = recruiterIdsForTeam.reduce((sum, rId) => sum + (matchCallsByRecruiter.get(rId) || 0), 0);
     const activeMembers = teamMembers.filter((m) => activeRecruiterIdSet.has(String(m._id))).length;
 
     const teamRecentActions = recentActivityByTeam.get(teamId) || [];
@@ -299,7 +284,7 @@ const computeOrgTeamsMetrics = async (orgId) => {
       members: teamMembers,
       memberCount: teamMembers.length,
       activeMembers,
-      recruiterCount: teamMembers.length, // recruiters assigned
+      recruiterCount: recruiterIdsForTeam.length,
 
       totalJobs,
       openJobs,

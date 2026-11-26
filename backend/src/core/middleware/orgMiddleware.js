@@ -4,13 +4,14 @@ const { normalizeUserRole } = require('./authmiddleware');
 
 const Organization = require('../../modules/admin/models/organization');
 
-const resolveMembershipContext = async (userId) => {
+const resolveMembershipContext = async (userId, organizationAdmin = false) => {
   if (!userId) return null;
 
   try {
     const membership = await Membership.findOne({
       userId,
-      status: 'active'
+      status: 'active',
+      ...(organizationAdmin && { teamId: null, role: 'admin' })
     })
       .sort({ updatedAt: -1 })
       .select('organizationId role')
@@ -42,24 +43,21 @@ const resolveOrganizationContext = async (user) => {
 
   try {
     const safeRole = normalizeUserRole(user.role);
-    const fallbackUser = await User.findById(user._id)
-      .select('organizationId role')
-      .lean();
+    const fallbackUser = await User.findById(user._id).select('organizationId role').lean();
 
-    const rawOrgId = String(
-      user.organizationId ||
-      fallbackUser?.organizationId ||
-      ''
-    ).trim();
+    const rawOrgId = String(user.organizationId || fallbackUser?.organizationId || '').trim();
 
     // Valid ObjectId — verify it actually exists in the DB
     if (rawOrgId && rawOrgId !== 'local' && rawOrgId.match(/^[0-9a-fA-F]{24}$/)) {
-      const orgExists = await Organization.exists({ _id: rawOrgId });
-      if (orgExists) {
+      const organization = await Organization.findById(rawOrgId).select('isSuspended').lean();
+      if (organization?.isSuspended === true) return null;
+      if (organization) {
         return { organizationId: rawOrgId, role: safeRole, membershipRole: null };
       }
       // Org ID is set but org doesn't exist — clear it and fall through
-      console.warn(`[orgMiddleware] organizationId "${rawOrgId}" for user ${user._id} points to non-existent org. Clearing...`);
+      console.warn(
+        `[orgMiddleware] organizationId "${rawOrgId}" for user ${user._id} points to non-existent org. Clearing...`
+      );
       await User.findByIdAndUpdate(user._id, { $unset: { organizationId: 1 } });
     }
 
@@ -71,7 +69,7 @@ const resolveOrganizationContext = async (user) => {
 
     // Admin with no organizationId stored — find the org they own/belong to
     if (safeRole === 'admin') {
-      const ownedOrg = await Organization.findOne({ ownerId: user._id })
+      const ownedOrg = await Organization.findOne({ ownerId: user._id, isSuspended: { $ne: true } })
         .select('_id')
         .lean();
       if (ownedOrg) {
@@ -82,8 +80,14 @@ const resolveOrganizationContext = async (user) => {
     }
 
     // Fall back to membership lookup
-    const membership = await resolveMembershipContext(user._id);
+    const membership = await resolveMembershipContext(user._id, safeRole === 'admin');
     if (!membership) return null;
+
+    const activeOrganization = await Organization.exists({
+      _id: membership.organizationId,
+      isSuspended: { $ne: true }
+    });
+    if (!activeOrganization) return null;
 
     // Persist the resolved org on the user so future requests skip the lookup
     await User.findByIdAndUpdate(user._id, {

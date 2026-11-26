@@ -131,8 +131,17 @@ const aiRankCandidates = async (req, res) => {
   try {
     const { jobId, candidates: inlineCandidates = [], candidateIds = [] } = req.body || {};
 
-    if (!jobId) {
-      return res.status(400).json({ message: 'jobId is required.' });
+    if (
+      typeof jobId !== 'string' ||
+      !/^[a-f0-9]{24}$/i.test(jobId) ||
+      !Array.isArray(inlineCandidates) ||
+      inlineCandidates.length > 500 ||
+      inlineCandidates.some((candidate) => !candidate || typeof candidate !== 'object' || Array.isArray(candidate)) ||
+      !Array.isArray(candidateIds) ||
+      candidateIds.length > 500 ||
+      candidateIds.some((id) => typeof id !== 'string' || !/^[a-f0-9]{24}$/i.test(id))
+    ) {
+      return res.status(400).json({ message: 'Invalid job or candidate selection.' });
     }
 
     const job = await Job.findOne({ _id: jobId, organizationId: req.organizationId }).lean();

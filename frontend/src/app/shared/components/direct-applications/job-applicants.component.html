@@ -220,14 +220,7 @@
             </div>
           </div>
 
-          <details class="evidence-details">
-            <summary>Status timeline</summary>
-            <ol>
-              <li *ngFor="let event of application.timeline">
-                {{ event.status }} - {{ event.at | date: 'medium' }}
-              </li>
-            </ol>
-          </details>
+          <app-application-timeline [timeline]="application.timeline" />
 
           <div class="applicant-card__evidence-bar">
             <span class="pdf-chip">{{ application.resume.fileName }}</span>
