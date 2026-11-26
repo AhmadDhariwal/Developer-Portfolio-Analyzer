@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-11-26T11:45:52.153Z",
+  "navbarCheck": {
+    "placeholder": "Search admin workspace...",
+    "orgPill": "Nexora Systems",
+    "hasOrgSelect": false
+  },
+  "themeCheck": {
+    "found": true,
+    "beforeTheme": "light",
+    "beforeStorage": "light",
+    "afterClickTheme": "dark",
+    "afterClickStorage": "dark"
+  },
+  "themePersisted": {
+    "theme": "dark",
+    "storage": "dark"
+  },
+  "notifCheck": {
+    "buttonFound": true,
+    "ariaExpanded": "true",
+    "open": true,
+    "actionText": null,
+    "itemCount": 2
+  },
+  "searchItems": [
+    "Admin DashboardOrganization command overviewpage"
+  ],
+  "dashboardHiringFunnelHeadingCount": 1,
+  "consoleDiagPresent": true,
+  "activityCheck": {
+    "rowCount": 2
+  },
+  "allDatesCheck": {
+    "rowCount": 2,
+    "activePresetText": "preset-btn preset-btn--active"
+  },
+  "drawerChecks": [
+    {
+      "route": "/app/admin/recruiters",
+      "opened": true,
+      "closed": true
+    },
+    {
+      "route": "/app/admin/teams",
+      "opened": true,
+      "closed": true
+    },
+    {
+      "route": "/app/admin/jobs",
+      "opened": true,
+      "closed": true
+    },
+    {
+      "route": "/app/admin/developers",
+      "opened": true,
+      "closed": true
+    },
+    {
+      "route": "/app/admin/console/performance-statistics",
+      "opened": true,
+      "closed": true
+    }
+  ],
+  "dialogVisible": true,
+  "rapidStreamDelta": 0,
+  "status429Count": 0,
+  "totalChecks": 56,
+  "overflowFailureCount": 0,
+  "contrastFailureCount": 0,
+  "clippedFailureCount": 0,
+  "layoutShiftIssueCount": 0,
+  "consoleErrorCount": 0,
+  "runtimeErrorCount": 0,
+  "badHttpCount": 0,
+  "recruiterBaseline": {
+    "docOverflowPx": 0,
+    "contrastCount": 0
+  },
+  "developerBaseline": {
+    "docOverflowPx": 0,
+    "contrastCount": 1
+  },
+  "overflowFailures": [],
+  "contrastFailures": [],
+  "clippedFailures": [],
+  "layoutShiftIssues": [],
+  "consoleErrors": [],
+  "runtimeErrors": [],
+  "badHttp": []
+}

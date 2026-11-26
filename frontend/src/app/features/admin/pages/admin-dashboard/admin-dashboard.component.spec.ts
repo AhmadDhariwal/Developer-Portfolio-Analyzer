@@ -1,8 +1,8 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { Chart } from 'chart.js';
-import { Subject, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdminModule } from '../../admin.module';
 import { ThemeService } from '../../../../shared/services/theme.service';
@@ -157,5 +157,124 @@ describe('AdminDashboardPageComponent', () => {
     component.ngOnDestroy();
     expect(activeChart.destroy).toHaveBeenCalledOnce();
     expect(component['funnelChart']).toBeNull();
+  });
+
+  it('renders a single Hiring Funnel chart without duplicating the Hiring Funnel card or raw Org ID banner', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [AdminModule],
+      providers: [
+        {
+          provide: AdminHiringService,
+          useValue: {
+            getOverview: () =>
+              of({
+                organizationId: 'org-1',
+                recruitersCount: 3,
+                jobsCount: 4,
+                globalDevelopersCount: 12,
+                pendingInvitationsCount: 1,
+                activeTeamsCount: 2,
+                recentActivityCount: 1,
+                recentActivity: [],
+              }),
+            getRecruiters: () => of({ recruiters: [] }),
+            getDevelopers: () => of({ developers: [], pagination: { total: 0 } }),
+          },
+        },
+        {
+          provide: AdminConsoleService,
+          useValue: {
+            getPreferences: () =>
+              of({
+                organization: {
+                  _id: 'org-1',
+                  name: 'Nexora Systems',
+                  slug: 'nexora',
+                  ownerId: 'owner-1',
+                  description: 'Engineering Org',
+                  createdAt: '2026-01-01T00:00:00.000Z',
+                  dashboardConfig: { preferredDateRangeDays: 30 },
+                },
+              }),
+          },
+        },
+        {
+          provide: AdminPerformanceService,
+          useValue: {
+            getPerformance: () =>
+              of({
+                period: { days: 30, since: '2026-10-27T00:00:00.000Z' },
+                filters: {
+                  selectedTeamId: '',
+                  selectedRecruiterId: '',
+                  selectedStack: '',
+                  selectedJobStatus: '',
+                  teams: [],
+                  recruiters: [],
+                  stacks: [],
+                  jobStatuses: [],
+                },
+                summary: {
+                  totalRecruiters: 3,
+                  activeRecruiters: 3,
+                  totalTeams: 2,
+                  pendingInvitations: 1,
+                  totalJobs: 4,
+                  recentJobs: 2,
+                  openJobs: 2,
+                  draftJobs: 1,
+                  closedJobs: 1,
+                  aiUsageCount: 5,
+                  matchesGenerated: 8,
+                  topTeam: 'Core',
+                  topRecruiter: 'Ava',
+                  organizationPerformanceScore: 80,
+                },
+                recruiterMetrics: [],
+                teamMetrics: [],
+                hiringAnalytics: {
+                  open: 2,
+                  draft: 1,
+                  closed: 1,
+                  total: 4,
+                  recentTotal: 2,
+                  stackDistribution: [],
+                  monthlyTrend: [],
+                  invitationFunnel: { total: 3, pending: 1, accepted: 2, revoked: 0, expired: 0 },
+                  invitationAcceptanceRate: 67,
+                },
+                developerAnalytics: {
+                  total: 12,
+                  publicCount: 10,
+                  recentAnalyzed: 4,
+                  topStacks: [],
+                  topSkills: [],
+                  experienceLevels: [],
+                  scoreDistribution: [],
+                },
+                activityBreakdown: [],
+                auditHeatmap: [],
+                recentActions: [],
+              }),
+          },
+        },
+        provideRouter([]),
+      ],
+    }).compileComponents();
+
+    const pageFixture = TestBed.createComponent(AdminDashboardPageComponent);
+    pageFixture.detectChanges();
+    const html = pageFixture.nativeElement as HTMLElement;
+    const headings = Array.from(html.querySelectorAll('h2, h3')).map((el) =>
+      el.textContent?.trim(),
+    );
+    expect(headings.filter((text) => text === 'Hiring Funnel')).toHaveLength(1);
+    expect(headings).toContain('Invitations & Stack Demand');
+    const overviewLabels = Array.from(html.querySelectorAll('.overview-band__label')).map((el) =>
+      el.textContent?.trim(),
+    );
+    expect(overviewLabels).not.toContain('Org ID');
+    expect(overviewLabels).toContain('Scope');
   });
 });

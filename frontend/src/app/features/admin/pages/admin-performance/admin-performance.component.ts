@@ -11,7 +11,7 @@ import {
   RecruiterMetric,
   StackItem,
   TeamMetric,
-  TrendItem
+  TrendItem,
 } from './admin-performance.service';
 
 type Section = 'overview' | 'recruiters' | 'teams' | 'hiring' | 'ai';
@@ -31,7 +31,7 @@ interface FilterState {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './admin-performance.component.html',
-  styleUrls: ['./admin-performance.component.scss']
+  styleUrls: ['./admin-performance.component.scss'],
 })
 export class AdminPerformanceComponent implements OnInit, OnDestroy {
   loading = false;
@@ -57,44 +57,48 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
     private readonly svc: AdminPerformanceService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-    this.routeSub = this.route.queryParamMap.pipe(
-      map((params) => this.readStateFromQuery(params)),
-      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
-      tap((state) => this.applyState(state)),
-      switchMap((state) => {
-        this.loading = true;
-        this.error = '';
-        this.closeDrawer();
-        return this.svc.getPerformance(state.days, {
-          teamId: state.teamId || undefined,
-          recruiterId: state.recruiterId || undefined,
-          stack: state.stack || undefined,
-          jobStatus: state.jobStatus || undefined
-        }).pipe(
-          map((data) => ({ data, state })),
-          catchError((error) => of({ error, state }))
-        );
-      })
-    ).subscribe((result) => {
-      this.loading = false;
+    this.routeSub = this.route.queryParamMap
+      .pipe(
+        map((params) => this.readStateFromQuery(params)),
+        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+        tap((state) => this.applyState(state)),
+        switchMap((state) => {
+          this.loading = true;
+          this.error = '';
+          this.closeDrawer();
+          return this.svc
+            .getPerformance(state.days, {
+              teamId: state.teamId || undefined,
+              recruiterId: state.recruiterId || undefined,
+              stack: state.stack || undefined,
+              jobStatus: state.jobStatus || undefined,
+            })
+            .pipe(
+              map((data) => ({ data, state })),
+              catchError((error) => of({ error, state })),
+            );
+        }),
+      )
+      .subscribe((result) => {
+        this.loading = false;
 
-      if ('error' in result) {
-        this.error = result.error?.error?.message || 'Failed to load performance data.';
+        if ('error' in result) {
+          this.error = result.error?.error?.message || 'Failed to load performance data.';
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.data = result.data;
+        if (this.normalizeSelectedFilters(result.data)) {
+          this.replaceUrlState();
+        }
+        this.syncDrawerSelection();
         this.cdr.detectChanges();
-        return;
-      }
-
-      this.data = result.data;
-      if (this.normalizeSelectedFilters(result.data)) {
-        this.replaceUrlState();
-      }
-      this.syncDrawerSelection();
-      this.cdr.detectChanges();
-    });
+      });
   }
 
   ngOnDestroy(): void {
@@ -107,24 +111,27 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = '';
     const state = this.currentState();
-    this.refreshSub = this.svc.getPerformance(state.days, {
-      teamId: state.teamId || undefined,
-      recruiterId: state.recruiterId || undefined,
-      stack: state.stack || undefined,
-      jobStatus: state.jobStatus || undefined
-    }).pipe(
-      catchError((error) => {
-        this.error = error?.error?.message || 'Failed to load performance data.';
-        return of(null);
+    this.refreshSub = this.svc
+      .getPerformance(state.days, {
+        teamId: state.teamId || undefined,
+        recruiterId: state.recruiterId || undefined,
+        stack: state.stack || undefined,
+        jobStatus: state.jobStatus || undefined,
       })
-    ).subscribe((data) => {
-      this.loading = false;
-      if (data) {
-        this.data = data;
-        this.syncDrawerSelection();
-      }
-      this.cdr.detectChanges();
-    });
+      .pipe(
+        catchError((error) => {
+          this.error = error?.error?.message || 'Failed to load performance data.';
+          return of(null);
+        }),
+      )
+      .subscribe((data) => {
+        this.loading = false;
+        if (data) {
+          this.data = data;
+          this.syncDrawerSelection();
+        }
+        this.cdr.detectChanges();
+      });
   }
 
   setSection(section: Section): void {
@@ -187,7 +194,19 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
   exportRecruiters(): void {
     if (!this.data?.recruiterMetrics?.length) return;
     this.downloadCsv('recruiter-performance.csv', [
-      ['Recruiter', 'Email', 'Status', 'Team Id', 'Total Jobs', 'Recent Jobs', 'AI Calls', 'Candidates', 'Hiring Success %', 'Last Active', 'Score'],
+      [
+        'Recruiter',
+        'Email',
+        'Status',
+        'Team Id',
+        'Total Jobs',
+        'Recent Jobs',
+        'AI Calls',
+        'Candidates',
+        'Hiring Success %',
+        'Last Active',
+        'Score',
+      ],
       ...this.data.recruiterMetrics.map((item) => [
         item.name,
         item.email,
@@ -199,15 +218,27 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
         item.candidatesAnalyzed,
         item.hiringSuccessRate,
         item.lastActiveAt || '',
-        item.score
-      ])
+        item.score,
+      ]),
     ]);
   }
 
   exportTeams(): void {
     if (!this.data?.teamMetrics?.length) return;
     this.downloadCsv('team-performance.csv', [
-      ['Team', 'Status', 'Members', 'Active Members', 'Recruiters', 'Total Jobs', 'Recent Jobs', 'Candidates', 'AI Usage', 'Engagement Score', 'Performance Score'],
+      [
+        'Team',
+        'Status',
+        'Members',
+        'Active Members',
+        'Recruiters',
+        'Total Jobs',
+        'Recent Jobs',
+        'Candidates',
+        'AI Usage',
+        'Engagement Score',
+        'Performance Score',
+      ],
       ...this.data.teamMetrics.map((item) => [
         item.name,
         item.isActive ? 'Active' : 'Inactive',
@@ -219,8 +250,8 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
         item.candidatesAnalyzed || 0,
         item.aiUsage || 0,
         item.engagementScore,
-        item.performanceScore || 0
-      ])
+        item.performanceScore || 0,
+      ]),
     ]);
   }
 
@@ -276,6 +307,19 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
     return 'red';
   }
 
+  get jobStatusDonutGradient(): string {
+    const open = Number(this.data?.hiringAnalytics?.open || 0);
+    const draft = Number(this.data?.hiringAnalytics?.draft || 0);
+    const closed = Number(this.data?.hiringAnalytics?.closed || 0);
+    const total = open + draft + closed;
+    if (total <= 0) {
+      return 'conic-gradient(var(--border-color) 0% 100%)';
+    }
+    const openPct = (open / total) * 100;
+    const draftPct = openPct + (draft / total) * 100;
+    return `conic-gradient(var(--color-success) 0% ${openPct.toFixed(2)}%, var(--color-warning) ${openPct.toFixed(2)}% ${draftPct.toFixed(2)}%, var(--color-danger) ${draftPct.toFixed(2)}% 100%)`;
+  }
+
   comparison(key: keyof NonNullable<PerformanceData['comparisons']>): PerformanceComparison | null {
     return this.data?.comparisons?.[key] || null;
   }
@@ -306,13 +350,18 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
       recruiterId: String(params.get('recruiterId') || '').trim(),
       stack: String(params.get('stack') || '').trim(),
       jobStatus: String(params.get('jobStatus') || '').trim(),
-      tab
+      tab,
     };
   }
 
   private parseSection(value: string | null): Section {
     const section = String(value || '').trim();
-    if (section === 'recruiters' || section === 'teams' || section === 'hiring' || section === 'ai') {
+    if (
+      section === 'recruiters' ||
+      section === 'teams' ||
+      section === 'hiring' ||
+      section === 'ai'
+    ) {
       return section;
     }
     return 'overview';
@@ -334,7 +383,7 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
       recruiterId: this.selectedRecruiterId,
       stack: this.selectedStack,
       jobStatus: this.selectedJobStatus,
-      tab: this.activeSection
+      tab: this.activeSection,
     };
   }
 
@@ -346,26 +395,32 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
       recruiterId: state.recruiterId || null,
       stack: state.stack || null,
       jobStatus: state.jobStatus || null,
-      tab: state.tab !== 'overview' ? state.tab : null
+      tab: state.tab !== 'overview' ? state.tab : null,
     };
 
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams,
-      replaceUrl: true
+      replaceUrl: true,
     });
   }
 
   private normalizeSelectedFilters(data: PerformanceData): boolean {
     let changed = false;
 
-    if (this.selectedTeamId && !data.filters.teams.some((team) => team._id === this.selectedTeamId)) {
+    if (
+      this.selectedTeamId &&
+      !data.filters.teams.some((team) => team._id === this.selectedTeamId)
+    ) {
       this.selectedTeamId = '';
       this.selectedRecruiterId = '';
       changed = true;
     }
 
-    if (this.selectedRecruiterId && !data.filters.recruiters.some((recruiter) => recruiter._id === this.selectedRecruiterId)) {
+    if (
+      this.selectedRecruiterId &&
+      !data.filters.recruiters.some((recruiter) => recruiter._id === this.selectedRecruiterId)
+    ) {
       this.selectedRecruiterId = '';
       changed = true;
     }
@@ -375,7 +430,10 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
       changed = true;
     }
 
-    if (this.selectedJobStatus && !(data.filters.jobStatuses || []).includes(this.selectedJobStatus)) {
+    if (
+      this.selectedJobStatus &&
+      !(data.filters.jobStatuses || []).includes(this.selectedJobStatus)
+    ) {
       this.selectedJobStatus = '';
       changed = true;
     }
@@ -387,13 +445,16 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
     if (!this.drawerOpen || !this.data) return;
 
     if (this.drawerType === 'recruiter' && this.selectedRecruiterDetail) {
-      const nextRecruiter = this.data.recruiterMetrics.find((item) => item._id === this.selectedRecruiterDetail?._id) || null;
+      const nextRecruiter =
+        this.data.recruiterMetrics.find((item) => item._id === this.selectedRecruiterDetail?._id) ||
+        null;
       this.selectedRecruiterDetail = nextRecruiter;
       this.drawerOpen = !!nextRecruiter;
     }
 
     if (this.drawerType === 'team' && this.selectedTeamDetail) {
-      const nextTeam = this.data.teamMetrics.find((item) => item._id === this.selectedTeamDetail?._id) || null;
+      const nextTeam =
+        this.data.teamMetrics.find((item) => item._id === this.selectedTeamDetail?._id) || null;
       this.selectedTeamDetail = nextTeam;
       this.drawerOpen = !!nextTeam;
     }

@@ -12,6 +12,7 @@ import {
   SearchableSelectComponent,
   SearchableSelectOption,
 } from '../../../../shared/components/searchable-select/searchable-select.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 interface AuditActor {
   _id: string;
@@ -68,7 +69,7 @@ const SENSITIVE_KEY_PATTERNS = [
 @Component({
   selector: 'app-admin-activity-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableSelectComponent],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent, ConfirmDialogComponent],
   templateUrl: './admin-activity-logs.component.html',
   styleUrls: ['./admin-activity-logs.component.scss'],
 })
@@ -212,9 +213,9 @@ export class AdminActivityLogsComponent implements OnInit {
         type: 'Date',
         label: `${this.from || 'Any'} to ${this.to || 'Any'}`,
         clear: () => {
-          const today = new Date();
-          this.from = this.toDateString(today);
-          this.to = this.toDateString(today);
+          this.datePreset = 'all';
+          this.from = '';
+          this.to = '';
           this.applyFilters();
         },
       });
@@ -254,12 +255,39 @@ export class AdminActivityLogsComponent implements OnInit {
     return '';
   }
 
+  datePreset: 'today' | '7d' | '30d' | 'all' | 'custom' = '30d';
+  pendingArchiveLog: AuditLogItem | null = null;
+
+  get archiveConfirmMessage(): string {
+    const action = this.pendingArchiveLog?.action || 'this activity entry';
+    return `Archive activity log entry "${action}"? Archived logs remain retained in audit storage for compliance.`;
+  }
+
+  onManualDateChange(): void {
+    this.datePreset = this.from || this.to ? 'custom' : 'all';
+  }
+
+  applyDatePreset(preset: 'today' | '7d' | '30d' | 'all', fetch = true): void {
+    this.datePreset = preset;
+    if (preset === 'all') {
+      this.from = '';
+      this.to = '';
+    } else {
+      const end = new Date();
+      const start = new Date(end);
+      const offsetDays = preset === 'today' ? 0 : preset === '7d' ? 6 : 29;
+      start.setDate(start.getDate() - offsetDays);
+      this.from = this.toDateString(start);
+      this.to = this.toDateString(end);
+    }
+    if (fetch) {
+      this.applyFilters();
+    }
+  }
+
   private ensureDefaultDateRange(): void {
-    if (this.from && this.to) return;
-    const today = new Date();
-    const todayText = this.toDateString(today);
-    if (!this.from) this.from = todayText;
-    if (!this.to) this.to = todayText;
+    if (this.from || this.to || this.datePreset === 'all') return;
+    this.applyDatePreset('30d', false);
   }
 
   private toDateString(d: Date): string {
@@ -441,9 +469,7 @@ export class AdminActivityLogsComponent implements OnInit {
     this.selectedActionCategory = '';
     this.actionOptions = [];
     this.quickSearch = '';
-    const today = new Date();
-    this.from = this.toDateString(today);
-    this.to = this.toDateString(today);
+    this.applyDatePreset('30d', false);
     this.fetchLogs(1);
   }
 
@@ -543,8 +569,20 @@ export class AdminActivityLogsComponent implements OnInit {
 
   deleteLog(log: AuditLogItem): void {
     if (!log?._id) return;
-    const confirmed = globalThis.confirm('Archive this activity log entry?');
-    if (!confirmed) return;
+    this.pendingArchiveLog = log;
+  }
+
+  cancelArchiveLog(): void {
+    this.pendingArchiveLog = null;
+  }
+
+  confirmArchiveLog(): void {
+    const log = this.pendingArchiveLog;
+    if (!log?._id) {
+      this.pendingArchiveLog = null;
+      return;
+    }
+    this.pendingArchiveLog = null;
 
     this.apiService
       .deleteAuditLog(log._id)

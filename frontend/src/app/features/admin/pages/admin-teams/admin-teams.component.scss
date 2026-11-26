@@ -9,9 +9,13 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  padding: 1.5rem;
+  width: 100%;
   max-width: 1480px;
+  min-width: 0;
+  margin-inline: auto;
+  padding: clamp(14px, 2.2vw, 24px);
   color: var(--text-primary);
+  overflow-x: clip;
 }
 
 // ── Page Header ──────────────────────────────────────────────────────────
@@ -869,7 +873,7 @@
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(15, 23, 42, 0.56);
   z-index: 1000;
   display: flex;
   justify-content: flex-end;
@@ -1357,7 +1361,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(15, 23, 42, 0.56);
   z-index: 1001;
   display: flex;
   align-items: center;
@@ -1626,6 +1630,8 @@
     align-items: stretch;
 
     &__search {
+      flex: 0 0 auto;
+      width: 100%;
       min-width: 0;
     }
     &__select {
@@ -1636,8 +1642,20 @@
   .teams-analytics__grid {
     grid-template-columns: 1fr;
   }
+
+  button,
+  a {
+    min-height: 44px;
+  }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
 :where(button, a, input, select, textarea):focus-visible {
   outline: 2px solid var(--color-primary);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }

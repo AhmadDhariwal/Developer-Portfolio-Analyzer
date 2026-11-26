@@ -2,6 +2,7 @@
   class="dashboard-shell"
   [class.developer-workspace]="developerWorkspace"
   [class.recruiter-workspace]="recruiterWorkspace"
+  [class.admin-workspace]="adminWorkspace"
 >
   <a
     class="skip-link"
@@ -23,6 +24,7 @@
     [isMobile]="isMobile()"
     [developerWorkspace]="developerWorkspace"
     [recruiterWorkspace]="recruiterWorkspace"
+    [adminWorkspace]="adminWorkspace"
     (collapse)="closeSidebar()"
   ></app-sidebar>
 

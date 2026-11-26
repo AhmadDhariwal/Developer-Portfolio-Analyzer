@@ -63,7 +63,8 @@
   color: #fff;
 }
 
-:host-context(.recruiter-workspace) {
+:host-context(.recruiter-workspace),
+:host-context(.admin-workspace) {
   .overlay {
     background: rgba(15, 23, 42, 0.56);
     padding: 16px;
@@ -123,4 +124,3 @@
     }
   }
 }
-

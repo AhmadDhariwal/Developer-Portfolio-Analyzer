@@ -183,7 +183,8 @@
   transform: rotate(180deg);
 }
 
-:host-context(.recruiter-workspace) {
+:host-context(.recruiter-workspace),
+:host-context(.admin-workspace) {
   .searchable-select {
     --select-scroll-thumb: var(--border-strong, #cbd5e1);
     --select-scroll-track: var(--surface-subtle, #f1f5f9);

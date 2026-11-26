@@ -41,7 +41,7 @@
             : null
         "
         (keydown)="onSearchKeydown($event)"
-        placeholder="Search repositories, skills..."
+        [placeholder]="searchPlaceholder"
         autocomplete="off"
         [value]="searchQuery"
         (input)="onSearchInput($event)"
@@ -121,19 +121,33 @@
         </a>
       </div>
 
-      <div class="switcher-group">
-        <label for="organization-switch">Organization</label>
-        <select
-          id="organization-switch"
-          class="switch-select"
-          title="Select organization context"
-          [ngModel]="selectedOrganizationId"
-          (ngModelChange)="onOrganizationSwitch($event)"
+      <div
+        class="switcher-group switcher-group--org-pill"
+        *ngIf="isAdmin && organizations.length === 1; else orgSelectGroup"
+      >
+        <span class="org-label">Organization</span>
+        <span
+          class="org-scope-pill"
+          [title]="'Active organization scope: ' + organizations[0].name"
         >
-          <option value="">Select organization</option>
-          <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
-        </select>
+          {{ organizations[0].name }}
+        </span>
       </div>
+      <ng-template #orgSelectGroup>
+        <div class="switcher-group">
+          <label for="organization-switch">Organization</label>
+          <select
+            id="organization-switch"
+            class="switch-select"
+            title="Select organization context"
+            [ngModel]="selectedOrganizationId"
+            (ngModelChange)="onOrganizationSwitch($event)"
+          >
+            <option value="">Select organization</option>
+            <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
+          </select>
+        </div>
+      </ng-template>
 
       <div class="switcher-group">
         <label for="team-switch">Team</label>
@@ -252,7 +266,7 @@
         [routerLink]="notificationsRoute"
         (click)="closeNotifications()"
       >
-        View All Activities
+        {{ notificationsActionLabel }}
       </a>
 
       <ng-template #noNotif>
@@ -295,7 +309,7 @@
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          <span>Profile</span>
+          <span>{{ profileLabel }}</span>
         </a>
         <a [routerLink]="dashboardRoute" class="dropdown-item" (click)="closeUserMenu()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

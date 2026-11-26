@@ -310,13 +310,35 @@
         flex-direction: column;
         gap: 1px;
 
-        label {
+        label,
+        .org-label {
           font-size: 0.64rem;
           text-transform: uppercase;
           letter-spacing: 0.04em;
           color: var(--text-muted);
           font-weight: 600;
         }
+      }
+
+      .switcher-group--org-pill {
+        min-width: 0;
+      }
+
+      .org-scope-pill {
+        display: inline-flex;
+        align-items: center;
+        height: 22px;
+        max-width: 190px;
+        padding: 0 8px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        background: var(--surface-card, #ffffff);
+        color: var(--text-primary);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .switch-select {
@@ -460,7 +482,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--color-danger);
+        background: #b91c1c;
         color: #fff;
         border: 1.5px solid var(--navbar-bg, #ffffff);
       }
@@ -912,7 +934,8 @@
 }
 
 :host-context(.developer-workspace) .navbar,
-:host-context(.recruiter-workspace) .navbar {
+:host-context(.recruiter-workspace) .navbar,
+:host-context(.admin-workspace) .navbar {
   .menu-toggle,
   .icon-btn {
     min-width: 38px;
@@ -1017,9 +1040,10 @@
   background: var(--surface-hover);
 }
 
-// Recruiter names/handles can be long. Keep the toolbar's fixed controls from
+// Recruiter and Admin names/handles can be long. Keep the toolbar's fixed controls from
 // expanding across the search/menu area when the desktop sidebar is open.
-:host-context(.recruiter-workspace) .navbar {
+:host-context(.recruiter-workspace) .navbar,
+:host-context(.admin-workspace) .navbar {
   .navbar-left .search-bar {
     min-width: 0;
   }

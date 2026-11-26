@@ -46,6 +46,11 @@ export class MainLayout implements OnDestroy {
     return role === 'recruiter' && /^\/app\/recruiter(\/|$)/.test(this.router.url);
   }
 
+  get adminWorkspace(): boolean {
+    const role = String(this.auth.getCurrentUser()?.role || '').toLowerCase();
+    return role === 'admin' && /^\/app\/admin(?:-console)?(\/|$)/.test(this.router.url);
+  }
+
   private readonly onboardingService = inject(ResumeOnboardingService);
   private readonly router = inject(Router);
 
@@ -55,7 +60,10 @@ export class MainLayout implements OnDestroy {
 
   constructor() {
     this.syncViewportState();
-    if (!this.isMobile() && (this.developerWorkspace || this.recruiterWorkspace)) {
+    if (
+      !this.isMobile() &&
+      (this.developerWorkspace || this.recruiterWorkspace || this.adminWorkspace)
+    ) {
       this.sidebarOpen.set(true);
     }
   }

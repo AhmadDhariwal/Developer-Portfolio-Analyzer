@@ -6,15 +6,48 @@
         Org Admin Console
       </div>
       <h1>Activity Logs</h1>
-      <p>Organization-scoped audit center. View, filter, and archive action logs within {{ orgName }}.</p>
+      <p>
+        Organization-scoped audit center. View, filter, and archive action logs within
+        {{ orgName }}.
+      </p>
     </div>
     <div class="page-header__meta">
       <span class="stat-pill" *ngIf="total > 0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
         {{ total }} Records
       </span>
-      <button type="button" class="btn-export" *ngIf="filteredLogs.length > 0" (click)="exportCSV()" [disabled]="exporting" title="Export filtered results as CSV">
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <button
+        type="button"
+        class="btn-export"
+        *ngIf="filteredLogs.length > 0"
+        (click)="exportCSV()"
+        [disabled]="exporting"
+        title="Export filtered results as CSV"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
         {{ exporting ? 'Exporting...' : 'Export CSV' }}
       </button>
     </div>
@@ -22,7 +55,17 @@
 
   <div class="filters-card">
     <div class="filters-card__header">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+      </svg>
       Filters
     </div>
     <div class="filters-row">
@@ -76,7 +119,15 @@
       </div>
       <div class="filter-field">
         <label>Status Code</label>
-        <input [(ngModel)]="selectedStatusCode" type="number" min="100" max="599" step="1" placeholder="200" title="HTTP status code" />
+        <input
+          [(ngModel)]="selectedStatusCode"
+          type="number"
+          min="100"
+          max="599"
+          step="1"
+          placeholder="200"
+          title="HTTP status code"
+        />
       </div>
       <div class="filter-field">
         <label>Category</label>
@@ -91,19 +142,77 @@
         />
       </div>
       <div class="filter-field">
-        <label>From</label>
-        <input [(ngModel)]="from" type="date" title="From date" />
+        <label for="audit-from-date">From</label>
+        <input
+          id="audit-from-date"
+          [(ngModel)]="from"
+          (ngModelChange)="onManualDateChange()"
+          type="date"
+          title="From date"
+        />
       </div>
       <div class="filter-field">
-        <label>To</label>
-        <input [(ngModel)]="to" type="date" title="To date" />
+        <label for="audit-to-date">To</label>
+        <input
+          id="audit-to-date"
+          [(ngModel)]="to"
+          (ngModelChange)="onManualDateChange()"
+          type="date"
+          title="To date"
+        />
       </div>
       <div class="filter-actions">
+        <div class="date-presets" role="group" aria-label="Date range presets">
+          <span class="date-presets__label">Range:</span>
+          <button
+            type="button"
+            class="preset-btn"
+            [class.preset-btn--active]="datePreset === 'today'"
+            (click)="applyDatePreset('today')"
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            class="preset-btn"
+            [class.preset-btn--active]="datePreset === '7d'"
+            (click)="applyDatePreset('7d')"
+          >
+            Last 7 days
+          </button>
+          <button
+            type="button"
+            class="preset-btn"
+            [class.preset-btn--active]="datePreset === '30d'"
+            (click)="applyDatePreset('30d')"
+          >
+            Last 30 days
+          </button>
+          <button
+            type="button"
+            class="preset-btn"
+            [class.preset-btn--active]="datePreset === 'all'"
+            (click)="applyDatePreset('all')"
+          >
+            All dates
+          </button>
+        </div>
         <button type="button" class="btn-apply" (click)="applyFilters()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
           Apply Filters
         </button>
-        <button type="button" class="btn-reset" (click)="resetFilters()">Clear Filters</button>
+        <button type="button" class="btn-reset" (click)="resetFilters()">Reset to 30d</button>
       </div>
     </div>
 
@@ -119,14 +228,39 @@
       >
         <span class="filter-chip__type">{{ f.type }}:</span>
         <span class="filter-chip__label">{{ f.label }}</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
-      <button type="button" class="filter-chip filter-chip--clear-all" (click)="resetFilters()">Clear all</button>
+      <button type="button" class="filter-chip filter-chip--clear-all" (click)="resetFilters()">
+        Clear all
+      </button>
     </div>
   </div>
 
   <div class="status-msg" *ngIf="statusMessage">
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
     {{ statusMessage }}
   </div>
 
@@ -134,12 +268,34 @@
     <div class="logs-panel">
       <div class="logs-panel__header">
         <span class="logs-panel__title">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
           Audit Logs
         </span>
         <div class="logs-panel__right">
           <div class="quick-search">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
             <input
               type="text"
               [(ngModel)]="quickSearch"
@@ -159,12 +315,37 @@
       </div>
 
       <div class="logs-empty" *ngIf="!loading && logs.length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <p>No logs found. Audit entries are created after successful POST, PUT, PATCH, or DELETE API actions.</p>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="36"
+          height="36"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        <p>
+          No logs found. Audit entries are created after successful POST, PUT, PATCH, or DELETE API
+          actions.
+        </p>
       </div>
 
       <div class="logs-empty" *ngIf="!loading && logs.length > 0 && filteredLogs.length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="36"
+          height="36"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
         <p>No results match your search. Try different keywords.</p>
       </div>
 
@@ -187,15 +368,23 @@
               [class.active]="selectedLog?._id === log._id"
               tabindex="0"
             >
-              <td class="td-time" [title]="getFullTimestamp(log)">{{ log.timestamp | date:'MMM d, HH:mm' }}</td>
+              <td class="td-time" [title]="getFullTimestamp(log)">
+                {{ log.timestamp | date: 'MMM d, HH:mm' }}
+              </td>
               <td class="td-user">{{ fmtActor(log.actor) }}</td>
               <td class="td-action">
-                <span class="method-badge" [class]="methodBadgeClass(log.method)">{{ log.method }}</span>
+                <span class="method-badge" [class]="methodBadgeClass(log.method)">{{
+                  log.method
+                }}</span>
                 <span class="action-text">{{ log.action }}</span>
-                <span class="log-category" *ngIf="log.actionCategory">{{ titleCase(log.actionCategory) }}</span>
+                <span class="log-category" *ngIf="log.actionCategory">{{
+                  titleCase(log.actionCategory)
+                }}</span>
               </td>
               <td>
-                <span class="status-code" [class]="statusBadgeClass(log.statusCode)">{{ log.statusCode }}</span>
+                <span class="status-code" [class]="statusBadgeClass(log.statusCode)">{{
+                  log.statusCode
+                }}</span>
               </td>
             </tr>
           </tbody>
@@ -203,14 +392,44 @@
       </div>
 
       <div class="pager" *ngIf="totalPages > 1">
-        <button type="button" class="pager-btn" [disabled]="page <= 1" (click)="fetchLogs(page - 1)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        <button
+          type="button"
+          class="pager-btn"
+          [disabled]="page <= 1"
+          (click)="fetchLogs(page - 1)"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
           Prev
         </button>
         <span class="pager-info">Page {{ page }} of {{ totalPages }}</span>
-        <button type="button" class="pager-btn" [disabled]="page >= totalPages" (click)="fetchLogs(page + 1)">
+        <button
+          type="button"
+          class="pager-btn"
+          [disabled]="page >= totalPages"
+          (click)="fetchLogs(page + 1)"
+        >
           Next
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
         </button>
       </div>
     </div>
@@ -218,12 +437,34 @@
     <div class="detail-panel" *ngIf="selectedLog as log">
       <div class="detail-panel__header">
         <div class="detail-panel__title">
-          <span class="method-badge method-badge--lg" [class]="methodBadgeClass(log.method)">{{ log.method }}</span>
+          <span class="method-badge method-badge--lg" [class]="methodBadgeClass(log.method)">{{
+            log.method
+          }}</span>
           <span>{{ log.action }}</span>
-          <span class="log-category log-category--detail" *ngIf="log.actionCategory">{{ titleCase(log.actionCategory) }}</span>
+          <span class="log-category log-category--detail" *ngIf="log.actionCategory">{{
+            titleCase(log.actionCategory)
+          }}</span>
         </div>
-        <button type="button" class="btn-archive-log" (click)="deleteLog(log)" title="Archive this log entry">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        <button
+          type="button"
+          class="btn-archive-log"
+          (click)="deleteLog(log)"
+          title="Archive this log entry"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path
+              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
+            />
+          </svg>
           Archive
         </button>
       </div>
@@ -231,7 +472,9 @@
       <div class="detail-meta">
         <div class="detail-meta__row">
           <span class="detail-meta__label">Timestamp</span>
-          <span class="detail-meta__value" [title]="getFullTimestamp(log)">{{ log.timestamp | date:'medium' }}</span>
+          <span class="detail-meta__value" [title]="getFullTimestamp(log)">{{
+            log.timestamp | date: 'medium'
+          }}</span>
         </div>
         <div class="detail-meta__row">
           <span class="detail-meta__label">User</span>
@@ -243,11 +486,15 @@
         </div>
         <div class="detail-meta__row" *ngIf="log.userAgent">
           <span class="detail-meta__label">User Agent</span>
-          <span class="detail-meta__value detail-meta__value--mono detail-meta__value--wrap">{{ log.userAgent }}</span>
+          <span class="detail-meta__value detail-meta__value--mono detail-meta__value--wrap">{{
+            log.userAgent
+          }}</span>
         </div>
         <div class="detail-meta__row">
           <span class="detail-meta__label">Status Code</span>
-          <span class="status-code" [class]="statusBadgeClass(log.statusCode)">{{ log.statusCode }}</span>
+          <span class="status-code" [class]="statusBadgeClass(log.statusCode)">{{
+            log.statusCode
+          }}</span>
         </div>
         <div class="detail-meta__row" *ngIf="log.ipAddress">
           <span class="detail-meta__label">IP Address</span>
@@ -268,8 +515,31 @@
     </div>
 
     <div class="detail-placeholder" *ngIf="!selectedLog && logs.length > 0">
-      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="36"
+        height="36"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+      >
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
       <p>Select a log entry to view details</p>
     </div>
   </div>
+
+  <app-confirm-dialog
+    [open]="!!pendingArchiveLog"
+    title="Archive Activity Log"
+    [message]="archiveConfirmMessage"
+    confirmText="Archive Log"
+    cancelText="Cancel"
+    (confirmed)="confirmArchiveLog()"
+    (cancelled)="cancelArchiveLog()"
+  ></app-confirm-dialog>
 </div>
