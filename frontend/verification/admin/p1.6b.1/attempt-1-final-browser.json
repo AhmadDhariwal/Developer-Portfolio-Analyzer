@@ -1,0 +1,910 @@
+{
+  "phase": "final",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "checks": {
+    "initialDeveloperCards": 10,
+    "pageTwoAutomatic": true,
+    "latestSearchOnly": true,
+    "filtersEmptyAndPrevious": true,
+    "developerDatabaseFailureRetry": true,
+    "console-overview-first": {
+      "progressbars": 0,
+      "overview": 1
+    },
+    "console-teams-first": {
+      "progressbars": 0,
+      "overview": 1
+    },
+    "consoleFaultRecovery": [
+      {
+        "failure": "teams",
+        "errorVisible": 0,
+        "recovered": true
+      },
+      {
+        "failure": "overview",
+        "errorVisible": 1,
+        "recovered": true
+      },
+      {
+        "failure": "both",
+        "errorVisible": 1,
+        "recovered": true
+      }
+    ],
+    "rapidNavigationStreamDelta": 0,
+    "performanceBack": {
+      "top": 210.515625,
+      "rowTops": [
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625
+      ],
+      "width": 97.5625,
+      "height": 38
+    },
+    "performanceFocus": {
+      "outline": "solid",
+      "width": "2px",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(79, 70, 229) 0px 0px 0px 4px"
+    },
+    "nativeTeamEnterAndSpace": true,
+    "nativeTeamTableSpace": true,
+    "jobsError": {
+      "top": 441.375,
+      "viewport": 900,
+      "inCreatePanel": true,
+      "role": "alert"
+    },
+    "jobsRealFailureRetry": true,
+    "adminNotificationFallback": true,
+    "activityHeight": {
+      "before": 1070.484375,
+      "after": 1139.484375,
+      "delta": 69
+    },
+    "activityTargets": [
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "preset-btn",
+        "height": 44
+      },
+      {
+        "class": "preset-btn",
+        "height": 44
+      },
+      {
+        "class": "preset-btn preset-btn--active",
+        "height": 44
+      },
+      {
+        "class": "preset-btn",
+        "height": 44
+      },
+      {
+        "class": "btn-archive-log",
+        "height": 44
+      }
+    ]
+  },
+  "profiles": [],
+  "requests": [
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703720318,
+      "finishedAt": 1795703720372
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703720334,
+      "finishedAt": 1795703720377
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703720456,
+      "finishedAt": 1795703720488
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703720459,
+      "finishedAt": 1795703720491
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703720310,
+      "finishedAt": 1795703720505
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703720318,
+      "finishedAt": 1795703720579
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703720766,
+      "finishedAt": 1795703721016
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703721819,
+      "finishedAt": 1795703722055
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703722753,
+      "finishedAt": 1795703723006
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703724803,
+      "finishedAt": 1795703725048
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703725412,
+      "finishedAt": 1795703725684
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703725785,
+      "finishedAt": 1795703726020
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703726104,
+      "finishedAt": 1795703726317
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703726494,
+      "finishedAt": 1795703726724
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703729182,
+      "finishedAt": 1795703729214
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703729172,
+      "finishedAt": 1795703729272
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703729189,
+      "finishedAt": 1795703729294
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703729186,
+      "finishedAt": 1795703729904
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703729189,
+      "finishedAt": 1795703729907
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703729295,
+      "finishedAt": 1795703730016
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703729296,
+      "finishedAt": 1795703730017
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703731240,
+      "finishedAt": 1795703731272
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703731240,
+      "finishedAt": 1795703731323
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703731230,
+      "finishedAt": 1795703731324
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703731244,
+      "finishedAt": 1795703731327
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703731319,
+      "finishedAt": 1795703731397
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703731319,
+      "finishedAt": 1795703731399
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703731244,
+      "finishedAt": 1795703732058
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703733241,
+      "finishedAt": 1795703733286
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703733246,
+      "finishedAt": 1795703733332
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703733233,
+      "finishedAt": 1795703733365
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703733249,
+      "finishedAt": 1795703735061
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703733249,
+      "finishedAt": 1795703735063
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703733352,
+      "finishedAt": 1795703735199
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703733353,
+      "finishedAt": 1795703735212
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703735254,
+      "finishedAt": 1795703735388
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703735259,
+      "finishedAt": 1795703735469
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703738636,
+      "finishedAt": 1795703738721
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703738641,
+      "finishedAt": 1795703738727
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703738646,
+      "finishedAt": 1795703738740
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703738545,
+      "finishedAt": 1795703738859
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703738940,
+      "finishedAt": 1795703738945
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703738945,
+      "finishedAt": 1795703738955
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703739802,
+      "finishedAt": 1795703739804
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703738640,
+      "finishedAt": 1795703740451
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703740528,
+      "finishedAt": 1795703740571
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703743674,
+      "finishedAt": 1795703743680
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703743684,
+      "finishedAt": 1795703743691
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703743691,
+      "finishedAt": 1795703743693
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703743694,
+      "finishedAt": 1795703743697
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703743699,
+      "finishedAt": 1795703743702
+    },
+    {
+      "path": "/stream",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795703743702,
+      "finishedAt": 1795703743709
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703743914,
+      "finishedAt": 1795703743942
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703743942,
+      "finishedAt": 1795703743989
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703746030,
+      "finishedAt": 1795703746264
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703746453,
+      "finishedAt": 1795703746491
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703746448,
+      "finishedAt": 1795703746492
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703746610,
+      "finishedAt": 1795703746858
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703747028,
+      "finishedAt": 1795703747070
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703747025,
+      "finishedAt": 1795703747075
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703747236,
+      "finishedAt": 1795703747467
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703747636,
+      "finishedAt": 1795703747663
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703747640,
+      "finishedAt": 1795703747671
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703748173,
+      "finishedAt": 1795703748259
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703748186,
+      "finishedAt": 1795703748305
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703748179,
+      "finishedAt": 1795703748848
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703748858,
+      "finishedAt": 1795703748895
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703748862,
+      "finishedAt": 1795703748900
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703748177,
+      "finishedAt": 1795703748904
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703750752,
+      "finishedAt": 1795703750797
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703750759,
+      "finishedAt": 1795703750827
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703750774,
+      "finishedAt": 1795703750837
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703750757,
+      "finishedAt": 1795703750867
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703750772,
+      "finishedAt": 1795703750887
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703750741,
+      "finishedAt": 1795703750927
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703750889,
+      "finishedAt": 1795703750939
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703750895,
+      "finishedAt": 1795703750943
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703751920,
+      "finishedAt": 1795703751963
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703751923,
+      "finishedAt": 1795703751975
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703751928,
+      "finishedAt": 1795703751985
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703751908,
+      "finishedAt": 1795703752037
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703752039,
+      "finishedAt": 1795703752069
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703752037,
+      "finishedAt": 1795703752074
+    },
+    {
+      "path": "/jobs",
+      "method": "POST",
+      "status": 503,
+      "startedAt": 1795703753002,
+      "finishedAt": 1795703753006
+    },
+    {
+      "path": "/jobs",
+      "method": "POST",
+      "status": 201,
+      "startedAt": 1795703753135,
+      "finishedAt": 1795703753165
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703753194,
+      "finishedAt": 1795703753211
+    },
+    {
+      "path": "/6b08439f3527c84d3c5e0707/read",
+      "method": "PUT",
+      "status": 200,
+      "startedAt": 1795703755346,
+      "finishedAt": 1795703755421
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703755425,
+      "finishedAt": 1795703755455
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703756984,
+      "finishedAt": 1795703757009
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703756982,
+      "finishedAt": 1795703757026
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703756980,
+      "finishedAt": 1795703757028
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703756969,
+      "finishedAt": 1795703757069
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703757075,
+      "finishedAt": 1795703757107
+    },
+    {
+      "path": "/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703757078,
+      "finishedAt": 1795703757108
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703757080,
+      "finishedAt": 1795703757117
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795703757184,
+      "finishedAt": 1795703758516
+    }
+  ],
+  "streamRequests": 10,
+  "offlineExternalAssets": [
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css"
+  ],
+  "consoleErrors": [],
+  "runtimeErrors": [],
+  "badHttp": [],
+  "expectedFaults": [
+    {
+      "path": "/api/admin/developers",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/admin-console/overview",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/admin-console/overview",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications/stream",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b08439f3527c84d3c5e06d3/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/admin/jobs",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+  ],
+  "maxConcurrentStreams": 1,
+  "status": "failed",
+  "failure": "AssertionError [ERR_ASSERTION]: Async activity content height must remain stable\n    at main (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\scripts\\verify-admin-frontend-closure.cjs:572:14)",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 139,
+    "productionDataUsed": false
+  }
+}

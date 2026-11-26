@@ -4,6 +4,44 @@ import { notificationTarget } from './notification-navigation';
 
 describe('notification navigation', () => {
   const notice = (meta: Record<string, unknown>) => ({ type: 'info', meta }) as AppNotification;
+  it('keeps every Admin fallback inside Activity Logs, including legacy and private-workspace hints', () => {
+    for (const meta of [
+      {},
+      { target: '/app/notifications' },
+      { target: '/app/recruiter/notifications' },
+      { target: '/app/profile' },
+      { target: '/app/recruiter/jobs' },
+      { target: '/app/jobs?view=internal' },
+      { target: '/app/super-admin/dashboard' },
+      { target: '/app/admin-unknown' },
+      { ticketId: 'synthetic' },
+      { reportId: 'synthetic' },
+      { target: '//attacker.test' },
+      { target: '/app/admin/teams?token=unsafe' },
+    ])
+      expect(notificationTarget(notice(meta), 'admin')).toBe('/app/admin/activity-logs');
+    for (const type of ['profile_update', 'resume_upload', 'github_update', 'low_score']) {
+      expect(notificationTarget({ type } as AppNotification, 'admin')).toBe(
+        '/app/admin/activity-logs',
+      );
+    }
+  });
+  it('preserves explicit authorized Admin targets without allowing them for other roles', () => {
+    for (const target of [
+      '/app/admin/dashboard',
+      '/app/admin/jobs',
+      '/app/admin/teams',
+      '/app/admin/console?tab=teams',
+      '/app/admin/console/performance-statistics',
+      '/app/admin/activity-logs',
+    ]) {
+      expect(notificationTarget(notice({ target }), 'admin')).toBe(target);
+      expect(notificationTarget(notice({ target }), 'developer')).toBe('/app/notifications');
+      expect(notificationTarget(notice({ target }), 'recruiter')).toBe(
+        '/app/recruiter/notifications',
+      );
+    }
+  });
   it('allows known originating modules and legacy ticket references', () => {
     expect(notificationTarget(notice({ target: '/app/recommendations' }))).toBe(
       '/app/recommendations',

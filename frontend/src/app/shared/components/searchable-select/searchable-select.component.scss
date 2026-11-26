@@ -191,7 +191,7 @@
   }
 
   .searchable-select__trigger {
-    min-height: 38px;
+    min-height: var(--select-control-min-height, 38px);
     padding: 7px 11px;
     border-radius: var(--dev-radius-control, 6px);
     background: var(--surface-input, #ffffff);

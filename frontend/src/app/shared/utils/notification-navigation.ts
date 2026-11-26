@@ -15,9 +15,30 @@ const targets = new Set([
   '/app/portfolio',
 ]);
 
+const adminTargets = new Set([
+  '/app/admin/dashboard',
+  '/app/admin/recruiters',
+  '/app/admin/teams',
+  '/app/admin/developers',
+  '/app/admin/jobs',
+  '/app/admin/console',
+  '/app/admin/console/performance-statistics',
+  '/app/admin/activity-logs',
+  '/app/admin-console',
+]);
+
 export function notificationTarget(notification: AppNotification, role?: string): string {
-  const fallback = role === 'recruiter' ? '/app/recruiter/notifications' : '/app/notifications';
   const target = notification.meta?.['target'];
+  if (role === 'admin') {
+    return typeof target === 'string' &&
+      (adminTargets.has(target) ||
+        /^\/app\/admin\/console\?tab=(overview|teams|recruiters|invitations|activity|preferences)$/.test(
+          target,
+        ))
+      ? target
+      : '/app/admin/activity-logs';
+  }
+  const fallback = role === 'recruiter' ? '/app/recruiter/notifications' : '/app/notifications';
   if (target === '/app/notifications' || target === '/app/recruiter/notifications') return fallback;
   if (target === '/app/jobs?view=internal')
     return ['developer', 'user', 'guest'].includes(role || '') ? target : fallback;

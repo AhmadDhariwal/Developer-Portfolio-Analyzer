@@ -21,12 +21,15 @@
     </div>
   </header>
 
-  <app-shared-message
-    [visible]="!!message"
-    type="error"
-    [text]="message"
-    (dismiss)="message = ''"
-  ></app-shared-message>
+  <div *ngIf="message" role="alert">
+    <app-shared-message
+      [visible]="!!message"
+      type="error"
+      [text]="message"
+      (dismiss)="message = ''"
+    ></app-shared-message>
+    <button type="button" class="btn-secondary" (click)="retry()">Retry</button>
+  </div>
 
   <section class="hero-grid">
     <article class="summary-card summary-card--accent">
@@ -305,7 +308,7 @@
     </div>
 
     <app-shared-empty-state
-      *ngIf="developers.length === 0"
+      *ngIf="developers.length === 0 && !message"
       [title]="
         searchInput || stackFilter || experienceLevelFilter || minScoreFilter
           ? 'No developers match the current filters'

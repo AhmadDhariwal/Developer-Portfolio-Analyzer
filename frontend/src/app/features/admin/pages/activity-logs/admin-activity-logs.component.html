@@ -391,11 +391,11 @@
         </table>
       </div>
 
-      <div class="pager" *ngIf="totalPages > 1">
+      <div class="pager">
         <button
           type="button"
           class="pager-btn"
-          [disabled]="page <= 1"
+          [disabled]="loading || page <= 1"
           (click)="fetchLogs(page - 1)"
         >
           <svg
@@ -411,11 +411,13 @@
           </svg>
           Prev
         </button>
-        <span class="pager-info">Page {{ page }} of {{ totalPages }}</span>
+        <span class="pager-info" aria-live="polite">{{
+          loading ? 'Loading pages…' : total ? 'Page ' + page + ' of ' + totalPages : 'No pages'
+        }}</span>
         <button
           type="button"
           class="pager-btn"
-          [disabled]="page >= totalPages"
+          [disabled]="loading || page >= totalPages"
           (click)="fetchLogs(page + 1)"
         >
           Next
@@ -514,7 +516,7 @@
       </div>
     </div>
 
-    <div class="detail-placeholder" *ngIf="!selectedLog && logs.length > 0">
+    <div class="detail-placeholder" *ngIf="!selectedLog">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="36"

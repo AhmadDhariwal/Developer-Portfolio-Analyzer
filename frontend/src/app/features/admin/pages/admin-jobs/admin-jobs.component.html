@@ -6,7 +6,10 @@
         Jobs And AI Ranking
       </div>
       <h1>Organization Jobs</h1>
-      <p>Create and manage organization-scoped jobs, then run AI ranking manually against the public developer pool.</p>
+      <p>
+        Create and manage organization-scoped jobs, then run AI ranking manually against the public
+        developer pool.
+      </p>
     </div>
     <div class="page-header__meta" *ngIf="!jobsLoading">
       <span class="stat-pill stat-pill--blue">{{ total }} Job{{ total !== 1 ? 's' : '' }}</span>
@@ -15,7 +18,12 @@
     </div>
   </header>
 
-  <app-shared-message [visible]="!!message" [type]="messageType" [text]="message" (dismiss)="message = ''"></app-shared-message>
+  <app-shared-message
+    [visible]="!!message && message !== createError && message !== editError"
+    [type]="messageType"
+    [text]="message"
+    (dismiss)="message = ''"
+  ></app-shared-message>
 
   <section class="filters-card">
     <div class="filters-card__header">
@@ -30,7 +38,16 @@
       <div class="form-field form-field--search">
         <label for="jobs-search">Search</label>
         <div class="search-wrap">
-          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            class="search-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <circle cx="11" cy="11" r="8"></circle>
             <path d="m21 21-4.35-4.35"></path>
           </svg>
@@ -41,7 +58,15 @@
             (ngModelChange)="onSearchChange($event)"
             placeholder="Search title, role, description, skills, stack, or location"
           />
-          <button type="button" class="search-clear" *ngIf="searchInput" (click)="clearSearch()" aria-label="Clear search">&times;</button>
+          <button
+            type="button"
+            class="search-clear"
+            *ngIf="searchInput"
+            (click)="clearSearch()"
+            aria-label="Clear search"
+          >
+            &times;
+          </button>
         </div>
       </div>
 
@@ -57,27 +82,46 @@
         <label for="jobs-status">Status</label>
         <select id="jobs-status" [ngModel]="statusFilter" (ngModelChange)="onStatusChange($event)">
           <option value="">All statuses</option>
-          <option *ngFor="let status of statusOptions" [value]="status">{{ status | titlecase }}</option>
+          <option *ngFor="let status of statusOptions" [value]="status">
+            {{ status | titlecase }}
+          </option>
         </select>
       </div>
 
       <div class="form-field">
         <label for="jobs-employment">Employment</label>
-        <select id="jobs-employment" [ngModel]="employmentTypeFilter" (ngModelChange)="onEmploymentTypeChange($event)">
+        <select
+          id="jobs-employment"
+          [ngModel]="employmentTypeFilter"
+          (ngModelChange)="onEmploymentTypeChange($event)"
+        >
           <option value="">All types</option>
-          <option *ngFor="let type of employmentTypeOptions" [value]="type">{{ formatEmploymentType(type) }}</option>
+          <option *ngFor="let type of employmentTypeOptions" [value]="type">
+            {{ formatEmploymentType(type) }}
+          </option>
         </select>
       </div>
 
       <div class="form-field">
         <label for="jobs-location">Location</label>
-        <input id="jobs-location" type="text" [ngModel]="locationFilter" (ngModelChange)="onLocationChange($event)" placeholder="Remote, Lahore, NYC" />
+        <input
+          id="jobs-location"
+          type="text"
+          [ngModel]="locationFilter"
+          (ngModelChange)="onLocationChange($event)"
+          placeholder="Remote, Lahore, NYC"
+        />
       </div>
 
       <div class="form-field">
         <label for="jobs-sort">Sort</label>
         <select id="jobs-sort" [ngModel]="sortValue" (ngModelChange)="onSortChange($event)">
-          <option *ngFor="let option of sortOptions" [value]="option.sortBy + ':' + option.sortOrder">{{ option.label }}</option>
+          <option
+            *ngFor="let option of sortOptions"
+            [value]="option.sortBy + ':' + option.sortOrder"
+          >
+            {{ option.label }}
+          </option>
         </select>
       </div>
     </div>
@@ -89,7 +133,15 @@
     <section class="create-panel">
       <div class="panel-header">
         <div class="panel-header__icon panel-header__icon--blue">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M12 5v14"></path>
             <path d="M5 12h14"></path>
           </svg>
@@ -103,7 +155,12 @@
       <div class="form-grid">
         <div class="form-field form-field--full">
           <label for="job-title">Job Title <span class="required">*</span></label>
-          <input id="job-title" type="text" [(ngModel)]="form.title" placeholder="e.g. Senior Frontend Engineer" />
+          <input
+            id="job-title"
+            type="text"
+            [(ngModel)]="form.title"
+            placeholder="e.g. Senior Frontend Engineer"
+          />
         </div>
 
         <div class="form-field">
@@ -113,12 +170,22 @@
 
         <div class="form-field">
           <label for="job-stack-input">Tech Stack</label>
-          <input id="job-stack-input" type="text" [(ngModel)]="form.stack" placeholder="Frontend, Backend, Full Stack" />
+          <input
+            id="job-stack-input"
+            type="text"
+            [(ngModel)]="form.stack"
+            placeholder="Frontend, Backend, Full Stack"
+          />
         </div>
 
         <div class="form-field">
           <label for="job-location-input">Location</label>
-          <input id="job-location-input" type="text" [(ngModel)]="form.location" placeholder="Remote / Hybrid / City" />
+          <input
+            id="job-location-input"
+            type="text"
+            [(ngModel)]="form.location"
+            placeholder="Remote / Hybrid / City"
+          />
         </div>
 
         <div class="form-field">
@@ -129,34 +196,59 @@
         <div class="form-field">
           <label for="job-type">Employment Type</label>
           <select id="job-type" [(ngModel)]="form.employmentType">
-            <option *ngFor="let type of employmentTypeOptions" [value]="type">{{ formatEmploymentType(type) }}</option>
+            <option *ngFor="let type of employmentTypeOptions" [value]="type">
+              {{ formatEmploymentType(type) }}
+            </option>
           </select>
         </div>
 
         <div class="form-field">
           <label for="job-status-input">Status</label>
           <select id="job-status-input" [(ngModel)]="form.status">
-            <option *ngFor="let status of statusOptions" [value]="status">{{ status | titlecase }}</option>
+            <option *ngFor="let status of statusOptions" [value]="status">
+              {{ status | titlecase }}
+            </option>
           </select>
         </div>
 
         <div class="form-field form-field--full">
           <label for="job-required">Required Skills</label>
-          <input id="job-required" type="text" [(ngModel)]="form.requiredSkills" placeholder="React, TypeScript, Node.js" />
+          <input
+            id="job-required"
+            type="text"
+            [(ngModel)]="form.requiredSkills"
+            placeholder="React, TypeScript, Node.js"
+          />
         </div>
 
         <div class="form-field form-field--full">
           <label for="job-preferred">Preferred Skills</label>
-          <input id="job-preferred" type="text" [(ngModel)]="form.preferredSkills" placeholder="GraphQL, Docker, AWS" />
+          <input
+            id="job-preferred"
+            type="text"
+            [(ngModel)]="form.preferredSkills"
+            placeholder="GraphQL, Docker, AWS"
+          />
         </div>
 
         <div class="form-field form-field--full">
           <label for="job-desc">Job Description <span class="required">*</span></label>
-          <textarea id="job-desc" [(ngModel)]="form.description" rows="6" placeholder="Describe responsibilities, expectations, scope, and core evaluation criteria."></textarea>
+          <textarea
+            id="job-desc"
+            [(ngModel)]="form.description"
+            rows="6"
+            placeholder="Describe responsibilities, expectations, scope, and core evaluation criteria."
+          ></textarea>
         </div>
       </div>
 
-      <button type="button" class="btn-primary" (click)="createJob()" [disabled]="actionLoading || jobsLoading">
+      <div class="form-error" role="alert" *ngIf="createError">{{ createError }}</div>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="createJob()"
+        [disabled]="actionLoading || jobsLoading"
+      >
         Create Job
       </button>
     </section>
@@ -175,8 +267,16 @@
 
       <app-shared-empty-state
         *ngIf="!jobsLoading && hasLoadedJobs && jobs.length === 0"
-        [title]="searchInput || stackFilter || statusFilter || employmentTypeFilter || locationFilter ? 'No jobs match the current filters' : 'No jobs created yet'"
-        [subtitle]="searchInput || stackFilter || statusFilter || employmentTypeFilter || locationFilter ? 'Try broader filters or clear the current search to see more jobs.' : 'Create your first organization job to start ranking candidates.'"
+        [title]="
+          searchInput || stackFilter || statusFilter || employmentTypeFilter || locationFilter
+            ? 'No jobs match the current filters'
+            : 'No jobs created yet'
+        "
+        [subtitle]="
+          searchInput || stackFilter || statusFilter || employmentTypeFilter || locationFilter
+            ? 'Try broader filters or clear the current search to see more jobs.'
+            : 'Create your first organization job to start ranking candidates.'
+        "
       ></app-shared-empty-state>
 
       <div class="job-list" *ngIf="!jobsLoading && jobs.length > 0">
@@ -186,17 +286,21 @@
               <h4>{{ job.title }}</h4>
               <p>{{ job.role || 'Role label not set' }}</p>
             </div>
-            <span class="status-badge"
+            <span
+              class="status-badge"
               [class.status-badge--open]="job.status === 'open'"
               [class.status-badge--draft]="job.status === 'draft'"
-              [class.status-badge--closed]="job.status === 'closed'">
+              [class.status-badge--closed]="job.status === 'closed'"
+            >
               {{ job.status | titlecase }}
             </span>
           </div>
 
           <div class="meta-row">
             <span class="meta-chip">{{ job.stack || 'Full Stack' }}</span>
-            <span class="meta-chip meta-chip--muted">{{ formatEmploymentType(job.employmentType) }}</span>
+            <span class="meta-chip meta-chip--muted">{{
+              formatEmploymentType(job.employmentType)
+            }}</span>
             <span class="meta-chip meta-chip--muted">{{ job.location || 'Location not set' }}</span>
             <span class="meta-chip meta-chip--muted">{{ job.minExperienceYears || 0 }}+ years</span>
           </div>
@@ -204,14 +308,22 @@
           <div class="skills-block" *ngIf="(job.requiredSkills.length || 0) > 0">
             <div class="skills-block__label">Required</div>
             <div class="skill-chip-row">
-              <span class="skill-chip" *ngFor="let skill of (job.requiredSkills || []).slice(0, 6)">{{ skill }}</span>
+              <span
+                class="skill-chip"
+                *ngFor="let skill of (job.requiredSkills || []).slice(0, 6)"
+                >{{ skill }}</span
+              >
             </div>
           </div>
 
           <div class="skills-block" *ngIf="(job.preferredSkills.length || 0) > 0">
             <div class="skills-block__label">Preferred</div>
             <div class="skill-chip-row">
-              <span class="skill-chip skill-chip--soft" *ngFor="let skill of (job.preferredSkills || []).slice(0, 6)">{{ skill }}</span>
+              <span
+                class="skill-chip skill-chip--soft"
+                *ngFor="let skill of (job.preferredSkills || []).slice(0, 6)"
+                >{{ skill }}</span
+              >
             </div>
           </div>
 
@@ -220,21 +332,53 @@
           <div class="job-card__footer">
             <div class="timestamp-stack">
               <span>Created {{ job.createdAt | date: 'MMM d, y' }}</span>
-              <span>Updated {{ (job.updatedAt || job.createdAt) | date: 'MMM d, y' }}</span>
+              <span>Updated {{ job.updatedAt || job.createdAt | date: 'MMM d, y' }}</span>
             </div>
             <div class="action-row">
-              <button type="button" class="btn-secondary btn-secondary--soft" (click)="selectJobForRanking(job._id)">Select For Ranking</button>
-              <button type="button" class="btn-secondary" (click)="openJobDetails(job)">View Details</button>
+              <button
+                type="button"
+                class="btn-secondary btn-secondary--soft"
+                (click)="selectJobForRanking(job._id)"
+              >
+                Select For Ranking
+              </button>
+              <button type="button" class="btn-secondary" (click)="openJobDetails(job)">
+                View Details
+              </button>
               <button type="button" class="btn-secondary" (click)="openJobEdit(job)">Edit</button>
-              <button type="button" class="btn-secondary btn-secondary--warn" *ngIf="job.status !== 'closed'" (click)="closeJob(job)">Close Job</button>
-              <button type="button" class="btn-secondary btn-secondary--danger" (click)="deleteJob(job)">Delete</button>
+              <button
+                type="button"
+                class="btn-secondary btn-secondary--warn"
+                *ngIf="job.status !== 'closed'"
+                (click)="closeJob(job)"
+              >
+                Close Job
+              </button>
+              <button
+                type="button"
+                class="btn-secondary btn-secondary--danger"
+                (click)="deleteJob(job)"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </article>
       </div>
 
-      <nav class="pagination" *ngIf="!jobsLoading && jobs.length > 0 && totalPages > 1" aria-label="Jobs pagination">
-        <button type="button" class="pagination__button" [disabled]="page <= 1" (click)="goToPage(page - 1)">Previous</button>
+      <nav
+        class="pagination"
+        *ngIf="!jobsLoading && jobs.length > 0 && totalPages > 1"
+        aria-label="Jobs pagination"
+      >
+        <button
+          type="button"
+          class="pagination__button"
+          [disabled]="page <= 1"
+          (click)="goToPage(page - 1)"
+        >
+          Previous
+        </button>
 
         <button
           *ngFor="let item of pageItems; trackBy: trackByPageItem"
@@ -248,7 +392,14 @@
           {{ typeof item === 'number' ? item : '...' }}
         </button>
 
-        <button type="button" class="pagination__button" [disabled]="!hasMore" (click)="goToPage(page + 1)">Next</button>
+        <button
+          type="button"
+          class="pagination__button"
+          [disabled]="!hasMore"
+          (click)="goToPage(page + 1)"
+        >
+          Next
+        </button>
       </nav>
     </section>
   </div>
@@ -262,18 +413,34 @@
       <div class="ranking-actions">
         <div class="form-field form-field--compact">
           <label for="ranking-job">Selected Job</label>
-          <select id="ranking-job" [ngModel]="selectedJobId" (ngModelChange)="selectJobForRanking($event)">
+          <select
+            id="ranking-job"
+            [ngModel]="selectedJobId"
+            (ngModelChange)="selectJobForRanking($event)"
+          >
             <option value="">Choose a job</option>
-            <option *ngFor="let job of jobs" [value]="job._id">{{ job.title }} · {{ job.stack }}</option>
+            <option *ngFor="let job of jobs" [value]="job._id">
+              {{ job.title }} · {{ job.stack }}
+            </option>
           </select>
         </div>
-        <button type="button" class="btn-rank" (click)="runRanking()" [disabled]="rankingLoading || !selectedJobId || jobsLoading">
+        <button
+          type="button"
+          class="btn-rank"
+          (click)="runRanking()"
+          [disabled]="rankingLoading || !selectedJobId || jobsLoading"
+        >
           Run AI Ranking
         </button>
       </div>
     </div>
 
-    <app-shared-message [visible]="!!rankingMessage" [type]="rankingMessageType" [text]="rankingMessage" (dismiss)="rankingMessage = ''"></app-shared-message>
+    <app-shared-message
+      [visible]="!!rankingMessage"
+      [type]="rankingMessageType"
+      [text]="rankingMessage"
+      (dismiss)="rankingMessage = ''"
+    ></app-shared-message>
     <app-shared-loader [loading]="rankingLoading" label="Running AI ranking"></app-shared-loader>
 
     <app-shared-empty-state
@@ -286,15 +453,21 @@
       <article class="rank-card" *ngFor="let item of ranking">
         <div class="rank-card__top">
           <div class="rank-card__identity">
-            <span class="rank-number"
+            <span
+              class="rank-number"
               [class.rank-number--gold]="item.rank === 1"
               [class.rank-number--silver]="item.rank === 2"
-              [class.rank-number--bronze]="item.rank === 3">
+              [class.rank-number--bronze]="item.rank === 3"
+            >
               #{{ item.rank }}
             </span>
             <div>
               <h4>{{ item.candidate.fullName }}</h4>
-              <p>{{ item.candidate.stack || 'Stack not set' }} · @{{ item.candidate.githubUsername || 'unknown' }}</p>
+              <p>
+                {{ item.candidate.stack || 'Stack not set' }} · @{{
+                  item.candidate.githubUsername || 'unknown'
+                }}
+              </p>
             </div>
           </div>
           <div class="rank-score">
@@ -316,14 +489,22 @@
           <div class="insight-block">
             <div class="insight-block__label">Strengths</div>
             <div class="bullet-chip-row">
-              <span class="bullet-chip bullet-chip--positive" *ngFor="let item of item.aiInsight.strengths">{{ item }}</span>
+              <span
+                class="bullet-chip bullet-chip--positive"
+                *ngFor="let item of item.aiInsight.strengths"
+                >{{ item }}</span
+              >
             </div>
           </div>
 
           <div class="insight-block">
             <div class="insight-block__label">Weaknesses</div>
             <div class="bullet-chip-row">
-              <span class="bullet-chip bullet-chip--negative" *ngFor="let issue of item.aiInsight.weaknesses">{{ issue }}</span>
+              <span
+                class="bullet-chip bullet-chip--negative"
+                *ngFor="let issue of item.aiInsight.weaknesses"
+                >{{ issue }}</span
+              >
             </div>
           </div>
         </div>
@@ -343,19 +524,42 @@
         <h3>{{ job.title }}</h3>
         <p>{{ job.role || 'Role label not set' }}</p>
       </div>
-      <button type="button" class="drawer-close" (click)="closeDrawer()" aria-label="Close job details">&times;</button>
+      <button
+        type="button"
+        class="drawer-close"
+        (click)="closeDrawer()"
+        aria-label="Close job details"
+      >
+        &times;
+      </button>
     </div>
 
     <div class="detail-drawer__body" *ngIf="drawerMode === 'details'">
       <section class="drawer-section">
         <div class="drawer-section__title">Overview</div>
         <div class="detail-grid">
-          <div><span class="detail-label">Stack</span><strong>{{ job.stack || 'Full Stack' }}</strong></div>
-          <div><span class="detail-label">Status</span><strong>{{ job.status | titlecase }}</strong></div>
-          <div><span class="detail-label">Employment</span><strong>{{ formatEmploymentType(job.employmentType) }}</strong></div>
-          <div><span class="detail-label">Location</span><strong>{{ job.location || 'Not set' }}</strong></div>
-          <div><span class="detail-label">Min experience</span><strong>{{ job.minExperienceYears || 0 }}+ years</strong></div>
-          <div><span class="detail-label">Updated</span><strong>{{ (job.updatedAt || job.createdAt) | date: 'MMM d, y, h:mm a' }}</strong></div>
+          <div>
+            <span class="detail-label">Stack</span><strong>{{ job.stack || 'Full Stack' }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">Status</span><strong>{{ job.status | titlecase }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">Employment</span
+            ><strong>{{ formatEmploymentType(job.employmentType) }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">Location</span
+            ><strong>{{ job.location || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">Min experience</span
+            ><strong>{{ job.minExperienceYears || 0 }}+ years</strong>
+          </div>
+          <div>
+            <span class="detail-label">Updated</span
+            ><strong>{{ job.updatedAt || job.createdAt | date: 'MMM d, y, h:mm a' }}</strong>
+          </div>
         </div>
       </section>
 
@@ -364,15 +568,21 @@
         <div class="skill-chip-row" *ngIf="job.requiredSkills.length; else noRequiredSkills">
           <span class="skill-chip" *ngFor="let skill of job.requiredSkills">{{ skill }}</span>
         </div>
-        <ng-template #noRequiredSkills><p class="muted-copy">No required skills set.</p></ng-template>
+        <ng-template #noRequiredSkills
+          ><p class="muted-copy">No required skills set.</p></ng-template
+        >
       </section>
 
       <section class="drawer-section">
         <div class="drawer-section__title">Preferred Skills</div>
         <div class="skill-chip-row" *ngIf="job.preferredSkills.length; else noPreferredSkills">
-          <span class="skill-chip skill-chip--soft" *ngFor="let skill of job.preferredSkills">{{ skill }}</span>
+          <span class="skill-chip skill-chip--soft" *ngFor="let skill of job.preferredSkills">{{
+            skill
+          }}</span>
         </div>
-        <ng-template #noPreferredSkills><p class="muted-copy">No preferred skills set.</p></ng-template>
+        <ng-template #noPreferredSkills
+          ><p class="muted-copy">No preferred skills set.</p></ng-template
+        >
       </section>
 
       <section class="drawer-section">
@@ -403,18 +613,27 @@
           </div>
           <div class="form-field">
             <label for="edit-job-exp">Min Experience</label>
-            <input id="edit-job-exp" type="number" min="0" [(ngModel)]="editForm.minExperienceYears" />
+            <input
+              id="edit-job-exp"
+              type="number"
+              min="0"
+              [(ngModel)]="editForm.minExperienceYears"
+            />
           </div>
           <div class="form-field">
             <label for="edit-job-type">Employment Type</label>
             <select id="edit-job-type" [(ngModel)]="editForm.employmentType">
-              <option *ngFor="let type of employmentTypeOptions" [value]="type">{{ formatEmploymentType(type) }}</option>
+              <option *ngFor="let type of employmentTypeOptions" [value]="type">
+                {{ formatEmploymentType(type) }}
+              </option>
             </select>
           </div>
           <div class="form-field">
             <label for="edit-job-status">Status</label>
             <select id="edit-job-status" [(ngModel)]="editForm.status">
-              <option *ngFor="let status of statusOptions" [value]="status">{{ status | titlecase }}</option>
+              <option *ngFor="let status of statusOptions" [value]="status">
+                {{ status | titlecase }}
+              </option>
             </select>
           </div>
           <div class="form-field form-field--full">
@@ -427,12 +646,24 @@
           </div>
           <div class="form-field form-field--full">
             <label for="edit-job-description">Description <span class="required">*</span></label>
-            <textarea id="edit-job-description" rows="6" [(ngModel)]="editForm.description"></textarea>
+            <textarea
+              id="edit-job-description"
+              rows="6"
+              [(ngModel)]="editForm.description"
+            ></textarea>
           </div>
         </div>
 
+        <div class="form-error" role="alert" *ngIf="editError">{{ editError }}</div>
         <div class="drawer-actions">
-          <button type="button" class="btn-primary" (click)="saveJobEdit()" [disabled]="actionLoading">Save Changes</button>
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="saveJobEdit()"
+            [disabled]="actionLoading"
+          >
+            Save Changes
+          </button>
           <button type="button" class="btn-secondary" (click)="closeDrawer()">Cancel</button>
         </div>
       </section>

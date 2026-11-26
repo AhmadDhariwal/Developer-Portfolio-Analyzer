@@ -1,13 +1,13 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, Subject, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
+import { catchError, debounceTime, filter, switchMap, tap } from 'rxjs/operators';
 
 import {
   AdminDeveloper,
   AdminDeveloperPage,
   AdminDeveloperQuery,
-  AdminHiringService
+  AdminHiringService,
 } from '../../services/admin-hiring.service';
 
 type SortOption = {
@@ -20,10 +20,11 @@ type SortOption = {
   selector: 'app-admin-developers-page',
   standalone: false,
   templateUrl: './admin-developers.component.html',
-  styleUrls: ['./admin-developers.component.scss']
+  styleUrls: ['./admin-developers.component.scss'],
 })
 export class AdminDevelopersPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly searchInput$ = new Subject<string>();
   private readonly initialQuery: AdminDeveloperQuery = {
     page: 1,
@@ -33,12 +34,20 @@ export class AdminDevelopersPageComponent implements OnInit {
     experienceLevel: '',
     minScore: null,
     sortBy: 'lastAnalyzedAt',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
   };
   private readonly queryState$ = new BehaviorSubject<AdminDeveloperQuery>(this.initialQuery);
 
   readonly stackOptions = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
-  readonly experienceOptions = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+  readonly experienceOptions = [
+    'Student',
+    'Intern',
+    '0-1 years',
+    '1-2 years',
+    '2-3 years',
+    '3-5 years',
+    '5+ years',
+  ];
   readonly minScoreOptions = [0, 40, 60, 70, 80, 90];
   readonly sortOptions: SortOption[] = [
     { label: 'Recently analyzed', sortBy: 'lastAnalyzedAt', sortOrder: 'desc' },
@@ -47,7 +56,7 @@ export class AdminDevelopersPageComponent implements OnInit {
     { label: 'Highest resume score', sortBy: 'resumeScore', sortOrder: 'desc' },
     { label: 'Most projects', sortBy: 'projectsCount', sortOrder: 'desc' },
     { label: 'Newest profiles', sortBy: 'createdAt', sortOrder: 'desc' },
-    { label: 'Name A-Z', sortBy: 'name', sortOrder: 'asc' }
+    { label: 'Name A-Z', sortBy: 'name', sortOrder: 'asc' },
   ];
 
   loading = false;
@@ -73,8 +82,8 @@ export class AdminDevelopersPageComponent implements OnInit {
     this.searchInput$
       .pipe(
         debounceTime(250),
-        distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef)
+        filter((search) => search !== this.queryState$.value.search),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((search) => {
         this.patchQuery({ search, page: 1 });
@@ -82,10 +91,10 @@ export class AdminDevelopersPageComponent implements OnInit {
 
     this.queryState$
       .pipe(
-        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
         tap(() => {
           this.loading = true;
           this.message = '';
+          this.cdr.markForCheck();
         }),
         switchMap((query) =>
           this.adminService.getDevelopers(query).pipe(
@@ -98,12 +107,12 @@ export class AdminDevelopersPageComponent implements OnInit {
                 limit: query.limit || 10,
                 total: 0,
                 totalPages: 1,
-                hasMore: false
+                hasMore: false,
               });
-            })
-          )
+            }),
+          ),
         ),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((response) => {
         this.developers = response.developers || [];
@@ -115,13 +124,20 @@ export class AdminDevelopersPageComponent implements OnInit {
         this.loading = false;
 
         if (this.selectedDeveloper) {
-          this.selectedDeveloper = this.developers.find((developer) => developer._id === this.selectedDeveloper?._id) || null;
+          this.selectedDeveloper =
+            this.developers.find((developer) => developer._id === this.selectedDeveloper?._id) ||
+            null;
         }
+        this.cdr.markForCheck();
       });
   }
 
   get activeSort(): SortOption {
-    return this.sortOptions.find((option) => `${option.sortBy}:${option.sortOrder}` === this.sortValue) || this.sortOptions[0];
+    return (
+      this.sortOptions.find(
+        (option) => `${option.sortBy}:${option.sortOrder}` === this.sortValue,
+      ) || this.sortOptions[0]
+    );
   }
 
   get rangeStart(): number {
@@ -138,7 +154,9 @@ export class AdminDevelopersPageComponent implements OnInit {
     }
 
     const pages = new Set<number>([1, this.totalPages, this.page - 1, this.page, this.page + 1]);
-    const ordered = Array.from(pages).filter((value) => value >= 1 && value <= this.totalPages).sort((a, b) => a - b);
+    const ordered = Array.from(pages)
+      .filter((value) => value >= 1 && value <= this.totalPages)
+      .sort((a, b) => a - b);
     const items: Array<number | string> = [];
 
     ordered.forEach((value, index) => {
@@ -190,7 +208,7 @@ export class AdminDevelopersPageComponent implements OnInit {
     this.patchQuery({
       sortBy,
       sortOrder: sortOrder === 'asc' ? 'asc' : 'desc',
-      page: 1
+      page: 1,
     });
   }
 
@@ -204,6 +222,7 @@ export class AdminDevelopersPageComponent implements OnInit {
 
   resetFilters(): void {
     this.searchInput = '';
+    this.searchInput$.next('');
     this.stackFilter = '';
     this.experienceLevelFilter = '';
     this.minScoreFilter = '';
@@ -213,10 +232,16 @@ export class AdminDevelopersPageComponent implements OnInit {
 
   openDeveloperDetails(developer: AdminDeveloper): void {
     this.selectedDeveloper = developer;
+    this.cdr.markForCheck();
   }
 
   closeDeveloperDetails(): void {
     this.selectedDeveloper = null;
+    this.cdr.markForCheck();
+  }
+
+  retry(): void {
+    this.queryState$.next({ ...this.queryState$.value });
   }
 
   profileTitle(developer: AdminDeveloper): string {
@@ -243,7 +268,12 @@ export class AdminDevelopersPageComponent implements OnInit {
   }
 
   developerInitial(developer: AdminDeveloper): string {
-    return String(developer.name || '?').trim().charAt(0).toUpperCase() || '?';
+    return (
+      String(developer.name || '?')
+        .trim()
+        .charAt(0)
+        .toUpperCase() || '?'
+    );
   }
 
   hasPrimaryResults(): boolean {
@@ -253,7 +283,7 @@ export class AdminDevelopersPageComponent implements OnInit {
   private patchQuery(patch: AdminDeveloperQuery): void {
     const nextQuery = {
       ...this.queryState$.value,
-      ...patch
+      ...patch,
     };
 
     if (JSON.stringify(nextQuery) === JSON.stringify(this.queryState$.value)) {

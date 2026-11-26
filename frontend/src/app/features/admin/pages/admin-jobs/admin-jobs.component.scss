@@ -984,3 +984,23 @@ button:disabled {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+.form-error {
+  width: 100%;
+  padding: 12px;
+  margin-block: 12px;
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--dev-radius-control, 8px);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-text);
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

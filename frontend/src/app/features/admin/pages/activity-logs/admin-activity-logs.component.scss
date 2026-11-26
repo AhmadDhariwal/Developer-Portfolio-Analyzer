@@ -71,6 +71,24 @@
   max-height: 640px;
 }
 
+// Keep the result viewport and detail column present while async rows arrive.
+.table-wrap,
+.logs-loading,
+.logs-empty {
+  box-sizing: border-box;
+  height: clamp(280px, 55vh, 640px);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.detail-panel,
+.detail-placeholder {
+  box-sizing: border-box;
+  height: clamp(280px, 55vh, 640px);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
 .td-action {
   flex-wrap: wrap;
 }
@@ -168,6 +186,20 @@
 }
 
 @media (max-width: 640px) {
+  .filters-card {
+    --select-control-min-height: 44px;
+  }
+
+  .preset-btn,
+  .btn-archive-log,
+  .filter-chip,
+  .quick-search__input,
+  .filter-field input,
+  .btn-refresh,
+  .detail-close {
+    min-height: 44px;
+    min-width: 44px;
+  }
   .logs-panel__header {
     align-items: stretch;
   }

@@ -157,6 +157,7 @@
 }
 
 .console-card {
+  min-width: 0;
   padding: 1.25rem;
 
   &--invite {
@@ -604,6 +605,7 @@
 }
 
 .form-field {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -622,6 +624,10 @@
 
   input,
   select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     appearance: none;
     background: var(--surface-input);
     border: 1px solid var(--border-strong);
@@ -967,7 +973,7 @@
   }
 
   .console-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .console-card__fields {
@@ -1042,5 +1048,14 @@
   .btn-action,
   .drawer-close {
     min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

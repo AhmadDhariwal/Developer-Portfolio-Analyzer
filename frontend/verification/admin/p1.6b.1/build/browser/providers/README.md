@@ -1,0 +1,3 @@
+Provider identification marks downloaded from the public [Simple Icons repository](https://github.com/simple-icons/simple-icons/tree/develop/icons) on 2026-11-05. SVG paths are retained; brand colors are applied to the root fill. The upstream CC0 license is retained in LICENSE.md. Trademarks remain the property of their respective owners; this does not assert endorsement or provider brand approval.
+
+Sources: youtube.svg, udemy.svg, coursera.svg, edx.svg, freecodecamp.svg, mdnwebdocs.svg, theodinproject.svg. Full Stack Open uses the accessible generic learning icon and visible provider name because no verified asset was available.

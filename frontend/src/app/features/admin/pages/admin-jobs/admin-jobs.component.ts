@@ -88,6 +88,8 @@ export class AdminJobsPageComponent implements OnInit {
   hasLoadedJobs = false;
 
   message = '';
+  createError = '';
+  editError = '';
   messageType: 'success' | 'error' | 'warning' = 'success';
   rankingMessage = '';
   rankingMessageType: 'success' | 'error' | 'warning' = 'success';
@@ -301,10 +303,12 @@ export class AdminJobsPageComponent implements OnInit {
   }
 
   createJob(): void {
+    this.createError = '';
     const validation = this.validateForm(this.form);
     if (validation) {
       this.messageType = 'warning';
       this.message = validation;
+      this.createError = validation;
       this.cdr.markForCheck();
       return;
     }
@@ -326,6 +330,7 @@ export class AdminJobsPageComponent implements OnInit {
           this.actionLoading = false;
           this.messageType = 'error';
           this.message = String(err?.error?.message || 'Failed to create job.');
+          this.createError = this.message;
           this.cdr.markForCheck();
         },
       });
@@ -338,6 +343,7 @@ export class AdminJobsPageComponent implements OnInit {
   }
 
   openJobEdit(job: AdminJob): void {
+    this.editError = '';
     this.drawerJob = job;
     this.drawerMode = 'edit';
     this.editForm = this.toForm(job);
@@ -345,6 +351,8 @@ export class AdminJobsPageComponent implements OnInit {
   }
 
   closeDrawer(): void {
+    if (this.message === this.editError) this.message = '';
+    this.editError = '';
     this.drawerJob = null;
     this.drawerMode = '';
     this.cdr.markForCheck();
@@ -352,11 +360,13 @@ export class AdminJobsPageComponent implements OnInit {
 
   saveJobEdit(): void {
     if (!this.drawerJob) return;
+    this.editError = '';
 
     const validation = this.validateForm(this.editForm);
     if (validation) {
       this.messageType = 'warning';
       this.message = validation;
+      this.editError = validation;
       this.cdr.markForCheck();
       return;
     }
@@ -377,6 +387,7 @@ export class AdminJobsPageComponent implements OnInit {
           this.actionLoading = false;
           this.messageType = 'error';
           this.message = String(err?.error?.message || 'Failed to update job.');
+          this.editError = this.message;
           this.cdr.markForCheck();
         },
       });

@@ -1,0 +1,31 @@
+{
+  "phase": "baseline-layout",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "checks": {
+    "performanceBack": {
+      "backTop": 256.515625,
+      "filterTops": [
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625
+      ]
+    }
+  },
+  "profiles": [],
+  "consoleErrors": [],
+  "runtimeErrors": [],
+  "badHttp": [],
+  "expectedFaults": [],
+  "maxConcurrentStreams": 1,
+  "status": "passed",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 139,
+    "productionDataUsed": false
+  }
+}

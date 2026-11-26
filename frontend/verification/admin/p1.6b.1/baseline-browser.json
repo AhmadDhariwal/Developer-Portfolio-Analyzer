@@ -1,0 +1,110 @@
+{
+  "phase": "baseline",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "checks": {
+    "initialDeveloperCards": 10,
+    "pageTwoAutomatic": false,
+    "console-overview-first": {
+      "progressbars": 1,
+      "overview": 1
+    },
+    "console-teams-first": {
+      "progressbars": 0,
+      "overview": 1
+    },
+    "performanceBack": {
+      "top": 210.515625,
+      "rowTops": [
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625
+      ],
+      "width": 97.5625,
+      "height": 38
+    },
+    "jobsError": {
+      "top": -644.625,
+      "viewport": 900,
+      "inCreatePanel": false
+    },
+    "activityHeight": {
+      "before": 181.21875,
+      "after": 1246.953125,
+      "delta": 1065.734375
+    },
+    "activityTargets": [
+      {
+        "class": "searchable-select__trigger",
+        "height": 38
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 38
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 38
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 38
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 38
+      },
+      {
+        "class": "preset-btn",
+        "height": 32
+      },
+      {
+        "class": "preset-btn",
+        "height": 32
+      },
+      {
+        "class": "preset-btn preset-btn--active",
+        "height": 32
+      },
+      {
+        "class": "preset-btn",
+        "height": 32
+      }
+    ]
+  },
+  "profiles": [],
+  "consoleErrors": [
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "runtimeErrors": [],
+  "badHttp": [],
+  "expectedFaults": [],
+  "maxConcurrentStreams": 1,
+  "status": "passed",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 139,
+    "productionDataUsed": false
+  }
+}

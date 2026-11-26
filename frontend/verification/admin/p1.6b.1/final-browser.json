@@ -1,0 +1,3467 @@
+{
+  "phase": "final",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "checks": {
+    "initialDeveloperCards": 10,
+    "pageTwoAutomatic": true,
+    "latestSearchOnly": true,
+    "filtersEmptyAndPrevious": true,
+    "developerDatabaseFailureRetry": true,
+    "console-overview-first": {
+      "progressbars": 0,
+      "overview": 1
+    },
+    "console-teams-first": {
+      "progressbars": 0,
+      "overview": 1
+    },
+    "consoleFaultRecovery": [
+      {
+        "failure": "teams",
+        "errorVisible": 0,
+        "recovered": true
+      },
+      {
+        "failure": "overview",
+        "errorVisible": 1,
+        "recovered": true
+      },
+      {
+        "failure": "both",
+        "errorVisible": 1,
+        "recovered": true
+      }
+    ],
+    "rapidNavigationStreamDelta": 0,
+    "performanceBack": {
+      "top": 210.515625,
+      "rowTops": [
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625,
+        210.515625
+      ],
+      "width": 97.5625,
+      "height": 38
+    },
+    "performanceFocus": {
+      "outline": "solid",
+      "width": "2px",
+      "shadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(79, 70, 229) 0px 0px 0px 4px"
+    },
+    "nativeTeamEnterAndSpace": true,
+    "nativeTeamTableSpace": true,
+    "jobsError": {
+      "top": 441.375,
+      "viewport": 900,
+      "inCreatePanel": true,
+      "role": "alert"
+    },
+    "jobsRealFailureRetry": true,
+    "adminNotificationFallback": true,
+    "activityHeight": {
+      "before": 1139.484375,
+      "after": 1139.484375,
+      "delta": 0
+    },
+    "activityTargets": [
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "searchable-select__trigger",
+        "height": 44
+      },
+      {
+        "class": "preset-btn",
+        "height": 44
+      },
+      {
+        "class": "preset-btn",
+        "height": 44
+      },
+      {
+        "class": "preset-btn preset-btn--active",
+        "height": 44
+      },
+      {
+        "class": "preset-btn",
+        "height": 44
+      },
+      {
+        "class": "btn-archive-log",
+        "height": 44
+      }
+    ],
+    "normalMotionFeedbackPreserved": true
+  },
+  "profiles": [
+    {
+      "profile": "desktop-light",
+      "route": "developers",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-light",
+      "route": "console?tab=overview",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-light",
+      "route": "console/performance-statistics",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-light",
+      "route": "teams",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-light",
+      "route": "jobs",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-light",
+      "route": "activity-logs",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-light",
+      "route": "recruiters",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-dark",
+      "route": "developers",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-dark",
+      "route": "console?tab=overview",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-dark",
+      "route": "console/performance-statistics",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-dark",
+      "route": "teams",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-dark",
+      "route": "jobs",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-dark",
+      "route": "activity-logs",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "desktop-dark",
+      "route": "recruiters",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "laptop-system-dark",
+      "route": "developers",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "laptop-system-dark",
+      "route": "console?tab=overview",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "laptop-system-dark",
+      "route": "console/performance-statistics",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "laptop-system-dark",
+      "route": "teams",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "laptop-system-dark",
+      "route": "jobs",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "laptop-system-dark",
+      "route": "activity-logs",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "laptop-system-dark",
+      "route": "recruiters",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "tablet-light",
+      "route": "developers",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "tablet-light",
+      "route": "console?tab=overview",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "tablet-light",
+      "route": "console/performance-statistics",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "tablet-light",
+      "route": "teams",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "tablet-light",
+      "route": "jobs",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "tablet-light",
+      "route": "activity-logs",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "tablet-light",
+      "route": "recruiters",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-light",
+      "route": "developers",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-light",
+      "route": "console?tab=overview",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-light",
+      "route": "console/performance-statistics",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-light",
+      "route": "teams",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-light",
+      "route": "jobs",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-light",
+      "route": "activity-logs",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-light",
+      "route": "recruiters",
+      "overflow": 0,
+      "theme": "light",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-dark",
+      "route": "developers",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-dark",
+      "route": "console?tab=overview",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-dark",
+      "route": "console/performance-statistics",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-dark",
+      "route": "teams",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-dark",
+      "route": "jobs",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-dark",
+      "route": "activity-logs",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "mobile-dark",
+      "route": "recruiters",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "xs-mobile-system",
+      "route": "developers",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "xs-mobile-system",
+      "route": "console?tab=overview",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "xs-mobile-system",
+      "route": "console/performance-statistics",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "xs-mobile-system",
+      "route": "teams",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "xs-mobile-system",
+      "route": "jobs",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "profile": "xs-mobile-system",
+      "route": "activity-logs",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [],
+      "clippedControls": []
+    },
+    {
+      "profile": "xs-mobile-system",
+      "route": "recruiters",
+      "overflow": 0,
+      "theme": "dark",
+      "motion": [
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        },
+        {
+          "transition": "0s",
+          "animation": "none"
+        }
+      ],
+      "clippedControls": []
+    }
+  ],
+  "requests": [
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704495446,
+      "finishedAt": 1795704495553
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704495452,
+      "finishedAt": 1795704495580
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704495646,
+      "finishedAt": 1795704495777
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704495644,
+      "finishedAt": 1795704495782
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704495400,
+      "finishedAt": 1795704495793
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704495445,
+      "finishedAt": 1795704495907
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704496761,
+      "finishedAt": 1795704497099
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704497895,
+      "finishedAt": 1795704498160
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704498707,
+      "finishedAt": 1795704500082
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704500811,
+      "finishedAt": 1795704501087
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704503202,
+      "finishedAt": 1795704503432
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704504191,
+      "finishedAt": 1795704504426
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704504888,
+      "finishedAt": 1795704505205
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704505261,
+      "finishedAt": 1795704505474
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704506213,
+      "finishedAt": 1795704506444
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704511899,
+      "finishedAt": 1795704511926
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704511902,
+      "finishedAt": 1795704512024
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704511902,
+      "finishedAt": 1795704512626
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704511902,
+      "finishedAt": 1795704512627
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704511893,
+      "finishedAt": 1795704512727
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704512045,
+      "finishedAt": 1795704512772
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704512046,
+      "finishedAt": 1795704512773
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704516128,
+      "finishedAt": 1795704516153
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704516130,
+      "finishedAt": 1795704516211
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704516136,
+      "finishedAt": 1795704516211
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704516136,
+      "finishedAt": 1795704516881
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704516117,
+      "finishedAt": 1795704517810
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704519493,
+      "finishedAt": 1795704519576
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704519494,
+      "finishedAt": 1795704519579
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704521494,
+      "finishedAt": 1795704521529
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704521499,
+      "finishedAt": 1795704521554
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704521481,
+      "finishedAt": 1795704521630
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704522629,
+      "finishedAt": 1795704522631
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704521497,
+      "finishedAt": 1795704523314
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704521502,
+      "finishedAt": 1795704523318
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704521596,
+      "finishedAt": 1795704523422
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704521596,
+      "finishedAt": 1795704523429
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704523452,
+      "finishedAt": 1795704523494
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704523455,
+      "finishedAt": 1795704523518
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704525878,
+      "finishedAt": 1795704525923
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704525881,
+      "finishedAt": 1795704525935
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704525884,
+      "finishedAt": 1795704525937
+    },
+    {
+      "path": "/stream",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704525891,
+      "finishedAt": 1795704525963
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704525869,
+      "finishedAt": 1795704525967
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704525989,
+      "finishedAt": 1795704525993
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704525994,
+      "finishedAt": 1795704525999
+    },
+    {
+      "path": "/stream",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704526909,
+      "finishedAt": 1795704526911
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704525884,
+      "finishedAt": 1795704527688
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704527771,
+      "finishedAt": 1795704527800
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704530408,
+      "finishedAt": 1795704530416
+    },
+    {
+      "path": "/stream",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704530417,
+      "finishedAt": 1795704530420
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704530420,
+      "finishedAt": 1795704530422
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704530422,
+      "finishedAt": 1795704530426
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704530427,
+      "finishedAt": 1795704530429
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 503,
+      "startedAt": 1795704530429,
+      "finishedAt": 1795704530431
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704530579,
+      "finishedAt": 1795704530602
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704530583,
+      "finishedAt": 1795704530631
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704532565,
+      "finishedAt": 1795704532791
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704532932,
+      "finishedAt": 1795704532965
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704532936,
+      "finishedAt": 1795704532972
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704533085,
+      "finishedAt": 1795704533320
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704533492,
+      "finishedAt": 1795704533523
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704533495,
+      "finishedAt": 1795704533534
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704533687,
+      "finishedAt": 1795704533930
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704534105,
+      "finishedAt": 1795704534145
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704534103,
+      "finishedAt": 1795704534150
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704534965,
+      "finishedAt": 1795704535015
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704534972,
+      "finishedAt": 1795704535034
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704534968,
+      "finishedAt": 1795704535131
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704534955,
+      "finishedAt": 1795704535186
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704535159,
+      "finishedAt": 1795704535193
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704535161,
+      "finishedAt": 1795704535197
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704537172,
+      "finishedAt": 1795704537220
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704537183,
+      "finishedAt": 1795704537277
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704537197,
+      "finishedAt": 1795704537297
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704537180,
+      "finishedAt": 1795704537340
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704537195,
+      "finishedAt": 1795704537369
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704537345,
+      "finishedAt": 1795704537393
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704537356,
+      "finishedAt": 1795704537395
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704537168,
+      "finishedAt": 1795704537397
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704538724,
+      "finishedAt": 1795704538827
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704538735,
+      "finishedAt": 1795704538837
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704538731,
+      "finishedAt": 1795704538839
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704538705,
+      "finishedAt": 1795704538913
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704538896,
+      "finishedAt": 1795704538921
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704538899,
+      "finishedAt": 1795704538923
+    },
+    {
+      "path": "/jobs",
+      "method": "POST",
+      "status": 503,
+      "startedAt": 1795704539842,
+      "finishedAt": 1795704539845
+    },
+    {
+      "path": "/jobs",
+      "method": "POST",
+      "status": 201,
+      "startedAt": 1795704539956,
+      "finishedAt": 1795704540000
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704540051,
+      "finishedAt": 1795704540086
+    },
+    {
+      "path": "/6b0846a6a37dff850113da0f/read",
+      "method": "PUT",
+      "status": 200,
+      "startedAt": 1795704542149,
+      "finishedAt": 1795704542202
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704542216,
+      "finishedAt": 1795704542236
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704543789,
+      "finishedAt": 1795704543820
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704543821,
+      "finishedAt": 1795704543864
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704543799,
+      "finishedAt": 1795704543876
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704543782,
+      "finishedAt": 1795704543932
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704543899,
+      "finishedAt": 1795704543948
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704543896,
+      "finishedAt": 1795704543949
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704543912,
+      "finishedAt": 1795704543957
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704544008,
+      "finishedAt": 1795704545349
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704546997,
+      "finishedAt": 1795704547031
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704546999,
+      "finishedAt": 1795704547039
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704546989,
+      "finishedAt": 1795704547072
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704547109,
+      "finishedAt": 1795704547143
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704547111,
+      "finishedAt": 1795704547144
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704547001,
+      "finishedAt": 1795704547229
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704547500,
+      "finishedAt": 1795704547560
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704547496,
+      "finishedAt": 1795704547563
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704548009,
+      "finishedAt": 1795704548051
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704548526,
+      "finishedAt": 1795704548572
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704548523,
+      "finishedAt": 1795704548596
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704548530,
+      "finishedAt": 1795704548604
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704548816,
+      "finishedAt": 1795704548845
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704549135,
+      "finishedAt": 1795704549151
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704549177,
+      "finishedAt": 1795704549213
+    },
+    {
+      "path": "/invitations/pending",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704549685,
+      "finishedAt": 1795704549780
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704549682,
+      "finishedAt": 1795704549784
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704549687,
+      "finishedAt": 1795704549785
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704549822,
+      "finishedAt": 1795704549841
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704551351,
+      "finishedAt": 1795704551397
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704551355,
+      "finishedAt": 1795704551415
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704551282,
+      "finishedAt": 1795704551464
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704551485,
+      "finishedAt": 1795704551507
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704551487,
+      "finishedAt": 1795704551513
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704551354,
+      "finishedAt": 1795704551621
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704551921,
+      "finishedAt": 1795704551965
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704551916,
+      "finishedAt": 1795704551970
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704552357,
+      "finishedAt": 1795704552390
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704552955,
+      "finishedAt": 1795704553035
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704552941,
+      "finishedAt": 1795704553048
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704552989,
+      "finishedAt": 1795704553076
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704553318,
+      "finishedAt": 1795704553368
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704553668,
+      "finishedAt": 1795704553704
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704553734,
+      "finishedAt": 1795704553771
+    },
+    {
+      "path": "/invitations/pending",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704554202,
+      "finishedAt": 1795704554246
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704554199,
+      "finishedAt": 1795704554247
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704554194,
+      "finishedAt": 1795704554249
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704554370,
+      "finishedAt": 1795704554400
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704556067,
+      "finishedAt": 1795704556103
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704556070,
+      "finishedAt": 1795704556121
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704556051,
+      "finishedAt": 1795704556162
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704556206,
+      "finishedAt": 1795704556231
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704556210,
+      "finishedAt": 1795704556234
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704556070,
+      "finishedAt": 1795704556304
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704556591,
+      "finishedAt": 1795704556639
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704556593,
+      "finishedAt": 1795704556646
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704557130,
+      "finishedAt": 1795704557170
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704557677,
+      "finishedAt": 1795704557754
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704557679,
+      "finishedAt": 1795704557777
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704557681,
+      "finishedAt": 1795704557792
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704557932,
+      "finishedAt": 1795704557946
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704558205,
+      "finishedAt": 1795704558220
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704558251,
+      "finishedAt": 1795704558285
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704558730,
+      "finishedAt": 1795704558813
+    },
+    {
+      "path": "/invitations/pending",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704558736,
+      "finishedAt": 1795704558815
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704558734,
+      "finishedAt": 1795704558816
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704558928,
+      "finishedAt": 1795704558940
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704560487,
+      "finishedAt": 1795704560525
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704560490,
+      "finishedAt": 1795704560532
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704560468,
+      "finishedAt": 1795704560587
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704560595,
+      "finishedAt": 1795704560615
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704560597,
+      "finishedAt": 1795704560618
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704560495,
+      "finishedAt": 1795704560735
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704561053,
+      "finishedAt": 1795704561099
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704561061,
+      "finishedAt": 1795704561104
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704561529,
+      "finishedAt": 1795704561571
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704562138,
+      "finishedAt": 1795704562296
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704562134,
+      "finishedAt": 1795704562302
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704562131,
+      "finishedAt": 1795704562321
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704562583,
+      "finishedAt": 1795704562621
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704562976,
+      "finishedAt": 1795704562999
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704563091,
+      "finishedAt": 1795704563146
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704563454,
+      "finishedAt": 1795704563524
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704563467,
+      "finishedAt": 1795704563526
+    },
+    {
+      "path": "/invitations/pending",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704563470,
+      "finishedAt": 1795704563527
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704563664,
+      "finishedAt": 1795704563685
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704565220,
+      "finishedAt": 1795704565245
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704565218,
+      "finishedAt": 1795704565256
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704565206,
+      "finishedAt": 1795704565363
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704565367,
+      "finishedAt": 1795704565426
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704565371,
+      "finishedAt": 1795704565428
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704565218,
+      "finishedAt": 1795704565462
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704565753,
+      "finishedAt": 1795704565789
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704565757,
+      "finishedAt": 1795704565792
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704566147,
+      "finishedAt": 1795704566195
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704566661,
+      "finishedAt": 1795704566748
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704566647,
+      "finishedAt": 1795704566757
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704566669,
+      "finishedAt": 1795704566773
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704567002,
+      "finishedAt": 1795704567018
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704567271,
+      "finishedAt": 1795704567292
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704567322,
+      "finishedAt": 1795704567356
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704567722,
+      "finishedAt": 1795704567765
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704567718,
+      "finishedAt": 1795704567772
+    },
+    {
+      "path": "/invitations/pending",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704567758,
+      "finishedAt": 1795704567780
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704567867,
+      "finishedAt": 1795704567879
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704569364,
+      "finishedAt": 1795704569393
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704569367,
+      "finishedAt": 1795704569413
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704569481,
+      "finishedAt": 1795704569548
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704569483,
+      "finishedAt": 1795704569552
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704569348,
+      "finishedAt": 1795704569579
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704569367,
+      "finishedAt": 1795704569622
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704569922,
+      "finishedAt": 1795704570022
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704569941,
+      "finishedAt": 1795704570027
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704570506,
+      "finishedAt": 1795704570534
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704571003,
+      "finishedAt": 1795704571088
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704571020,
+      "finishedAt": 1795704571090
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704571027,
+      "finishedAt": 1795704571112
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704571371,
+      "finishedAt": 1795704571387
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704571636,
+      "finishedAt": 1795704571658
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704571701,
+      "finishedAt": 1795704571737
+    },
+    {
+      "path": "/invitations/pending",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704572090,
+      "finishedAt": 1795704572150
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704572096,
+      "finishedAt": 1795704572154
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704572112,
+      "finishedAt": 1795704572163
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704572203,
+      "finishedAt": 1795704572215
+    },
+    {
+      "path": "/organizations",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704573841,
+      "finishedAt": 1795704573895
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704573850,
+      "finishedAt": 1795704573900
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704573838,
+      "finishedAt": 1795704573978
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704573955,
+      "finishedAt": 1795704573982
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704573960,
+      "finishedAt": 1795704573985
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704573854,
+      "finishedAt": 1795704574094
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704574368,
+      "finishedAt": 1795704574417
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704574372,
+      "finishedAt": 1795704574420
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704574874,
+      "finishedAt": 1795704574909
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704575364,
+      "finishedAt": 1795704575398
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704575357,
+      "finishedAt": 1795704575416
+    },
+    {
+      "path": "/performance",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704575372,
+      "finishedAt": 1795704575425
+    },
+    {
+      "path": "/jobs",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704575662,
+      "finishedAt": 1795704575675
+    },
+    {
+      "path": "/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704575967,
+      "finishedAt": 1795704575989
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704576013,
+      "finishedAt": 1795704576059
+    },
+    {
+      "path": "/recruiters",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704577039,
+      "finishedAt": 1795704577079
+    },
+    {
+      "path": "/invitations/pending",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704577047,
+      "finishedAt": 1795704577081
+    },
+    {
+      "path": "/overview",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704577049,
+      "finishedAt": 1795704577090
+    },
+    {
+      "path": "/organizations/6b0846a6a37dff850113d9db/teams",
+      "method": "GET",
+      "status": 200,
+      "startedAt": 1795704577170,
+      "finishedAt": 1795704577194
+    }
+  ],
+  "streamRequests": 18,
+  "offlineExternalAssets": [
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css",
+    "https://fonts.googleapis.com/css2",
+    "https://fonts.googleapis.com/css2",
+    "https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css"
+  ],
+  "consoleErrors": [],
+  "runtimeErrors": [],
+  "badHttp": [],
+  "expectedFaults": [
+    {
+      "path": "/api/admin/developers",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b0846a6a37dff850113d9db/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b0846a6a37dff850113d9db/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications/stream",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b0846a6a37dff850113d9db/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b0846a6a37dff850113d9db/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications/stream",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/admin-console/overview",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b0846a6a37dff850113d9db/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications/stream",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/tenant/organizations/6b0846a6a37dff850113d9db/teams",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/admin-console/overview",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/notifications",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    {
+      "path": "/api/admin/jobs",
+      "status": 503
+    },
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+  ],
+  "maxConcurrentStreams": 1,
+  "status": "passed",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 139,
+    "productionDataUsed": false
+  }
+}

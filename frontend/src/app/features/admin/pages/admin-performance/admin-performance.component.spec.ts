@@ -153,6 +153,9 @@ describe('AdminPerformanceComponent', () => {
   });
 
   it('computes a conic gradient for the job status breakdown donut and surfaces distinct team labels', () => {
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Organization Performance Composite',
+    );
     expect(component.jobStatusDonutGradient).toContain('conic-gradient(');
     expect(component.jobStatusDonutGradient).toContain('50.00%');
 
@@ -161,7 +164,7 @@ describe('AdminPerformanceComponent', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent || '';
     expect(text).toContain('Total Members');
     expect(text).toContain('Active Recruiters');
-    expect(text).toContain('Team Activity Score');
+    expect(text).toContain('Team Engagement Score');
     expect(text).toContain('Hiring Close Rate');
   });
 

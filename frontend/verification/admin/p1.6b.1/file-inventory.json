@@ -1,0 +1,950 @@
+{
+  "sourceBranch": "fix/admin",
+  "baselineCommit": "33b325b419a5af0fe81629e8eeba81c5240f1049",
+  "finalCommit": "33b325b419a5af0fe81629e8eeba81c5240f1049",
+  "targetBranch": null,
+  "initialWorkingTreeAndIndexClean": true,
+  "stagedChanges": "",
+  "sourceFiles": [
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\activity-logs\\admin-activity-logs.component.html",
+      "status": "modified",
+      "sha256": "c3758bc42d7c647ec8a7e9f2247deb4f26d67229e592f348ffdfa241186e1c7d"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\activity-logs\\admin-activity-logs.component.scss",
+      "status": "modified",
+      "sha256": "c0dd831cbb455569f92eb7a35017e3f326d548f427f112608ffa14cbf4d8fea4"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\activity-logs\\admin-activity-logs.component.spec.ts",
+      "status": "modified",
+      "sha256": "2973d8c184e6b02840f25784b39867e5000b0d44f627003e55927e9eb945773d"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-console\\admin-console.component.ts",
+      "status": "modified",
+      "sha256": "30c5f404caaf13fe4c1e99952e7b39975017384b0c76ae85591575928292d866"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.html",
+      "status": "modified",
+      "sha256": "817379856de02a2b13526313cb8ee49df743a3ca43f17571553d2ab1151c27da"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.scss",
+      "status": "modified",
+      "sha256": "db12581071a6e6da612e703d3e9a9b9cbd69e468955e83bd7b8c7db3279174e7"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.ts",
+      "status": "modified",
+      "sha256": "25b95e3e7f8ff747f236854997be71372d1ab56820f96c4b41c67089e4f16241"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-jobs\\admin-jobs.component.html",
+      "status": "modified",
+      "sha256": "6618d65d4f37a9d3eb818f8ea96563fbc1be5661a2e9ec301f9f379c49e9ddfe"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-jobs\\admin-jobs.component.scss",
+      "status": "modified",
+      "sha256": "4774e2d32a672684f3864a630a2958c09cc84824fee800cd88bccd6f98f9e7e2"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-jobs\\admin-jobs.component.spec.ts",
+      "status": "modified",
+      "sha256": "62ac806f5e3b28684677af92f7cb2ea961e70fe4146b3748c1c87a0c967312f8"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-jobs\\admin-jobs.component.ts",
+      "status": "modified",
+      "sha256": "58047547a008161f07518a61ac2415d419b4dd8f2bd8681abca7fe5052028217"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-performance\\admin-performance.component.html",
+      "status": "modified",
+      "sha256": "75f3d870d109c042f037bb67d8e4c3b14beb5ad1e3649ffd44da15bd680e56e7"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-performance\\admin-performance.component.scss",
+      "status": "modified",
+      "sha256": "65922527be8c2115f4a498421fa7cfe9187d1f1ba96b90ead09acace551fcfc3"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-performance\\admin-performance.component.spec.ts",
+      "status": "modified",
+      "sha256": "90fc08dcf989adfe64f59e805f1145635ba85bfd48e317012e935d53d91814fe"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-recruiters\\admin-recruiters.component.scss",
+      "status": "modified",
+      "sha256": "b36a46ba7e2c78fadc596a2e319bb324ec30e5186a5fa6cf4ef609b800079275"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-teams\\admin-teams.component.html",
+      "status": "modified",
+      "sha256": "7b6942eff3b434b0cf838af53571a173aa48d6858d5affa0c149ddf070a5d190"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-teams\\admin-teams.component.spec.ts",
+      "status": "modified",
+      "sha256": "da1e6b865300b45ba4f9e513763428364225509523a6ccbc83c80f42f26bc1a3"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\searchable-select\\searchable-select.component.scss",
+      "status": "modified",
+      "sha256": "255f7c9901010a4367a3a87e19adf31733d15908692035c3976847558cf41a42"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\utils\\notification-navigation.spec.ts",
+      "status": "modified",
+      "sha256": "ddaa64a0892b22d27a189441c4cc8b700b6440df1a006a963f83ae4c2e306246"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\utils\\notification-navigation.ts",
+      "status": "modified",
+      "sha256": "b1b981ab40af94fb701c602ef9c23ccab4d9f3dc0312ffc0b0235284dc706706"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-console\\admin-console.component.spec.ts",
+      "status": "new",
+      "sha256": "d88c9cb278b030f39c5e009a8887a3fbf45805e29e4415115a89a7061140920e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.spec.ts",
+      "status": "new",
+      "sha256": "73c155d79c724d28db9f72849b844ca3e74919be4ba7705c989093517714abfd"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\scripts\\verify-admin-frontend-closure.cjs",
+      "status": "new",
+      "sha256": "c6ff699e7f4bbf68b6a6adc42b161baca6f6df5ba69ebaf1f2a27dee7a0842c4"
+    }
+  ],
+  "deletedSourceFiles": [],
+  "movedSourceFiles": [],
+  "cleanup": {
+    "deletedFiles": [],
+    "ownership": "Created by the initial task baseline-build command with an extra frontend path prefix; verified empty before each nonrecursive removal",
+    "removedEmptyDirectories": [
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\frontend\\verification\\admin\\p1.6b.1",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\frontend\\verification\\admin",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\frontend\\verification",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\frontend"
+    ],
+    "preservedUserWork": true
+  },
+  "evidenceRenames": [
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-browser.json",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-baseline-browser.json",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\targeted-tests.log",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-targeted-tests.log",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build.log",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-build.log",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build.log",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-build.log",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build.log",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-3-build.log",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-browser.json",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-final-browser.json",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-browser.log",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-final-browser.log",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-browser.json",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-final-browser.json",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-browser.log",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-final-browser.log",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-activity-mobile.png",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\attempt-1-final-activity-mobile.png",
+      "ownership": "created by this task; retained before rerun recreated the current filename"
+    }
+  ],
+  "validation": {
+    "focusedTests": 64,
+    "focusedFiles": 12,
+    "affectedActivityRerun": 2,
+    "browserProfiles": 49,
+    "unexpectedConsoleErrors": 0,
+    "runtimeErrors": 0,
+    "badHttp": 0,
+    "activeStreamMaximum": 1,
+    "rapidNavigationNewStreams": 0,
+    "sourceChecksPassed": true
+  },
+  "files": [
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-baseline-browser.json",
+      "kind": "retained verification evidence",
+      "bytes": 1015,
+      "sha256": "ede7d924a3cf318c8cfd5121fd144d89842811def39700b8ceb873c66d0a5955"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-build.log",
+      "kind": "retained verification evidence",
+      "bytes": 1853,
+      "sha256": "d13c99029a42c71d481270ed2ab67e0c745223a657f1070634dc9c34ad23239a"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-final-browser.json",
+      "kind": "retained verification evidence",
+      "bytes": 23358,
+      "sha256": "56dbd7e90b14f0bf33b23ae9ba862471e80392970caad61c810860791edec20b"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-final-browser.log",
+      "kind": "retained verification evidence",
+      "bytes": 2016,
+      "sha256": "68290f9254da81ae7582b55762b1e2b03c50f4384271644fb12011beccb63bd8"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-1-targeted-tests.log",
+      "kind": "retained verification evidence",
+      "bytes": 10598,
+      "sha256": "93f6468e38887f5119d1f7cf61b5e20c7e0a5f727fe9cb2fff0d5ff5a0772186"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-baseline-browser.log",
+      "kind": "retained verification evidence",
+      "bytes": 37,
+      "sha256": "993cfacd765c99ec2aaeb3680a4001cd99b64be7fe194db31667072cc94bbf71"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-build.log",
+      "kind": "retained verification evidence",
+      "bytes": 1853,
+      "sha256": "d75dee240a70ce7c0e4886d99a7708e8a24431a52ae81b92d4972926de432480"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-final-browser.json",
+      "kind": "retained verification evidence",
+      "bytes": 96526,
+      "sha256": "3e90b0f1921c0a1c0e6259ae4304062ac6acd875c0553be9b4315ff4fa4a2a99"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-final-browser.log",
+      "kind": "retained verification evidence",
+      "bytes": 3544,
+      "sha256": "be40de8d6e87b97de99c6f81b9b1dc139d46456c912053bca9ac6dbccbd192a0"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-2-targeted-tests.log",
+      "kind": "retained verification evidence",
+      "bytes": 11459,
+      "sha256": "0e35793d75489f1068ac91376c6a59870c32cf57c3e0d4ba09b41be73a62f592"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-3-baseline-browser.log",
+      "kind": "retained verification evidence",
+      "bytes": 1014,
+      "sha256": "308860c03ecc22dc63fcd2bc2295c6102b2e986c36d19db72ea9f466449a3d2e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\attempt-3-build.log",
+      "kind": "retained verification evidence",
+      "bytes": 1852,
+      "sha256": "24837cb5139c2291a933e127248c73299f2b3b0ab7bd55a56e5ce6ad369dd0fe"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-async-tests.log",
+      "kind": "retained verification evidence",
+      "bytes": 11653,
+      "sha256": "c742086c797fb6cf38ae3ed7e850666e2d9460c12ea28effda4f473ef2cc2bc6"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-browser.json",
+      "kind": "retained verification evidence",
+      "bytes": 2691,
+      "sha256": "289944dc04aa12f8c67d5eb2f9644497e7905478662fa6fa2c68b724516863fa"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-browser.log",
+      "kind": "retained verification evidence",
+      "bytes": 66,
+      "sha256": "11e751f57a2d15388f0b2adf634b8365b27a87e41b05fbe5727e5d766f6d2962"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build.log",
+      "kind": "retained verification evidence",
+      "bytes": 1871,
+      "sha256": "8d2bfe0eed122a1b40a092d7ce330405aae1cb081ea1011b5f76ae7ba62ac5aa"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\3rdpartylicenses.txt",
+      "kind": "referenced compiled snapshot",
+      "bytes": 20596,
+      "sha256": "fac19a415feea20e2bb1c927b22293e65a8bde4722d92810612d536e6f33dfee"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\avatar\\dev_3d_avatar_female.jpg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 674499,
+      "sha256": "b3a22a808afe232d5c52194d61ca94f9971bc53ed231913138fff339ed50725f"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\avatar\\dev_3d_avatar.jpg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 805159,
+      "sha256": "4fdf8d73eac9dbdba6b93ba4bcd3be25eac51dde48d61a69e7dca91eadf6d3a5"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\avatar\\profile.png",
+      "kind": "referenced compiled snapshot",
+      "bytes": 21032,
+      "sha256": "4dad60a56eaa7a2eeb0b9165002081d5fbfd2bf02fb15704eee4bd96240defef"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\chunk-2RDXDJSZ.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 46078,
+      "sha256": "2373b033279ddfeb7aa789ca190131bc1dda00bb8d8e4696c58e580fd8e4bdf4"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\chunk-44CQYEWM.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 598045,
+      "sha256": "50c3c67c8467d63b191cbf4ddcac2188abd602c3ac061fbabc846cddabd1c9b2"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\chunk-MOUQZ2LK.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 3815,
+      "sha256": "6a836242139196c7dbd7f89c5252dcd1156f7c4775bca9edb6b569453116d008"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\chunk-OZGSISPN.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 155194,
+      "sha256": "5033c7b8243e1ee195a3f76c45eebfcdca7863183d08f91bf5623444c54d9bb3"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\chunk-PADJ3F5T.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 545719,
+      "sha256": "acea26bb53c88a3e9de735165c549cf6775734f1226e8e94ea0ace72d57fc879"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\chunk-RUZ2U2TD.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 7590,
+      "sha256": "f15bf82c9e12cb49b43b1ccfcee5e39a75a771906af423290983b71c0ecee95d"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\chunk-SLTV2627.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 280560,
+      "sha256": "e569a85bbef53d4e1507271538c1389dff5b6a40b6f5e52cb640b1d201aa564e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\chunk-VJOQCHQD.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 469953,
+      "sha256": "18f0e7cfd3cbfa4c0c9eea49c120a1bcaedf4b24d0fd7e2c177a7a8d234f183a"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\favicon.ico",
+      "kind": "referenced compiled snapshot",
+      "bytes": 15086,
+      "sha256": "f9102be80297c0529207607be5277b4f90bca89d65988fa1771b91c7894e815f"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\fonts\\manrope\\Manrope.ttf",
+      "kind": "referenced compiled snapshot",
+      "bytes": 164700,
+      "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\fonts\\manrope\\OFL.txt",
+      "kind": "referenced compiled snapshot",
+      "bytes": 4480,
+      "sha256": "4b8929f05a122b7abb9059501dc7dc4df86f8c97d5a1769d60d82cf2d2795dde"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\index.html",
+      "kind": "referenced compiled snapshot",
+      "bytes": 7220,
+      "sha256": "d920d38de92674029d7ae72ed5a8a051b5f3424f3d007ddf42956e4f0460c751"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\main-RQLWRGE2.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 3296635,
+      "sha256": "7870baf5b815e740081191335213ee3f994070a7dc2a6351579880f4194d2120"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\prototypes\\stitch_html.html",
+      "kind": "referenced compiled snapshot",
+      "bytes": 25677,
+      "sha256": "15cf2c597cf4750f369bdb3fd1eb346c639dcd62b42b2e712334828dd428a26b"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\coursera.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 691,
+      "sha256": "ccc07089b2b2f26598a4935149f7546bbf29479a6ab95d0b18471d1e522b83e5"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\edx.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 2147,
+      "sha256": "685539f93d4cd2ac816e5ac23a1fcb21fcb0ceb5264f290228de661902730f11"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\freecodecamp.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 1196,
+      "sha256": "cc58bbfdeb98d8a5eb19d9afa00cb4bcebf34d186d215a3604e68915b679fef0"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\LICENSE.md",
+      "kind": "referenced compiled snapshot",
+      "bytes": 6599,
+      "sha256": "d2ff98b803f0c12f09825d4489cb8a4b14fd912ebbf6a3e8b23a77043a7dc043"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\mdnwebdocs.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 248,
+      "sha256": "f62a7aeb5af86d201fd62190dca1932cd60dbee3c1f6d6f0db1ceb5e9da035d3"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\README.md",
+      "kind": "referenced compiled snapshot",
+      "bytes": 641,
+      "sha256": "b792dc8b239a025566570415857f0119947ce494f8dbf045b2182369b7f6d8a8"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\theodinproject.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 1263,
+      "sha256": "1b6d595ca71d9e95b210a898f183087befa106c951902217c49720f637cbde9e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\udemy.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 392,
+      "sha256": "3b49cd526313c09aaffed5676c1e929ec27236d928904b9e55bc0460de3b6e9e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\providers\\youtube.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 474,
+      "sha256": "7f5156448b9c1b65156e34e4443f0eff8b85f5afa783fc8a8d09f49380fed424"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\browser\\styles-LNHZ7Z4F.css",
+      "kind": "referenced compiled snapshot",
+      "bytes": 68482,
+      "sha256": "1786c04ab1ed98f1c6b1112b42cee48671c31ddc5d1be017ef6b12c7f80db0f2"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-build\\prerendered-routes.json",
+      "kind": "referenced compiled snapshot",
+      "bytes": 18,
+      "sha256": "a79ddcc8a115190e9c19479ed36914741a7d1db74f0a1153529efc80725505fe"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-layout-browser.json",
+      "kind": "retained verification evidence",
+      "bytes": 601,
+      "sha256": "ff5de339407c3bae89d04384173d06d70e6f82c90b436063bcbb49063b11717c"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\baseline-layout-browser.log",
+      "kind": "retained verification evidence",
+      "bytes": 1014,
+      "sha256": "308860c03ecc22dc63fcd2bc2295c6102b2e986c36d19db72ea9f466449a3d2e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build.log",
+      "kind": "retained verification evidence",
+      "bytes": 1852,
+      "sha256": "9a620995dc5ccd833640be0580a1601a86669ac0ba7e963b88e0414e5c3fa5a0"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\3rdpartylicenses.txt",
+      "kind": "referenced compiled snapshot",
+      "bytes": 20596,
+      "sha256": "fac19a415feea20e2bb1c927b22293e65a8bde4722d92810612d536e6f33dfee"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\avatar\\dev_3d_avatar_female.jpg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 674499,
+      "sha256": "b3a22a808afe232d5c52194d61ca94f9971bc53ed231913138fff339ed50725f"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\avatar\\dev_3d_avatar.jpg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 805159,
+      "sha256": "4fdf8d73eac9dbdba6b93ba4bcd3be25eac51dde48d61a69e7dca91eadf6d3a5"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\avatar\\profile.png",
+      "kind": "referenced compiled snapshot",
+      "bytes": 21032,
+      "sha256": "4dad60a56eaa7a2eeb0b9165002081d5fbfd2bf02fb15704eee4bd96240defef"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\chunk-3SLULSYZ.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 469953,
+      "sha256": "fae2d8d7045c6068deef0b61584f7d3a3fee14dd4e75f1f96262f6192846f1f3"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\chunk-44CQYEWM.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 598045,
+      "sha256": "50c3c67c8467d63b191cbf4ddcac2188abd602c3ac061fbabc846cddabd1c9b2"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\chunk-CDUWJLEA.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 46112,
+      "sha256": "300a7558db30458e6e5fee04d35c39ef5ec857b0bf340fe2fa8fa8aae57656d9"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\chunk-E3LLZNFN.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 155617,
+      "sha256": "e9d6369b65ef7075a1a8cfc0d9d7bcbf9c9c5642da552375a6ead5b3d7305576"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\chunk-IE6MCKNR.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 549498,
+      "sha256": "25ccefa8b77aba1e85e88fede3cb3210eba86c4f0d8d71e59aada3296546b6e5"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\chunk-MOUQZ2LK.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 3815,
+      "sha256": "6a836242139196c7dbd7f89c5252dcd1156f7c4775bca9edb6b569453116d008"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\chunk-RUZ2U2TD.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 7590,
+      "sha256": "f15bf82c9e12cb49b43b1ccfcee5e39a75a771906af423290983b71c0ecee95d"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\chunk-SLTV2627.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 280560,
+      "sha256": "e569a85bbef53d4e1507271538c1389dff5b6a40b6f5e52cb640b1d201aa564e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\favicon.ico",
+      "kind": "referenced compiled snapshot",
+      "bytes": 15086,
+      "sha256": "f9102be80297c0529207607be5277b4f90bca89d65988fa1771b91c7894e815f"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\fonts\\manrope\\Manrope.ttf",
+      "kind": "referenced compiled snapshot",
+      "bytes": 164700,
+      "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\fonts\\manrope\\OFL.txt",
+      "kind": "referenced compiled snapshot",
+      "bytes": 4480,
+      "sha256": "4b8929f05a122b7abb9059501dc7dc4df86f8c97d5a1769d60d82cf2d2795dde"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\index.html",
+      "kind": "referenced compiled snapshot",
+      "bytes": 7220,
+      "sha256": "954ee47170ab65fad34c1d8b247220afa98a9d1d312a0a83f900f46525b7e3df"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\main-2MGLHR3O.js",
+      "kind": "referenced compiled snapshot",
+      "bytes": 3296635,
+      "sha256": "bff604a7606f4480401562730706d0bf45b33aace86af952d2949826c947d8d2"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\prototypes\\stitch_html.html",
+      "kind": "referenced compiled snapshot",
+      "bytes": 25677,
+      "sha256": "15cf2c597cf4750f369bdb3fd1eb346c639dcd62b42b2e712334828dd428a26b"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\coursera.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 691,
+      "sha256": "ccc07089b2b2f26598a4935149f7546bbf29479a6ab95d0b18471d1e522b83e5"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\edx.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 2147,
+      "sha256": "685539f93d4cd2ac816e5ac23a1fcb21fcb0ceb5264f290228de661902730f11"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\freecodecamp.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 1196,
+      "sha256": "cc58bbfdeb98d8a5eb19d9afa00cb4bcebf34d186d215a3604e68915b679fef0"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\LICENSE.md",
+      "kind": "referenced compiled snapshot",
+      "bytes": 6599,
+      "sha256": "d2ff98b803f0c12f09825d4489cb8a4b14fd912ebbf6a3e8b23a77043a7dc043"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\mdnwebdocs.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 248,
+      "sha256": "f62a7aeb5af86d201fd62190dca1932cd60dbee3c1f6d6f0db1ceb5e9da035d3"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\README.md",
+      "kind": "referenced compiled snapshot",
+      "bytes": 641,
+      "sha256": "b792dc8b239a025566570415857f0119947ce494f8dbf045b2182369b7f6d8a8"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\theodinproject.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 1263,
+      "sha256": "1b6d595ca71d9e95b210a898f183087befa106c951902217c49720f637cbde9e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\udemy.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 392,
+      "sha256": "3b49cd526313c09aaffed5676c1e929ec27236d928904b9e55bc0460de3b6e9e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\providers\\youtube.svg",
+      "kind": "referenced compiled snapshot",
+      "bytes": 474,
+      "sha256": "7f5156448b9c1b65156e34e4443f0eff8b85f5afa783fc8a8d09f49380fed424"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\browser\\styles-LNHZ7Z4F.css",
+      "kind": "referenced compiled snapshot",
+      "bytes": 68482,
+      "sha256": "1786c04ab1ed98f1c6b1112b42cee48671c31ddc5d1be017ef6b12c7f80db0f2"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\build\\prerendered-routes.json",
+      "kind": "referenced compiled snapshot",
+      "bytes": 18,
+      "sha256": "a79ddcc8a115190e9c19479ed36914741a7d1db74f0a1153529efc80725505fe"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\cleanup.json",
+      "kind": "retained verification evidence",
+      "bytes": 678,
+      "sha256": "05fc5337e0ea38915ef84c3fe37eb2602996bafcc1d01e6e3b1495c13c4ba038"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-activity-tests.log",
+      "kind": "retained verification evidence",
+      "bytes": 1923,
+      "sha256": "77219e3011cd7e942bd5cddffc0403180f0933ad9ab0f41994fd3b45abd20795"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-browser.json",
+      "kind": "retained verification evidence",
+      "bytes": 78632,
+      "sha256": "33c5d24d7701e1b8968d524bc380c033b7380d185e7c0a4f9d03da1d5af11068"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-browser.log",
+      "kind": "retained verification evidence",
+      "bytes": 3973,
+      "sha256": "570c20046fe3627e3c7df5eafeb967c2d24928582b709d48258e9777defe9ab4"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-mobile-probe-browser.json",
+      "kind": "retained verification evidence",
+      "bytes": 2356,
+      "sha256": "1fb4e8045250d038fc3f29ca621a7f7405843488df39c70b79819e60565ec74b"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\final-mobile-probe.log",
+      "kind": "retained verification evidence",
+      "bytes": 1014,
+      "sha256": "308860c03ecc22dc63fcd2bc2295c6102b2e986c36d19db72ea9f466449a3d2e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\formatting.log",
+      "kind": "retained verification evidence",
+      "bytes": 68,
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\IMPLEMENTATION-REPORT.md",
+      "kind": "retained verification evidence",
+      "bytes": 16616,
+      "sha256": "0db622407cf6326f6d01446645749785972204c55793ed2e095133b07f447a2f"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\attempt-1-final-activity-mobile.png",
+      "kind": "retained screenshot",
+      "bytes": 117407,
+      "sha256": "716521171354a6f646c1c4b101bba2dc40e820035940718cf87cba4b4bedebf5"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\baseline-activity-mobile.png",
+      "kind": "retained screenshot",
+      "bytes": 127468,
+      "sha256": "4d2fbf5594aae2f2f2dcb6a5e716a65cb9694a3bb9235aab4bcd57ad83a53846"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\baseline-console-overview-first.png",
+      "kind": "retained screenshot",
+      "bytes": 127361,
+      "sha256": "f291468a18e4dcf7c6b1e7d32e7166f7333e11d6a2b92d2596be96a8dcf2c237"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\baseline-console-teams-first.png",
+      "kind": "retained screenshot",
+      "bytes": 124380,
+      "sha256": "f3ec5206e6dac6350f8a5cfa06c2cf40ebfaae7e3b105dc1d8853968b9ec9bc6"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\baseline-developers-page-two.png",
+      "kind": "retained screenshot",
+      "bytes": 139799,
+      "sha256": "df5389981a7026dd1c1c59be10fe81ba8823193d2ec86435b6de14ac5bdd9008"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\baseline-jobs-error.png",
+      "kind": "retained screenshot",
+      "bytes": 203972,
+      "sha256": "1ced162e5604687dafddf6d9feee610f7adeb25e79bfd2e8d99586fdd7a95ad0"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\baseline-layout-performance-long-label.png",
+      "kind": "retained screenshot",
+      "bytes": 217241,
+      "sha256": "9687dca7947f3aeb683f2d9003eee0e98d0dcea87fad1fd9bbe3815447076bdd"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\baseline-performance.png",
+      "kind": "retained screenshot",
+      "bytes": 209908,
+      "sha256": "b7e225fc5477c6b4b106265a1a953d5667b4b92cff4ff7b7ef9f0b82e14cbca7"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-activity-mobile.png",
+      "kind": "retained screenshot",
+      "bytes": 117880,
+      "sha256": "cc4a736914e22956ab7ba54c1f86d7935a0b0d32df99ca9090793bda1c0a6344"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-console-overview-first.png",
+      "kind": "retained screenshot",
+      "bytes": 124495,
+      "sha256": "16a315849c8bc43871fa216746e75489d3e04cb08dbc249b601559d40a3e91aa"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-console-teams-first.png",
+      "kind": "retained screenshot",
+      "bytes": 124495,
+      "sha256": "16a315849c8bc43871fa216746e75489d3e04cb08dbc249b601559d40a3e91aa"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-desktop-dark-activity-logs.png",
+      "kind": "retained screenshot",
+      "bytes": 175513,
+      "sha256": "e9e63114a032c33e97133af14010f852f0a5dad8f2a239eba424966052c610f6"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-desktop-dark-console-performance-statistics.png",
+      "kind": "retained screenshot",
+      "bytes": 197218,
+      "sha256": "447ac2da7fa3a10746fa101abe3fbcf6ae54f7692ca141b3b9e0a96ec82fa4fd"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-desktop-dark-console.png",
+      "kind": "retained screenshot",
+      "bytes": 124985,
+      "sha256": "8884451ef3bc9c5cdeaf3f0c6a0035e16a2ccaa5309bc049691c0a31cec28df1"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-desktop-light-activity-logs.png",
+      "kind": "retained screenshot",
+      "bytes": 174855,
+      "sha256": "54382b8594380d7945437f19163b32cf87cb8bc4bdfe46522d3057197b4fa5e8"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-desktop-light-console-performance-statistics.png",
+      "kind": "retained screenshot",
+      "bytes": 217264,
+      "sha256": "9cbaaf4ded999537a365830e7e4295fa70a1b6b3114d306eb3c76f1fb2f12c62"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-desktop-light-console.png",
+      "kind": "retained screenshot",
+      "bytes": 124415,
+      "sha256": "93f56545c408867c34bd002dd6c2ce51b45cfde82905d45eb00782db9c841001"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-developers-page-two.png",
+      "kind": "retained screenshot",
+      "bytes": 238800,
+      "sha256": "6f733be06cb4dbd3785b6246265375702445a0696b5da7ad6e11306f43b4840b"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-jobs-error.png",
+      "kind": "retained screenshot",
+      "bytes": 203737,
+      "sha256": "fade32a5e71892861061b252cb947e1c6779b89cd046ad626ba754e2433cd01f"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-laptop-system-dark-activity-logs.png",
+      "kind": "retained screenshot",
+      "bytes": 162269,
+      "sha256": "506f71a0a79c8cea3b55e30957044376fbe80bcdd61527ec4c5e270b2b8f47e4"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-laptop-system-dark-console-performance-statistics.png",
+      "kind": "retained screenshot",
+      "bytes": 199116,
+      "sha256": "20607da95e9f453d4a76566d5eb6d2fff4e49c30d575930ff0cfd10fded56e92"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-laptop-system-dark-console.png",
+      "kind": "retained screenshot",
+      "bytes": 122320,
+      "sha256": "935d22de183f02153391eeaa39958193244393252ff7d5e80440d5dbc7af729b"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-mobile-dark-activity-logs.png",
+      "kind": "retained screenshot",
+      "bytes": 118057,
+      "sha256": "486f0a7049694f714bd1ad5af1a09c9312d88694ff811ad99e3ffd8b30280d8c"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-mobile-dark-console-performance-statistics.png",
+      "kind": "retained screenshot",
+      "bytes": 169117,
+      "sha256": "58e5bdd433d6ec4b209d6354f882eaa98d06b1c636e4742f1682a6a4a60e608b"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-mobile-dark-console.png",
+      "kind": "retained screenshot",
+      "bytes": 101229,
+      "sha256": "1338f6cad25050f6e1390e55169871244d385244c7f540e19eb626baf4eefd3c"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-mobile-light-activity-logs.png",
+      "kind": "retained screenshot",
+      "bytes": 116638,
+      "sha256": "3acc728892641aef273e7a4ee9767571a8938fc41d2a9c06660f076258d1a432"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-mobile-light-console-performance-statistics.png",
+      "kind": "retained screenshot",
+      "bytes": 185766,
+      "sha256": "9e09124f687be7fe2c22d54fa6bebfa65708ab910f30aa4e8602babf313c0508"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-mobile-light-console.png",
+      "kind": "retained screenshot",
+      "bytes": 98740,
+      "sha256": "ef7854c0cbd99014881aa9189d4ce705a1d2a9b882578c83647221169b055c0e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-mobile-probe-recruiters-dark.png",
+      "kind": "retained screenshot",
+      "bytes": 169290,
+      "sha256": "5ed55a933acfbdf6e2a2fdd6614056f419a1a68b9d5f8ec2b2fb5a7dd8008451"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-performance-focus.png",
+      "kind": "retained screenshot",
+      "bytes": 218032,
+      "sha256": "bba8251f6c2ef0f2c6e3d18df73b85b5914c8fc9e5cf95b37ae6b15eac4ceb8d"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-performance.png",
+      "kind": "retained screenshot",
+      "bytes": 217071,
+      "sha256": "bb36525888a24275a368c7281d6ad952f9a2c09e12afbd8f4f6bb56138a5545a"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-tablet-light-activity-logs.png",
+      "kind": "retained screenshot",
+      "bytes": 174284,
+      "sha256": "d95bf5922f45bf5175f159e857caf98b4ea0b1097fe3287500ebcf4da987885d"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-tablet-light-console-performance-statistics.png",
+      "kind": "retained screenshot",
+      "bytes": 193398,
+      "sha256": "d91afaafeed9f3c25ec8592da92527b8c4daec4584f5926ee4ae5670268854dc"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-tablet-light-console.png",
+      "kind": "retained screenshot",
+      "bytes": 91617,
+      "sha256": "ad4d665485334f0105e77658da3d6e847046c4e87dd532e2bfba15641dfd0ac5"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-xs-mobile-system-activity-logs.png",
+      "kind": "retained screenshot",
+      "bytes": 97543,
+      "sha256": "63ac7c253b4a8ab652fc7fc5ded6b6c280d0921e7482b164dd48594554717100"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-xs-mobile-system-console-performance-statistics.png",
+      "kind": "retained screenshot",
+      "bytes": 167079,
+      "sha256": "e35cecc48f4046d6dcc672294d928bd22eba4d4245e8cf3e1956a441b02a7dce"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\screenshots\\final-xs-mobile-system-console.png",
+      "kind": "retained screenshot",
+      "bytes": 99690,
+      "sha256": "f2218b6ab13425ad19a802e381da96229b5fd9c597985925d193c759b976ef1b"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\static-checks.json",
+      "kind": "retained verification evidence",
+      "bytes": 14003,
+      "sha256": "e0dd2be8fcac8fb013d98ec0f9cdca5e3262cd11fb72fb55742eb69fc68d1d4c"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\targeted-tests.log",
+      "kind": "retained verification evidence",
+      "bytes": 9948,
+      "sha256": "0fd752950ea7193fa68f4548d01d0a3f49abcd6064dd6791e86ad712e4a30ddf"
+    }
+  ],
+  "finalStatus": "M frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.html\n M frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.scss\n M frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.spec.ts\n M frontend/src/app/features/admin/pages/admin-console/admin-console.component.ts\n M frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.html\n M frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.scss\n M frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.ts\n M frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.html\n M frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.scss\n M frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.spec.ts\n M frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.ts\n M frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.html\n M frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.scss\n M frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.spec.ts\n M frontend/src/app/features/admin/pages/admin-recruiters/admin-recruiters.component.scss\n M frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.html\n M frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.spec.ts\n M frontend/src/app/shared/components/searchable-select/searchable-select.component.scss\n M frontend/src/app/shared/utils/notification-navigation.spec.ts\n M frontend/src/app/shared/utils/notification-navigation.ts\n?? backend/scripts/verify-admin-frontend-closure.cjs\n?? frontend/src/app/features/admin/pages/admin-console/admin-console.component.spec.ts\n?? frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.spec.ts\n?? frontend/verification/admin/p1.6b.1/",
+  "manifestPath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6b.1\\file-inventory.json"
+}

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { vi } from 'vitest';
 import { AdminActivityLogsComponent } from './admin-activity-logs.component';
 import { ApiService } from '../../../../shared/services/api.service';
@@ -82,5 +82,37 @@ describe('AdminActivityLogsComponent', () => {
     expect(component.pendingArchiveLog?._id).toBe('log-1');
     component.confirmArchiveLog();
     expect(apiSpy.deleteAuditLog).toHaveBeenCalledWith('log-1');
+  });
+
+  it('keeps the detail area present through delayed loading and empty results', async () => {
+    type AuditResponse =
+      ReturnType<typeof apiSpy.getAuditLogs> extends Observable<infer Value> ? Value : never;
+    const response = new Subject<AuditResponse>();
+    apiSpy.getAuditLogs.mockReturnValueOnce(response);
+    component.applyFilters();
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.detail-panel, .detail-placeholder')).not.toBeNull();
+    expect(element.querySelector('.pager')).not.toBeNull();
+    expect(element.querySelector('.pager-info')?.textContent).toContain('Loading pages');
+    expect(
+      Array.from(element.querySelectorAll<HTMLButtonElement>('.pager-btn')).every(
+        (button) => button.disabled,
+      ),
+    ).toBe(true);
+    response.next({
+      logs: [],
+      total: 0,
+      limit: 20,
+      totalPages: 1,
+      actionOptions: [],
+      actorOptions: [],
+    });
+    response.complete();
+    await fixture.whenStable();
+    expect(element.querySelector('.detail-placeholder')).not.toBeNull();
+    expect(element.querySelector('.logs-empty')).not.toBeNull();
+    expect(element.querySelector('.pager-info')?.textContent).toContain('No pages');
+    expect(component.loading).toBe(false);
   });
 });

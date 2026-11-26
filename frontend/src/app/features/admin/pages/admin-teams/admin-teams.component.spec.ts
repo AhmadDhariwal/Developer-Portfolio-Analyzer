@@ -4,6 +4,7 @@ import { Subject, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdminHiringService } from '../../services/admin-hiring.service';
 import { AdminConsoleService } from '../admin-console/admin-console.service';
+import { AdminModule } from '../../admin.module';
 import { AdminTeamsPageComponent } from './admin-teams.component';
 
 describe('AdminTeamsPageComponent', () => {
@@ -116,5 +117,44 @@ describe('AdminTeamsPageComponent', () => {
     expect(component.analyticsLoadFailed).toBe(true);
     expect(component.loading).toBe(false);
     expect(component.message).toBe('Team deactivated.');
+  });
+
+  it('provides one native keyboard activation path for each grid card and table row', async () => {
+    vi.useRealTimers();
+    TestBed.resetTestingModule();
+    teams = [team];
+    TestBed.configureTestingModule({
+      imports: [AdminModule],
+      providers: [
+        { provide: AdminConsoleService, useValue: { getTeamsPaginated, getPerformance } },
+        { provide: AdminHiringService, useValue: { getRecruiters: () => of([]) } },
+      ],
+    });
+    const fixture = TestBed.createComponent(AdminTeamsPageComponent);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const viewDetails = vi.spyOn(fixture.componentInstance, 'viewDetails');
+    for (const mode of ['grid', 'table'] as const) {
+      fixture.componentInstance.viewMode = mode;
+      fixture.changeDetectorRef.markForCheck();
+      await fixture.whenStable();
+      const control = element.querySelector<HTMLButtonElement>(
+        'button[aria-label="View details for Platform"]',
+      );
+      expect(control?.type).toBe('button');
+      expect(control?.closest('[role="button"]')).toBeNull();
+      expect(element.textContent).toContain('Team Activity Score');
+      expect(element.textContent).toContain('Performance Composite');
+      control!.focus();
+      expect(document.activeElement).toBe(control);
+      // A keyboard-generated native activation is a click with detail=0.
+      control!.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 }));
+      await fixture.whenStable();
+      expect(viewDetails).toHaveBeenCalledTimes(1);
+      expect(fixture.componentInstance.selectedTeam?.name).toBe('Platform');
+      viewDetails.mockClear();
+      fixture.componentInstance.closeDrawer();
+    }
+    fixture.destroy();
   });
 });

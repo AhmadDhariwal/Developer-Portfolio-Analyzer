@@ -181,6 +181,43 @@ describe('AdminJobsPageComponent', () => {
     await fixture.whenStable();
     expect(element.textContent).toContain('Job title is required.');
     expect(element.querySelector('.detail-drawer')).not.toBeNull();
+    expect(element.querySelector('.detail-drawer [role="alert"]')?.textContent).toContain(
+      'Job title is required.',
+    );
+    fixture.destroy();
+  });
+
+  it('announces validation and delayed server errors beside the create action and recovers on retry', async () => {
+    TestBed.resetTestingModule();
+    const response = new Subject<AdminJob>();
+    const retry = new Subject<AdminJob>();
+    const createJob = vi.fn().mockReturnValueOnce(response).mockReturnValueOnce(retry);
+    TestBed.configureTestingModule({
+      imports: [AdminModule],
+      providers: [{ provide: AdminHiringService, useValue: { getJobs, createJob } }],
+    });
+    const fixture = TestBed.createComponent(AdminJobsPageComponent);
+    const component = fixture.componentInstance;
+    const element = fixture.nativeElement as HTMLElement;
+    await fixture.whenStable();
+    component.createJob();
+    await fixture.whenStable();
+    expect(element.querySelector('.create-panel [role="alert"]')?.textContent).toContain(
+      'Job title is required.',
+    );
+    Object.assign(component.form, { title: job.title, description: job.description });
+    component.createJob();
+    response.error({ error: { message: 'Synthetic create unavailable' } });
+    await fixture.whenStable();
+    expect(element.querySelector('.create-panel [role="alert"]')?.textContent).toBe(
+      'Synthetic create unavailable',
+    );
+    expect(element.querySelector('app-shared-message .shared-message')).toBeNull();
+    component.createJob();
+    retry.next(job);
+    await fixture.whenStable();
+    expect(component.createError).toBe('');
+    expect(element.querySelector('.create-panel [role="alert"]')).toBeNull();
     fixture.destroy();
   });
 });

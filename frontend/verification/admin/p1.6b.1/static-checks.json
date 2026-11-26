@@ -1,0 +1,231 @@
+{
+  "branch": "fix/admin",
+  "targetBranch": null,
+  "commands": [
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--config",
+        "frontend/.prettierrc",
+        "--check",
+        "frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.html",
+        "frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.scss",
+        "frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.spec.ts",
+        "frontend/src/app/features/admin/pages/admin-console/admin-console.component.ts",
+        "frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.html",
+        "frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.scss",
+        "frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.ts",
+        "frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.html",
+        "frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.scss",
+        "frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.spec.ts",
+        "frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.ts",
+        "frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.html",
+        "frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.scss",
+        "frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.spec.ts",
+        "frontend/src/app/features/admin/pages/admin-recruiters/admin-recruiters.component.scss",
+        "frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.html",
+        "frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.spec.ts",
+        "frontend/src/app/shared/components/searchable-select/searchable-select.component.scss",
+        "frontend/src/app/shared/utils/notification-navigation.spec.ts",
+        "frontend/src/app/shared/utils/notification-navigation.ts",
+        "frontend/src/app/features/admin/pages/admin-console/admin-console.component.spec.ts",
+        "frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.spec.ts"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--print-width",
+        "100",
+        "--trailing-comma",
+        "none",
+        "backend/scripts/verify-admin-frontend-closure.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/scripts/verify-admin-frontend-closure.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "frontend/tsconfig.app.json"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of 'frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-console/admin-console.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-performance/admin-performance.component.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-recruiters/admin-recruiters.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/shared/components/searchable-select/searchable-select.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/shared/utils/notification-navigation.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/shared/utils/notification-navigation.ts', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--exit-code"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--print-width",
+        "100",
+        "--trailing-comma",
+        "none",
+        "backend/scripts/verify-admin-frontend-closure.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/scripts/verify-admin-frontend-closure.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "passed": true,
+  "sources": [
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\activity-logs\\admin-activity-logs.component.html",
+      "sha256": "c3758bc42d7c647ec8a7e9f2247deb4f26d67229e592f348ffdfa241186e1c7d"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\activity-logs\\admin-activity-logs.component.scss",
+      "sha256": "c0dd831cbb455569f92eb7a35017e3f326d548f427f112608ffa14cbf4d8fea4"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\activity-logs\\admin-activity-logs.component.spec.ts",
+      "sha256": "2973d8c184e6b02840f25784b39867e5000b0d44f627003e55927e9eb945773d"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-console\\admin-console.component.ts",
+      "sha256": "30c5f404caaf13fe4c1e99952e7b39975017384b0c76ae85591575928292d866"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.html",
+      "sha256": "817379856de02a2b13526313cb8ee49df743a3ca43f17571553d2ab1151c27da"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.scss",
+      "sha256": "db12581071a6e6da612e703d3e9a9b9cbd69e468955e83bd7b8c7db3279174e7"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.ts",
+      "sha256": "25b95e3e7f8ff747f236854997be71372d1ab56820f96c4b41c67089e4f16241"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-jobs\\admin-jobs.component.html",
+      "sha256": "6618d65d4f37a9d3eb818f8ea96563fbc1be5661a2e9ec301f9f379c49e9ddfe"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-jobs\\admin-jobs.component.scss",
+      "sha256": "4774e2d32a672684f3864a630a2958c09cc84824fee800cd88bccd6f98f9e7e2"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-jobs\\admin-jobs.component.spec.ts",
+      "sha256": "62ac806f5e3b28684677af92f7cb2ea961e70fe4146b3748c1c87a0c967312f8"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-jobs\\admin-jobs.component.ts",
+      "sha256": "58047547a008161f07518a61ac2415d419b4dd8f2bd8681abca7fe5052028217"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-performance\\admin-performance.component.html",
+      "sha256": "75f3d870d109c042f037bb67d8e4c3b14beb5ad1e3649ffd44da15bd680e56e7"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-performance\\admin-performance.component.scss",
+      "sha256": "65922527be8c2115f4a498421fa7cfe9187d1f1ba96b90ead09acace551fcfc3"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-performance\\admin-performance.component.spec.ts",
+      "sha256": "90fc08dcf989adfe64f59e805f1145635ba85bfd48e317012e935d53d91814fe"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-recruiters\\admin-recruiters.component.scss",
+      "sha256": "b36a46ba7e2c78fadc596a2e319bb324ec30e5186a5fa6cf4ef609b800079275"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-teams\\admin-teams.component.html",
+      "sha256": "7b6942eff3b434b0cf838af53571a173aa48d6858d5affa0c149ddf070a5d190"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-teams\\admin-teams.component.spec.ts",
+      "sha256": "da1e6b865300b45ba4f9e513763428364225509523a6ccbc83c80f42f26bc1a3"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\searchable-select\\searchable-select.component.scss",
+      "sha256": "255f7c9901010a4367a3a87e19adf31733d15908692035c3976847558cf41a42"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\utils\\notification-navigation.spec.ts",
+      "sha256": "ddaa64a0892b22d27a189441c4cc8b700b6440df1a006a963f83ae4c2e306246"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\utils\\notification-navigation.ts",
+      "sha256": "b1b981ab40af94fb701c602ef9c23ccab4d9f3dc0312ffc0b0235284dc706706"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-console\\admin-console.component.spec.ts",
+      "sha256": "d88c9cb278b030f39c5e009a8887a3fbf45805e29e4415115a89a7061140920e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.spec.ts",
+      "sha256": "73c155d79c724d28db9f72849b844ca3e74919be4ba7705c989093517714abfd"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\scripts\\verify-admin-frontend-closure.cjs",
+      "sha256": "c6ff699e7f4bbf68b6a6adc42b161baca6f6df5ba69ebaf1f2a27dee7a0842c4"
+    }
+  ]
+}
