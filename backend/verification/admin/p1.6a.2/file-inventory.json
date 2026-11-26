@@ -1,0 +1,250 @@
+{
+  "sourceBranch": "fix/admin",
+  "baselineCommit": "f2e49e9818641682412fa1c987bbd1d1b3f40364",
+  "targetBranch": null,
+  "initialIndexAndWorkingTreeClean": true,
+  "stagedChanges": "",
+  "changedTrackedFiles": [
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\middleware\\auditLogMiddleware.js",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\observability\\requestLogPath.js",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\controllers\\recruiterController.js",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\services\\invitationAcceptanceService.js",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\core\\applicationEvaluationRequestLogging.test.js",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\notifications\\notificationsProduction.test.js",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\notifications\\notificationsRequestLogging.test.js",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.html",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\public\\pages\\accept-invitation\\accept-invitation.component.html"
+  ],
+  "newFiles": [
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\admin\\adminRegressionClosure.integration.test.js",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\IMPLEMENTATION-REPORT.md",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\attempt-1-adminRegressionClosure.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\baseline-applicationEvaluationRequestLogging.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\baseline-notificationsProduction.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\baseline-notificationsRequestLogging.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\baseline-recruiterHttp.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\concurrency-tests.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\file-inventory.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-adminRegressionClosure.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-adminScopeAndAnalytics.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationConcurrency.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationEvaluationRequestLogging.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationIntegrity.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationShortlists.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationWorkflow.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-auditLogSerialization.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-notificationsProduction.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-notificationsRequestLogging.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-recruiterHttp.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-static-checks.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-supportAdminAuthority.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-tenantAudit.integration.test.js.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\historical-evidence-preservation.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\notification-final\\integration-results.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\p1.4b-workflow-tests.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\raw-audit-inspection.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\recruiter-http-retry.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin-p1.6a.2-angular-tests.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin-p1.6a.2-build.log"
+  ],
+  "formattedWithoutContentDelta": [
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\core\\layouts\\main-layout\\sidebar\\sidebar.component.ts",
+      "indexBlob": "7b8dbc1de761465d0e2f0078639f68a01071d91e",
+      "workingBlob": "7b8dbc1de761465d0e2f0078639f68a01071d91e"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-teams\\admin-teams.component.html",
+      "indexBlob": "a1adea3b25d4c920bdc821d8d21c0cfb27ad9574",
+      "workingBlob": "a1adea3b25d4c920bdc821d8d21c0cfb27ad9574"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\auth.service.ts",
+      "indexBlob": "ed461b599c200a0958588dfaa7619cdaa8d94139",
+      "workingBlob": "ed461b599c200a0958588dfaa7619cdaa8d94139"
+    }
+  ],
+  "evidenceRename": {
+    "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-adminRegressionClosure.integration.test.js.log",
+    "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\attempt-1-adminRegressionClosure.integration.test.js.log",
+    "reason": "Retain failed fixture attempt before successful final rerun recreated the final log"
+  },
+  "deletedSourceFiles": [],
+  "discretionaryDeletedFiles": [],
+  "historicalEvidence": {
+    "initialWorkingTreeAndIndexClean": true,
+    "preserved": [
+      {
+        "path": "backend/verification/jobs-hub/p1.4b-workflow-tests.json",
+        "originalSha256": "e735f2d8d1323693f34c626c7bf0ffa46b095a1652fc688be065dd4bcab0205f",
+        "finalSha256": "e735f2d8d1323693f34c626c7bf0ffa46b095a1652fc688be065dd4bcab0205f",
+        "currentRunRetainedAt": "backend/verification/admin/p1.6a.2/p1.4b-workflow-tests.json"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5b/concurrency-tests.json",
+        "originalSha256": "38c4a906da6dc590faa6a878e19e1c37a07b07101bf7c135608aba4711fad383",
+        "finalSha256": "38c4a906da6dc590faa6a878e19e1c37a07b07101bf7c135608aba4711fad383",
+        "currentRunRetainedAt": "backend/verification/admin/p1.6a.2/concurrency-tests.json"
+      }
+    ]
+  },
+  "finalStatus": "M backend/src/core/middleware/auditLogMiddleware.js\n M backend/src/core/observability/requestLogPath.js\n M backend/src/modules/admin/controllers/recruiterController.js\n M backend/src/modules/admin/services/invitationAcceptanceService.js\n M backend/src/tests/core/applicationEvaluationRequestLogging.test.js\n M backend/src/tests/notifications/notificationsProduction.test.js\n M backend/src/tests/notifications/notificationsRequestLogging.test.js\n M frontend/src/app/core/layouts/main-layout/sidebar/sidebar.component.ts\n M frontend/src/app/features/admin/pages/admin-developers/admin-developers.component.html\n M frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.html\n M frontend/src/app/features/public/pages/accept-invitation/accept-invitation.component.html\n M frontend/src/app/shared/services/auth.service.ts\n?? backend/src/tests/admin/adminRegressionClosure.integration.test.js\n?? backend/verification/admin/p1.6a.2/\n?? frontend/verification/admin-p1.6a.2-angular-tests.log\n?? frontend/verification/admin-p1.6a.2-build.log",
+  "files": [
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\middleware\\auditLogMiddleware.js",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\observability\\requestLogPath.js",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\controllers\\recruiterController.js",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\services\\invitationAcceptanceService.js",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\admin\\adminRegressionClosure.integration.test.js",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\core\\applicationEvaluationRequestLogging.test.js",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\notifications\\notificationsProduction.test.js",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\notifications\\notificationsRequestLogging.test.js",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\IMPLEMENTATION-REPORT.md",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\attempt-1-adminRegressionClosure.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\baseline-applicationEvaluationRequestLogging.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\baseline-notificationsProduction.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\baseline-notificationsRequestLogging.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\baseline-recruiterHttp.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\concurrency-tests.json",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\file-inventory.json",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-adminRegressionClosure.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-adminScopeAndAnalytics.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationConcurrency.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationEvaluationRequestLogging.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationIntegrity.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationShortlists.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-applicationWorkflow.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-auditLogSerialization.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-notificationsProduction.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-notificationsRequestLogging.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-recruiterHttp.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-static-checks.json",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-supportAdminAuthority.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\final-tenantAudit.integration.test.js.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\historical-evidence-preservation.json",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\notification-final\\integration-results.json",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\p1.4b-workflow-tests.json",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\raw-audit-inspection.json",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6a.2\\recruiter-http-retry.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-developers\\admin-developers.component.html",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\public\\pages\\accept-invitation\\accept-invitation.component.html",
+      "kind": "source"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin-p1.6a.2-angular-tests.log",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin-p1.6a.2-build.log",
+      "kind": "retained verification evidence"
+    }
+  ]
+}

@@ -93,6 +93,13 @@ test(
       authProvider: 'google',
       name: 'Support Admin',
       email: 'admin@notifications.test',
+      role: 'super_admin'
+    });
+    const organizationAdmin = await User.create({
+      providers: ['google'],
+      authProvider: 'google',
+      name: 'Organization Admin',
+      email: 'organization-admin@notifications.test',
       role: 'admin'
     });
     const payload = {
@@ -349,6 +356,16 @@ test(
         }).lean();
         assert.ok(notice);
         assert.doesNotMatch(notice.message, /Private synthetic/);
+        await assert.rejects(
+          support.updateTicketStatus(ticket._id, 'resolved', organizationAdmin._id),
+          (error) => error.status === 403
+        );
+        await assert.rejects(
+          support.adminAddReply(organizationAdmin, ticket._id, 'Unauthorized reply'),
+          (error) => error.status === 403
+        );
+        assert.equal((await Ticket.findById(ticket._id)).status, ticket.status);
+        assert.equal((await Ticket.findById(ticket._id)).replies.length, 0);
         await support.updateTicketStatus(ticket._id, 'resolved', admin._id);
         const count = await Notification.countDocuments({ 'meta.ticketId': String(ticket._id) });
         await support.updateTicketStatus(ticket._id, 'resolved', admin._id);

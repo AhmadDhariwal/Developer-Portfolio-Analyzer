@@ -130,12 +130,14 @@ const auditLogMiddleware = (req, res, next) => {
     /^\/api\/admin\/recruiter(?:\/|\?|$)/i.test(req.originalUrl);
 
   const actor = req.user?._id || resolveActorFromToken(req) || null;
-  const ipAddress = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() || null;
+  const ipAddress =
+    (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() || null;
   const userAgent = req.headers['user-agent']?.slice(0, 500) || null;
 
   const before = {
     params: req.params || {},
-    query: req.query || {},
+    // Apply the same allowlist to persisted query metadata as to the route.
+    query: Object.fromEntries(new URLSearchParams(requestLogPath(req).split('?')[1] || '')),
     body: req.body || {}
   };
 

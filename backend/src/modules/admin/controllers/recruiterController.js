@@ -16,7 +16,10 @@ const {
   getRecruiterSettingsSync
 } = require('../../super-admin/services/platformSettingsService');
 const { validatePasswordAgainstPolicy } = require('../../auth/utils/passwordPolicy');
-const { createRecruiterLimitError, withOrganizationCapacityFence } = require('../services/teamCapacityService');
+const {
+  createRecruiterLimitError,
+  withOrganizationCapacityFence
+} = require('../services/teamCapacityService');
 
 const INVITATION_TTL_DAYS = 7;
 
@@ -45,7 +48,9 @@ const formatAction = (value) =>
 const buildRecruiterProfileCompleted = (user = {}) => {
   const hasName = Boolean(String(user.name || '').trim());
   const hasPhone = Boolean(normalizePhone(user.phoneNumber));
-  const hasProfessionalLink = Boolean(String(user.githubUsername || '').trim() || normalizeLinkedIn(user.linkedin));
+  const hasProfessionalLink = Boolean(
+    String(user.githubUsername || '').trim() || normalizeLinkedIn(user.linkedin)
+  );
   const hasBasicInfo = Boolean(String(user.jobTitle || '').trim() || String(user.bio || '').trim());
   const hasBackground = Boolean(
     sanitizeText(user.recruiterDetails?.education) ||
@@ -71,7 +76,9 @@ const sanitizeRecruiter = (user, teams = [], organization = null, metrics = {}) 
   bio: user.bio || '',
   recruiterDetails: {
     education: sanitizeText(user.recruiterDetails?.education),
-    certifications: Array.isArray(user.recruiterDetails?.certifications) ? user.recruiterDetails.certifications : [],
+    certifications: Array.isArray(user.recruiterDetails?.certifications)
+      ? user.recruiterDetails.certifications
+      : [],
     yearsOfExperience: Number(user.recruiterDetails?.yearsOfExperience || 0),
     experienceSummary: sanitizeText(user.recruiterDetails?.experienceSummary),
     specialties: Array.isArray(user.recruiterDetails?.specialties) ? user.recruiterDetails.specialties : [],
@@ -220,10 +227,14 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
     const recruiterLogs = logsByRecruiter.get(recruiterId) || [];
     const viewedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_VIEWED').length;
     const analyzedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED').length;
-    const aiUsageCount = recruiterLogs.filter((log) => /ANALYZED|MATCH/.test(String(log.action || ''))).length;
+    const aiUsageCount = recruiterLogs.filter((log) =>
+      /ANALYZED|MATCH/.test(String(log.action || ''))
+    ).length;
     const activeJobs = recruiterJobs.filter((job) => String(job.status || '') === 'open').length;
     const shortlistedCount = recruiterShortlists.length;
-    const shortlistedMatches = recruiterMatches.filter((match) => String(match.status || '') === 'shortlisted').length;
+    const shortlistedMatches = recruiterMatches.filter(
+      (match) => String(match.status || '') === 'shortlisted'
+    ).length;
     const activityScore = clamp(
       viewedCount * 2 +
         analyzedCount * 5 +
@@ -247,7 +258,11 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
     );
     const teamContribution = clamp(
       Math.round(
-        average([(recruiterJobs.length / maxJobs) * 100, (recruiterMatches.length / maxMatches) * 100, activityScore])
+        average([
+          (recruiterJobs.length / maxJobs) * 100,
+          (recruiterMatches.length / maxMatches) * 100,
+          activityScore
+        ])
       )
     );
     const profileCompletion = buildRecruiterProfileCompleted(recruiter)
@@ -316,7 +331,9 @@ const getRecruiters = async (req, res) => {
       recruiters.map((recruiter) => recruiter._id)
     );
     const metricsMap = await buildRecruiterMetricsMap(req.organizationId, recruiters, teamMap);
-    const organizationPayload = organization?._id ? { _id: organization._id, name: organization.name || '' } : null;
+    const organizationPayload = organization?._id
+      ? { _id: organization._id, name: organization.name || '' }
+      : null;
 
     return res.status(200).json({
       recruiters: recruiters.map((recruiter) =>
@@ -338,11 +355,18 @@ const inviteRecruiter = async (req, res) => {
   try {
     const recruiterSettings = getRecruiterSettingsSync();
     if (recruiterSettings.enableRecruiterAccess === false) {
-      return res.status(403).json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
+      return res
+        .status(403)
+        .json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
     }
 
     const name = String(req.body?.name || '').trim();
     const email = normalizeEmail(req.body?.email);
+    const teamId = String(req.body?.teamId || '').trim() || null;
+
+    if (teamId && !/^[a-fA-F0-9]{24}$/.test(teamId)) {
+      return res.status(400).json({ message: 'Invalid teamId.' });
+    }
 
     if (!name || !email) {
       return res.status(400).json({ message: 'name and email are required.' });
@@ -354,7 +378,7 @@ const inviteRecruiter = async (req, res) => {
       Invitation.findOne({
         email,
         organizationId: req.organizationId,
-        teamId: req.body?.teamId || null,
+        teamId,
         role: 'recruiter',
         status: 'pending',
         expiresAt: { $gt: new Date() }
@@ -371,11 +395,12 @@ const inviteRecruiter = async (req, res) => {
     }
 
     if (existingPendingInvite) {
-      return res.status(409).json({ message: 'An active recruiter invitation already exists for this email.' });
+      return res
+        .status(409)
+        .json({ message: 'An active recruiter invitation already exists for this email.' });
     }
 
     let team = null;
-    const teamId = String(req.body?.teamId || '').trim() || null;
     if (teamId) {
       team = await Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true })
         .select('_id name')
@@ -488,7 +513,14 @@ const validateDirectRecruiterInput = ({ name, email, password }) => {
   return null;
 };
 
-const upsertDirectRecruiterRecord = async ({ existingUser, organizationId, name, email, passwordHash, session }) => {
+const upsertDirectRecruiterRecord = async ({
+  existingUser,
+  organizationId,
+  name,
+  email,
+  passwordHash,
+  session
+}) => {
   if (existingUser) {
     const recruiter = await User.findById(existingUser._id).session(session);
     recruiter.name = name;
@@ -500,7 +532,8 @@ const upsertDirectRecruiterRecord = async ({ existingUser, organizationId, name,
     recruiter.isActive = true;
     recruiter.onboardingCompleted = true;
     recruiter.activeCareerStack = recruiter.activeCareerStack || recruiter.careerStack || 'Full Stack';
-    recruiter.activeExperienceLevel = recruiter.activeExperienceLevel || recruiter.experienceLevel || 'Student';
+    recruiter.activeExperienceLevel =
+      recruiter.activeExperienceLevel || recruiter.experienceLevel || 'Student';
     await recruiter.save({ session });
     return recruiter;
   }
@@ -569,13 +602,19 @@ const addRecruiterDirect = async (req, res) => {
   try {
     const recruiterSettings = getRecruiterSettingsSync();
     if (recruiterSettings.enableRecruiterAccess === false) {
-      return res.status(403).json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
+      return res
+        .status(403)
+        .json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
     }
 
     const name = String(req.body?.name || '').trim();
     const email = normalizeEmail(req.body?.email);
     const password = String(req.body?.password || '');
     const teamId = String(req.body?.teamId || '').trim() || null;
+
+    if (teamId && !/^[a-fA-F0-9]{24}$/.test(teamId)) {
+      return res.status(400).json({ message: 'Invalid teamId.' });
+    }
 
     const validationError = validateDirectRecruiterInput({ name, email, password });
     if (validationError) {
@@ -587,7 +626,9 @@ const addRecruiterDirect = async (req, res) => {
       User.findOne({ email }).lean(),
       Organization.findById(req.organizationId).select('name').lean(),
       teamId
-        ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true }).select('_id name').lean()
+        ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true })
+            .select('_id name')
+            .lean()
         : null
     ]);
 
@@ -615,7 +656,9 @@ const addRecruiterDirect = async (req, res) => {
       mutate: async (session, organizationId) => {
         const currentUser = await User.findOne({ email }).session(session).lean();
         if (currentUser?.organizationId && String(currentUser.organizationId) !== String(organizationId)) {
-          throw Object.assign(new Error('This email is already assigned to another organization.'), { status: 403 });
+          throw Object.assign(new Error('This email is already assigned to another organization.'), {
+            status: 403
+          });
         }
 
         const recruiterCount = await User.countDocuments({
@@ -628,7 +671,9 @@ const addRecruiterDirect = async (req, res) => {
 
         const currentRole = String(currentUser?.role || '').toLowerCase();
         if (currentRole === 'admin' || currentRole === 'super_admin') {
-          throw Object.assign(new Error('This email is already linked to a restricted account role.'), { status: 409 });
+          throw Object.assign(new Error('This email is already linked to a restricted account role.'), {
+            status: 409
+          });
         }
 
         const currentTeam = teamId
@@ -677,7 +722,8 @@ const addRecruiterDirect = async (req, res) => {
     });
   } catch (error) {
     if (error?.status) return res.status(error.status).json({ message: error.message });
-    if (error?.code === 11000) return res.status(409).json({ message: 'Another account already uses this email.' });
+    if (error?.code === 11000)
+      return res.status(409).json({ message: 'Another account already uses this email.' });
     console.error('Admin direct recruiter create error:', error.message);
     return res.status(500).json({ message: 'Failed to create recruiter.' });
   }

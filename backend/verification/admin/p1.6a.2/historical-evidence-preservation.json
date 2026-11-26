@@ -1,0 +1,17 @@
+{
+  "initialWorkingTreeAndIndexClean": true,
+  "preserved": [
+    {
+      "path": "backend/verification/jobs-hub/p1.4b-workflow-tests.json",
+      "originalSha256": "e735f2d8d1323693f34c626c7bf0ffa46b095a1652fc688be065dd4bcab0205f",
+      "finalSha256": "e735f2d8d1323693f34c626c7bf0ffa46b095a1652fc688be065dd4bcab0205f",
+      "currentRunRetainedAt": "backend/verification/admin/p1.6a.2/p1.4b-workflow-tests.json"
+    },
+    {
+      "path": "backend/verification/jobs-hub/p1.5b/concurrency-tests.json",
+      "originalSha256": "38c4a906da6dc590faa6a878e19e1c37a07b07101bf7c135608aba4711fad383",
+      "finalSha256": "38c4a906da6dc590faa6a878e19e1c37a07b07101bf7c135608aba4711fad383",
+      "currentRunRetainedAt": "backend/verification/admin/p1.6a.2/concurrency-tests.json"
+    }
+  ]
+}

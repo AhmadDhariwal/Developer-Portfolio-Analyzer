@@ -17,12 +17,31 @@ test('application evaluation, evidence and mutation routes redact private identi
   }
 });
 
-test('public evaluation routes retain their existing log representation', () => {
+test('public evaluation routes retain only a validated public job filter', () => {
   for (const originalUrl of [
-    '/api/recruiter-hub/shortlists?jobId=public-job',
+    '/api/recruiter-hub/shortlists?jobId=0123456789abcdef01234567',
     '/api/recruiter-hub/jobs/public-job',
     '/api/recruiter-hub/shortlists/applications-extra'
   ]) {
     assert.equal(requestLogPath({ originalUrl }), originalUrl);
+  }
+});
+
+test('public shortlist diagnostics exclude ambiguous, unbounded and private values', () => {
+  const pathname = '/api/recruiter-hub/shortlists';
+  const jobId = '0123456789abcdef01234567';
+  assert.equal(
+    requestLogPath({ originalUrl: `${pathname}?%6AobId=${jobId}&token=synthetic-secret` }),
+    `${pathname}?jobId=${jobId}`
+  );
+  for (const query of [
+    'jobId=public-job',
+    `jobId=${jobId}&%6AobId=${jobId}`,
+    `jobId=${jobId}&token=%ZZ`,
+    'jobId=' + 'a'.repeat(3000),
+    'applicationId=private-application&resume=private-evidence',
+    'jobId%5Btoken%5D=synthetic-secret'
+  ]) {
+    assert.equal(requestLogPath({ originalUrl: `${pathname}?${query}` }), pathname);
   }
 });

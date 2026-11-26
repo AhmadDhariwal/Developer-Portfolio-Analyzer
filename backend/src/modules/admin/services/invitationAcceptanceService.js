@@ -1,6 +1,7 @@
 const Invitation = require('../models/invitation');
 const Membership = require('../models/membership');
 const Team = require('../models/team');
+const Organization = require('../models/organization');
 const User = require('../../auth/models/user');
 const { canManageRole, resolveOrganizationRole } = require('./tenantService');
 const { bumpOrganizationCapacityFence, createRecruiterLimitError } = require('./teamCapacityService');
@@ -37,10 +38,21 @@ async function claimInvitation({ selector, session }) {
 
   const settings = getOrganizationSettingsSync();
   if (invitation.role === 'recruiter') {
+    // Ownership is organization-specific authority, including for a platform
+    // account. The account role alone never grants invitation authority.
+    const ownsOrganization = await Organization.exists({
+      _id: invitation.organizationId,
+      ownerId: inviter._id,
+      isSuspended: { $ne: true }
+    }).session(session);
+    const affiliatedAdmin =
+      inviter.role === 'admin' && String(inviter.organizationId) === String(invitation.organizationId);
+    const authorizedOwner =
+      ownsOrganization &&
+      (await resolveOrganizationRole(inviter._id, invitation.organizationId, session)) === 'admin';
     if (
       getRecruiterSettingsSync().enableRecruiterAccess === false ||
-      inviter.role !== 'admin' ||
-      String(inviter.organizationId) !== String(invitation.organizationId)
+      (!affiliatedAdmin && !authorizedOwner)
     ) {
       throw invitationError(403, 'Recruiter invitation is unavailable.');
     }
@@ -92,7 +104,8 @@ async function assertRecruiterCapacity(invitation, account, session) {
 
 async function acceptMembership(invitation, userId, session) {
   const recruiterInvite = invitation.role === 'recruiter';
-  const teamIds = recruiterInvite && invitation.teamId ? [null, invitation.teamId] : [invitation.teamId ?? null];
+  const teamIds =
+    recruiterInvite && invitation.teamId ? [null, invitation.teamId] : [invitation.teamId ?? null];
   let membership;
   for (const teamId of teamIds) {
     const existing = await Membership.findOne({
@@ -121,4 +134,10 @@ async function acceptMembership(invitation, userId, session) {
   return membership;
 }
 
-module.exports = { invitationError, claimInvitation, assertRecipient, assertRecruiterCapacity, acceptMembership };
+module.exports = {
+  invitationError,
+  claimInvitation,
+  assertRecipient,
+  assertRecruiterCapacity,
+  acceptMembership
+};
