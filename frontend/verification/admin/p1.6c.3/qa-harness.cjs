@@ -62,9 +62,9 @@ const POLICY_KEYS = [
   'managerTeamAdministration',
 ];
 
-const ONE_BY_ONE_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+X2Z0AAAAASUVORK5CYII=',
-  'base64'
+const QA_BRANDING_SVG = Buffer.from(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#4f46e5"/><circle cx="32" cy="32" r="16" fill="#ffffff"/></svg>',
+  'utf8'
 );
 
 function loadPlaywright() {
@@ -406,6 +406,14 @@ async function startRealStackHarness() {
       skills: ['TypeScript', 'Node.js', 'Angular'],
       readinessScore: 84,
     });
+    const publicDev2 = await createAccount('Second Public Showcase Dev', 'developer', {
+      isPublic: true,
+      githubUsername: 'qa-public-dev-2',
+      activeGithubUsername: 'qa-public-dev-2',
+      careerStack: 'Backend',
+      skills: ['Node.js', 'TypeScript', 'MongoDB'],
+      readinessScore: 79,
+    });
     const privateApplicant = await createAccount('Private Direct Applicant', 'developer', {
       isPublic: false,
     });
@@ -428,6 +436,18 @@ async function startRealStackHarness() {
       ],
       isPublic: true,
       socialLinks: { github: 'https://github.com/qa-public-dev' },
+    });
+    await PublicProfile.create({
+      userId: publicDev2._id,
+      slug: 'qa-public-dev-2',
+      headline: 'Backend Engineer',
+      summary: 'Second public showcase developer for P1.6C.3 comparison QA',
+      skills: [
+        { name: 'Node.js', score: 90 },
+        { name: 'TypeScript', score: 84 },
+      ],
+      isPublic: true,
+      socialLinks: { github: 'https://github.com/qa-public-dev-2' },
     });
 
     // Teams in Org A (2 active + 1 inactive) and Org B
@@ -844,8 +864,8 @@ async function startRealStackHarness() {
         if (reqUrl.href === 'https://assets.qa.example.test/valid-logo.png') {
           return route.fulfill({
             status: 200,
-            contentType: 'image/png',
-            body: ONE_BY_ONE_PNG,
+            contentType: 'image/svg+xml',
+            body: QA_BRANDING_SVG,
           });
         }
         if (reqUrl.href === 'https://assets.qa.example.test/broken-logo.png') {
@@ -953,6 +973,7 @@ async function startRealStackHarness() {
         inactiveRecruiterA,
         foreignRecruiterB,
         publicDev,
+        publicDev2,
         privateApplicant,
         inviteRecipient,
         superAdminUser,
