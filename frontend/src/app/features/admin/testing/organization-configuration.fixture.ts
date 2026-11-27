@@ -1,6 +1,7 @@
-import { OrganizationGovernance } from '../../../../shared/models/organization-governance.model';
-import { ConsolePreferences } from '../admin-console/admin-console.service';
-import { organizationPolicyIds } from '../../../../shared/testing/organization-policy-state.fixture';
+import { OrganizationGovernance } from '../../../shared/models/organization-governance.model';
+import { organizationPolicyIds } from '../../../shared/testing/organization-policy-state.fixture';
+import { ConsolePreferences } from '../pages/admin-console/admin-console.service';
+
 export function governanceFixture(version = 3): OrganizationGovernance {
   return {
     organization: {
@@ -26,6 +27,7 @@ export function governanceFixture(version = 3): OrganizationGovernance {
     defaultTimezone: 'UTC',
   };
 }
+
 export function preferencesFixture(version = 3): ConsolePreferences {
   return {
     organization: {

@@ -1,10 +1,13 @@
-import { inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
-import { OrganizationPolicyNoticeComponent } from '../../../../shared/components/organization-policy-notice/organization-policy-notice.component';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -17,15 +20,16 @@ import {
 import { AdminConsoleService } from '../admin-console/admin-console.service';
 import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
 import { AdminStatCardComponent } from '../../components/admin-stat-card/admin-stat-card.component';
-import { SharedMessageComponent } from '../../../../shared/components/message/message.component';
-import { SharedEmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { OrganizationPolicyNoticeComponent } from '../../../../shared/components/organization-policy-notice/organization-policy-notice.component';
+import { SharedEmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { SharedMessageComponent } from '../../../../shared/components/message/message.component';
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 
 @Component({
   selector: 'app-admin-recruiters-page',
   standalone: true,
   imports: [
-    OrganizationPolicyNoticeComponent,
     CommonModule,
     FormsModule,
     AdminLoaderComponent,
@@ -33,6 +37,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
     SharedMessageComponent,
     SharedEmptyStateComponent,
     ConfirmDialogComponent,
+    OrganizationPolicyNoticeComponent,
   ],
   templateUrl: './admin-recruiters.component.html',
   styleUrls: ['./admin-recruiters.component.scss'],

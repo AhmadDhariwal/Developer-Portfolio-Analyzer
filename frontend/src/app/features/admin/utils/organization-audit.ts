@@ -1,9 +1,11 @@
 import { ORGANIZATION_POLICIES } from './organization-policy-catalog';
+
 function record(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
 }
+
 export function organizationAuditSummary(log: { action: string; before: unknown; after: unknown }) {
   if (log.action !== 'ORGANIZATION_CONFIGURATION_UPDATED') return null;
   const before = record(log.before);

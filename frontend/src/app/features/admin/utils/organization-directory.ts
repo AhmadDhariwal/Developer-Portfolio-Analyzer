@@ -1,4 +1,5 @@
 import { OrganizationDirectoryMember } from '../../../shared/models/organization-governance.model';
+
 export function deduplicateOrganizationMembers(
   rows: OrganizationDirectoryMember[],
 ): OrganizationDirectoryMember[] {

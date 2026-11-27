@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -7,17 +8,17 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { OrganizationShellComponent } from '../../components/organization-shell/organization-shell.component';
 import { OrganizationConfigurationStore } from '../../services/organization-configuration.store';
-import { AdminConsoleService, ConsolePreferences } from '../admin-console/admin-console.service';
 import {
   organizationTimezoneError,
   organizationUrlError,
 } from '../../utils/organization-settings-validation';
+import { AdminConsoleService, ConsolePreferences } from '../admin-console/admin-console.service';
 
 type GeneralDraft = {
   name: string;
@@ -27,6 +28,7 @@ type GeneralDraft = {
   timezone: string;
   logoUrl: string;
 };
+
 type DashboardDraft = NonNullable<ConsolePreferences['organization']['dashboardConfig']>;
 
 @Component({
@@ -34,19 +36,18 @@ type DashboardDraft = NonNullable<ConsolePreferences['organization']['dashboardC
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, OrganizationShellComponent],
   templateUrl: './organization-settings.component.html',
-  styleUrl: '../../styles/organization-page.scss',
+  styleUrl: './organization-settings.component.scss',
 })
 export class OrganizationSettingsComponent {
   readonly store = inject(OrganizationConfigurationStore);
   private readonly console = inject(AdminConsoleService);
   private readonly destroy = inject(DestroyRef);
+
   readonly message = signal('');
   readonly conflict = signal(false);
   readonly teams = signal<Array<{ _id: string; name: string }>>([]);
   general: GeneralDraft | null = null;
   dashboard: DashboardDraft | null = null;
-  private baselineGeneral = '';
-  private baselineDashboard = '';
   attempted = false;
   readonly fields = [
     { key: 'name', label: 'Organization name', limit: 80 },
@@ -64,6 +65,9 @@ export class OrganizationSettingsComponent {
     { key: 'showActivityFeed', label: 'Activity feed' },
   ] as const;
 
+  private baselineGeneral = '';
+  private baselineDashboard = '';
+
   constructor() {
     effect(() => {
       this.store.context();
@@ -74,6 +78,7 @@ export class OrganizationSettingsComponent {
       });
     });
   }
+
   get dirty(): boolean {
     return (
       !!this.general &&
@@ -81,16 +86,15 @@ export class OrganizationSettingsComponent {
         JSON.stringify(this.dashboard) !== this.baselineDashboard)
     );
   }
+
   get generalDirty(): boolean {
     return !!this.general && JSON.stringify(this.general) !== this.baselineGeneral;
   }
+
   get dashboardDirty(): boolean {
     return !!this.dashboard && JSON.stringify(this.dashboard) !== this.baselineDashboard;
   }
-  serverField(key: keyof GeneralDraft): string {
-    const value = this.store.committed()!.organization;
-    return key === 'logoUrl' ? value.branding.logoUrl : value[key];
-  }
+
   get dashboardReview(): Array<{ label: string; draft: string; server: string }> {
     const server = this.store.preferences()?.organization.dashboardConfig;
     const name = (id: string | undefined) =>
@@ -113,11 +117,17 @@ export class OrganizationSettingsComponent {
       })),
     ];
   }
+
   @HostListener('window:beforeunload', ['$event']) beforeUnload(event: BeforeUnloadEvent): void {
     if (this.dirty) {
       event.preventDefault();
       event.returnValue = '';
     }
+  }
+
+  serverField(key: keyof GeneralDraft): string {
+    const value = this.store.committed()!.organization;
+    return key === 'logoUrl' ? value.branding.logoUrl : value[key];
   }
 
   load(preserve = false): void {
@@ -148,6 +158,7 @@ export class OrganizationSettingsComponent {
         error: () => this.teams.set([]),
       });
   }
+
   reset(): void {
     const organization = this.store.committed()?.organization;
     if (!organization) return;
@@ -174,6 +185,7 @@ export class OrganizationSettingsComponent {
     this.conflict.set(false);
     this.attempted = false;
   }
+
   fieldError(key: keyof GeneralDraft): string {
     const value = this.general?.[key] ?? '';
     if (key === 'name' && (value.trim().length < 2 || value.trim().length > 80))
@@ -184,6 +196,7 @@ export class OrganizationSettingsComponent {
     if (key === 'timezone') return organizationTimezoneError(value);
     return '';
   }
+
   saveGeneral(): void {
     this.attempted = true;
     if (
@@ -219,6 +232,7 @@ export class OrganizationSettingsComponent {
         },
       });
   }
+
   saveDashboard(): void {
     if (!this.dashboard || !this.dashboardDirty || this.conflict() || this.generalDirty) return;
     this.message.set('');
@@ -238,6 +252,7 @@ export class OrganizationSettingsComponent {
         },
       });
   }
+
   private saveError(error: { status?: number; error?: { message?: string } }): void {
     if (error.status === 409) {
       this.conflict.set(true);

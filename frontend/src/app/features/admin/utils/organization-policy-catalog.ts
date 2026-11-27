@@ -10,6 +10,7 @@ export interface OrganizationPolicyPresentation {
   existing: string;
   warning: string;
 }
+
 export const ORGANIZATION_POLICIES: readonly OrganizationPolicyPresentation[] = [
   {
     id: 'recruiterJobCreation',

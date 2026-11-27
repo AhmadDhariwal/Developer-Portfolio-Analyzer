@@ -22,9 +22,11 @@
         <h2>{{ committed.organization.name }}</h2>
         <p>{{ committed.organization.description || 'No organization description provided.' }}</p>
         <div class="actions">
-          <a class="button primary" routerLink="/app/admin/organization/settings"
-            >Edit general settings</a
-          ><a class="button" routerLink="/app/admin/organization/policies">Review policies</a>
+          <a class="button primary" routerLink="/app/admin/organization/settings">
+            Edit general settings
+          </a>
+
+          <a class="button" routerLink="/app/admin/organization/policies">Review policies</a>
         </div>
       </section>
       <div class="metrics">
@@ -104,25 +106,33 @@
             talent pool.
           </p>
           <div class="actions">
-            <a class="button" routerLink="/app/admin/organization/members">Members & access</a
-            ><a class="button" routerLink="/app/admin/organization/invitations">Invitations</a
-            ><a class="button" routerLink="/app/admin/recruiters">Recruiters</a
-            ><a class="button" routerLink="/app/admin/teams">Teams</a
-            ><a class="button" routerLink="/app/admin/jobs">Jobs</a>
+            <a class="button" routerLink="/app/admin/organization/members">Members & access</a>
+
+            <a class="button" routerLink="/app/admin/organization/invitations">Invitations</a>
+
+            <a class="button" routerLink="/app/admin/recruiters">Recruiters</a>
+
+            <a class="button" routerLink="/app/admin/teams">Teams</a>
+
+            <a class="button" routerLink="/app/admin/jobs">Jobs</a>
           </div>
         </section>
       </div>
+
       <div class="content-grid">
         <app-organization-capacity
           title="Active Recruiter seats"
           [used]="committed.resources.usage.activeRecruiters"
           [limit]="committed.resources.limits.activeRecruiters"
-        /><app-organization-capacity
+        />
+
+        <app-organization-capacity
           title="Total teams"
           [used]="committed.resources.usage.teams"
           [limit]="committed.resources.limits.teams"
         />
       </div>
+
       <div class="content-grid">
         <section class="card stack">
           <h2>Current policies</h2>

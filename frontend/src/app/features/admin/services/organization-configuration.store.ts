@@ -1,20 +1,21 @@
-import { Injectable, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, combineLatest, forkJoin, throwError } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
+
 import {
   OrganizationConfigurationPatch,
   OrganizationGovernance,
 } from '../../../shared/models/organization-governance.model';
+import { AuthService } from '../../../shared/services/auth.service';
 import { OrganizationGovernanceService } from '../../../shared/services/organization-governance.service';
 import { OrganizationPolicyState } from '../../../shared/services/organization-policy-state.service';
+import { TenantContextService } from '../../../shared/services/tenant-context.service';
 import {
   AdminConsoleService,
   ConsolePreferences,
 } from '../pages/admin-console/admin-console.service';
-import { AuthService } from '../../../shared/services/auth.service';
-import { TenantContextService } from '../../../shared/services/tenant-context.service';
 
 @Injectable({ providedIn: 'root' })
 export class OrganizationConfigurationStore {
@@ -22,6 +23,7 @@ export class OrganizationConfigurationStore {
   private readonly console = inject(AdminConsoleService);
   private readonly policies = inject(OrganizationPolicyState);
   private readonly tenant = inject(TenantContextService);
+
   readonly committed = signal<OrganizationGovernance | null>(null);
   readonly preferences = signal<ConsolePreferences | null>(null);
   readonly loading = signal(false);
@@ -29,6 +31,7 @@ export class OrganizationConfigurationStore {
   readonly error = signal('');
   readonly denied = signal(false);
   readonly context = signal('');
+
   private epoch = 0;
   private loadSequence = 0;
 

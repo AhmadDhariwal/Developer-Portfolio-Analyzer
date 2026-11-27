@@ -4,8 +4,8 @@
   "syntheticSecretAbsent": true,
   "records": [
     {
-      "_id": "6b07f518369b8ceadafadd3c",
-      "actor": "6b07f513369b8ceadafada57",
+      "_id": "6b099c83ab362aee8b4b40d4",
+      "actor": "6b099c7fab362aee8b4b3dc1",
       "organizationId": null,
       "teamId": null,
       "action": "POST /api/profile?tab=settings",
@@ -30,11 +30,11 @@
       "userAgent": "node",
       "deleted": false,
       "deletedAt": null,
-      "timestamp": "2026-11-26T09:00:08.680Z"
+      "timestamp": "2026-11-27T15:06:43.102Z"
     },
     {
-      "_id": "6b07f518369b8ceadafadd3e",
-      "actor": "6b07f513369b8ceadafada57",
+      "_id": "6b099c83ab362aee8b4b40d6",
+      "actor": "6b099c7fab362aee8b4b3dc1",
       "organizationId": null,
       "teamId": null,
       "action": "POST /api/profile",
@@ -56,11 +56,11 @@
       "userAgent": "node",
       "deleted": false,
       "deletedAt": null,
-      "timestamp": "2026-11-26T09:00:08.692Z"
+      "timestamp": "2026-11-27T15:06:43.109Z"
     },
     {
-      "_id": "6b07f518369b8ceadafadd40",
-      "actor": "6b07f513369b8ceadafada57",
+      "_id": "6b099c83ab362aee8b4b40d8",
+      "actor": "6b099c7fab362aee8b4b3dc1",
       "organizationId": null,
       "teamId": null,
       "action": "POST /api/integrations/callback",
@@ -73,11 +73,11 @@
       "userAgent": "node",
       "deleted": false,
       "deletedAt": null,
-      "timestamp": "2026-11-26T09:00:08.707Z"
+      "timestamp": "2026-11-27T15:06:43.114Z"
     },
     {
-      "_id": "6b07f518369b8ceadafadd42",
-      "actor": "6b07f513369b8ceadafada57",
+      "_id": "6b099c83ab362aee8b4b40da",
+      "actor": "6b099c7fab362aee8b4b3dc1",
       "organizationId": null,
       "teamId": null,
       "action": "POST /api/recruiter-hub/shortlists?jobId=0123456789abcdef01234567",
@@ -90,7 +90,7 @@
       "userAgent": "node",
       "deleted": false,
       "deletedAt": null,
-      "timestamp": "2026-11-26T09:00:08.715Z"
+      "timestamp": "2026-11-27T15:06:43.120Z"
     }
   ]
 }

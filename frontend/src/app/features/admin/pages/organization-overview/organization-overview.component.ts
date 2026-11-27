@@ -1,48 +1,55 @@
-import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { OrganizationConfigurationStore } from '../../services/organization-configuration.store';
-import { OrganizationShellComponent } from '../../components/organization-shell/organization-shell.component';
+
 import { OrganizationCapacityComponent } from '../../components/organization-capacity/organization-capacity.component';
-import {
-  AdminConsoleService,
-  ConsoleOverview,
-  ActivityLog,
-} from '../admin-console/admin-console.service';
+import { OrganizationShellComponent } from '../../components/organization-shell/organization-shell.component';
+import { OrganizationConfigurationStore } from '../../services/organization-configuration.store';
 import { ORGANIZATION_POLICIES } from '../../utils/organization-policy-catalog';
 import { organizationUrlError } from '../../utils/organization-settings-validation';
+import {
+  ActivityLog,
+  AdminConsoleService,
+  ConsoleOverview,
+} from '../admin-console/admin-console.service';
+
 @Component({
   selector: 'app-organization-overview',
   standalone: true,
   imports: [CommonModule, RouterLink, OrganizationShellComponent, OrganizationCapacityComponent],
   templateUrl: './organization-overview.component.html',
-  styleUrl: '../../styles/organization-page.scss',
+  styleUrl: './organization-overview.component.scss',
 })
 export class OrganizationOverviewComponent {
   readonly store = inject(OrganizationConfigurationStore);
   private readonly console = inject(AdminConsoleService);
   private readonly destroy = inject(DestroyRef);
+
   readonly overview = signal<ConsoleOverview | null>(null);
   readonly owner = signal('');
   readonly activity = signal<ActivityLog[]>([]);
   readonly catalog = ORGANIZATION_POLICIES;
   readonly error = signal('');
   readonly loading = signal(false);
+  readonly logoFailed = signal(false);
+
   private request = 0;
   private loadedContext = '';
-  readonly logoFailed = signal(false);
-  get safeLogo(): string {
-    const value = this.store.committed()?.organization.branding.logoUrl || '';
-    return value && !organizationUrlError(value) ? value : '';
-  }
+
   constructor() {
     effect(() => {
       this.store.context();
       untracked(() => this.load());
     });
   }
+
+  get safeLogo(): string {
+    const value = this.store.committed()?.organization.branding.logoUrl || '';
+    return value && !organizationUrlError(value) ? value : '';
+  }
+
   load(): void {
     const request = ++this.request;
     this.loading.set(true);

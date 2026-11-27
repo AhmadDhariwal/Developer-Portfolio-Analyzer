@@ -52,6 +52,7 @@ export class Sidebar implements OnInit {
   hoveredGroup = '';
   private readonly destroyRef = inject(DestroyRef);
   private currentRole = '';
+  private initializedRoleGroups = '';
 
   visibleNavItems: NavItem[] = [];
   visibleNavGroups: NavGroup[] = [];
@@ -337,36 +338,113 @@ export class Sidebar implements OnInit {
     const isAdmin = role === 'admin';
 
     if (isAdmin) {
-      const icon = this.trustSvg(
-        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4"/></svg>`,
-      );
-      const group = (label: string, items: Array<[string, string]>): NavGroup => ({
+      const group = (label: string, iconSvg: string, items: RawNavItem[]): NavGroup => ({
         label,
-        icon,
-        items: items.map(([label, path]) => ({ label, route: '/app/admin/' + path, icon })),
+        icon: this.trustSvg(iconSvg),
+        items: items.map((item) => ({
+          label: item.label,
+          route: '/app/admin/' + item.route,
+          icon: this.trustSvg(item.icon),
+        })),
       });
       this.visibleNavItems = [];
-      this.openGroups.add('Workspace');
+      if (this.initializedRoleGroups !== 'admin') {
+        this.openGroups.add('Workspace');
+        this.openGroups.add('Organization Management');
+        this.openGroups.add('Recruitment Management');
+        this.openGroups.add('Insights & Governance');
+        this.initializedRoleGroups = 'admin';
+      }
       this.visibleNavGroups = [
-        group('Workspace', [['Dashboard', 'dashboard']]),
-        group('Organization Management', [
-          ['Organization Overview', 'organization'],
-          ['General Settings', 'organization/settings'],
-          ['Policies & Permissions', 'organization/policies'],
-          ['Members & Access', 'organization/members'],
-          ['Invitations', 'organization/invitations'],
-          ['Resource Usage', 'organization/usage'],
-        ]),
-        group('Recruitment Management', [
-          ['Recruiters', 'recruiters'],
-          ['Teams', 'teams'],
-          ['Jobs', 'jobs'],
-          ['Developer Discovery', 'developers'],
-        ]),
-        group('Insights & Governance', [
-          ['Performance & Statistics', 'performance'],
-          ['Activity & Audit Logs', 'activity-logs'],
-        ]),
+        group(
+          'Workspace',
+          `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 20h8"></path><path d="M12 18v2"></path></svg>`,
+          [
+            {
+              label: 'Dashboard',
+              route: 'dashboard',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`,
+            },
+          ],
+        ),
+        group(
+          'Organization Management',
+          `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-4h6v4"></path></svg>`,
+          [
+            {
+              label: 'Organization Overview',
+              route: 'organization',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-4h6v4"></path></svg>`,
+            },
+            {
+              label: 'General Settings',
+              route: 'organization/settings',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>`,
+            },
+            {
+              label: 'Policies & Permissions',
+              route: 'organization/policies',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>`,
+            },
+            {
+              label: 'Members & Access',
+              route: 'organization/members',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>`,
+            },
+            {
+              label: 'Invitations',
+              route: 'organization/invitations',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>`,
+            },
+            {
+              label: 'Resource Usage',
+              route: 'organization/usage',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>`,
+            },
+          ],
+        ),
+        group(
+          'Recruitment Management',
+          `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg>`,
+          [
+            {
+              label: 'Recruiters',
+              route: 'recruiters',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
+            },
+            {
+              label: 'Teams',
+              route: 'teams',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="6" height="6" rx="1"></rect><rect x="15" y="3" width="6" height="6" rx="1"></rect><rect x="9" y="15" width="6" height="6" rx="1"></rect><path d="M6 9v3h12V9"></path><path d="M12 12v3"></path></svg>`,
+            },
+            {
+              label: 'Jobs',
+              route: 'jobs',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path><line x1="2" y1="13" x2="22" y2="13"></line></svg>`,
+            },
+            {
+              label: 'Developer Discovery',
+              route: 'developers',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+            },
+          ],
+        ),
+        group(
+          'Insights & Governance',
+          `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`,
+          [
+            {
+              label: 'Performance & Statistics',
+              route: 'performance',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
+            },
+            {
+              label: 'Activity & Audit Logs',
+              route: 'activity-logs',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`,
+            },
+          ],
+        ),
       ]
         .map((group) => ({
           ...group,
@@ -376,6 +454,8 @@ export class Sidebar implements OnInit {
       this.syncOpenGroupFromRoute();
       return;
     }
+
+    this.initializedRoleGroups = role;
 
     if (isRecruiter) {
       this.openGroups.add('Recruiter Hub');

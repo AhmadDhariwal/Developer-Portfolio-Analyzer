@@ -19,7 +19,7 @@ import { policyStateFixture } from '../../../../shared/testing/organization-poli
 import {
   governanceFixture,
   preferencesFixture,
-} from '../organization-settings/organization-configuration.fixture';
+} from '../../testing/organization-configuration.fixture';
 import { organizationCapacity } from '../../utils/organization-capacity';
 
 function member(id: string, name: string, teamId = 'team-a'): OrganizationDirectoryMember {

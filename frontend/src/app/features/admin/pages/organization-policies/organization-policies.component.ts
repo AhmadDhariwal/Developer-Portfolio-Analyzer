@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -7,11 +8,11 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { OrganizationPolicyId } from '../../../../shared/models/organization-governance.model';
+import { RouterLink } from '@angular/router';
+
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { OrganizationPolicyId } from '../../../../shared/models/organization-governance.model';
 import { OrganizationShellComponent } from '../../components/organization-shell/organization-shell.component';
 import { OrganizationConfigurationStore } from '../../services/organization-configuration.store';
 import { ORGANIZATION_POLICIES } from '../../utils/organization-policy-catalog';
@@ -21,18 +22,21 @@ import { ORGANIZATION_POLICIES } from '../../utils/organization-policy-catalog';
   standalone: true,
   imports: [CommonModule, RouterLink, ConfirmDialogComponent, OrganizationShellComponent],
   templateUrl: './organization-policies.component.html',
-  styleUrl: '../../styles/organization-page.scss',
+  styleUrl: './organization-policies.component.scss',
 })
 export class OrganizationPoliciesComponent {
   readonly store = inject(OrganizationConfigurationStore);
   private readonly destroy = inject(DestroyRef);
+
   readonly catalog = ORGANIZATION_POLICIES;
   readonly groups = [...new Set(this.catalog.map((policy) => policy.group))];
   readonly draft = signal<Partial<Record<OrganizationPolicyId, boolean>>>({});
-  private baseline = '';
   readonly message = signal('');
   readonly conflict = signal(false);
   readonly confirming = signal(false);
+
+  private baseline = '';
+
   constructor() {
     effect(() => {
       this.store.context();
@@ -43,9 +47,11 @@ export class OrganizationPoliciesComponent {
       });
     });
   }
+
   get dirty(): boolean {
     return JSON.stringify(this.draft()) !== this.baseline;
   }
+
   get confirmation(): string {
     return this.catalog
       .filter((policy) => this.draft()[policy.id] !== this.store.committed()?.policies[policy.id])
@@ -55,12 +61,14 @@ export class OrganizationPoliciesComponent {
       )
       .join('\n\n');
   }
+
   @HostListener('window:beforeunload', ['$event']) beforeUnload(event: BeforeUnloadEvent): void {
     if (this.dirty) {
       event.preventDefault();
       event.returnValue = '';
     }
   }
+
   load(preserve = false): void {
     if (!preserve && this.dirty && !window.confirm('Discard unsaved policy changes and refresh?'))
       return;
@@ -75,16 +83,19 @@ export class OrganizationPoliciesComponent {
         error: () => {},
       });
   }
+
   reset(): void {
     this.draft.set({ ...this.store.committed()!.policies });
     this.baseline = JSON.stringify(this.draft());
     this.conflict.set(false);
     this.confirming.set(false);
   }
+
   toggle(id: OrganizationPolicyId, event: Event): void {
     this.draft.update((value) => ({ ...value, [id]: (event.target as HTMLInputElement).checked }));
     this.message.set('');
   }
+
   save(): void {
     this.confirming.set(false);
     if (!this.dirty || this.conflict() || !this.store.committed()) return;

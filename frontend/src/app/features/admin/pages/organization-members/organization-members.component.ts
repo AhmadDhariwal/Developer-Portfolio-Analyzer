@@ -9,9 +9,10 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { OrganizationDirectoryMember } from '../../../../shared/models/organization-governance.model';
 import { OrganizationShellComponent } from '../../components/organization-shell/organization-shell.component';
 import { OrganizationConfigurationStore } from '../../services/organization-configuration.store';
@@ -22,12 +23,14 @@ import { deduplicateOrganizationMembers } from '../../utils/organization-directo
   standalone: true,
   imports: [FormsModule, RouterLink, OrganizationShellComponent],
   templateUrl: './organization-members.component.html',
-  styleUrl: '../../styles/organization-page.scss',
+  styleUrl: './organization-members.component.scss',
 })
 export class OrganizationMembersComponent {
+  @ViewChild('details') private details?: ElementRef<HTMLDialogElement>;
+
   readonly store = inject(OrganizationConfigurationStore);
   private readonly destroy = inject(DestroyRef);
-  @ViewChild('details') private details?: ElementRef<HTMLDialogElement>;
+
   readonly rows = signal<OrganizationDirectoryMember[]>([]);
   readonly total = signal(0);
   readonly loading = signal(false);
@@ -41,8 +44,7 @@ export class OrganizationMembersComponent {
   readonly page = signal(1);
   readonly pageSize = 20;
   readonly selected = signal<OrganizationDirectoryMember | null>(null);
-  private request = 0;
-  private loadedContext = '';
+
   readonly teamOptions = computed(() =>
     [
       ...new Map(
@@ -81,6 +83,10 @@ export class OrganizationMembersComponent {
     ),
   );
   readonly activeCount = computed(() => this.rows().filter((row) => row.isActive).length);
+
+  private request = 0;
+  private loadedContext = '';
+
   constructor() {
     effect(() => {
       this.store.context();
@@ -90,6 +96,7 @@ export class OrganizationMembersComponent {
       });
     });
   }
+
   load(): void {
     const request = ++this.request;
     const context = this.store.context();
@@ -134,6 +141,7 @@ export class OrganizationMembersComponent {
       dialog.showModal();
     }
   }
+
   close(): void {
     const dialog = this.details?.nativeElement;
     if (dialog && typeof dialog.close === 'function') {

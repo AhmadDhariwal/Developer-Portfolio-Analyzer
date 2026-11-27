@@ -10,12 +10,13 @@ import {
   inject,
   effect,
 } from '@angular/core';
-import { ThemeService } from '../../../../shared/services/theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Observable, Subscription, forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+
+import { ThemeService } from '../../../../shared/services/theme.service';
 
 import {
   AdminDeveloper,

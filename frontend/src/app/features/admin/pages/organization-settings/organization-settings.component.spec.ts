@@ -11,7 +11,10 @@ import { TenantContextService } from '../../../../shared/services/tenant-context
 import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 import { policyStateFixture } from '../../../../shared/testing/organization-policy-state.fixture';
 import { OrganizationConfigurationStore } from '../../services/organization-configuration.store';
-import { governanceFixture, preferencesFixture } from './organization-configuration.fixture';
+import {
+  governanceFixture,
+  preferencesFixture,
+} from '../../testing/organization-configuration.fixture';
 
 describe('Organization configuration rendered contracts', () => {
   let http: HttpTestingController;

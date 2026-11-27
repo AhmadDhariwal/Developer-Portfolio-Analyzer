@@ -1,17 +1,18 @@
-import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { OrganizationInvitation } from '../../../../shared/models/organization-governance.model';
 import { ApiService } from '../../../../shared/services/api.service';
-import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { OrganizationShellComponent } from '../../components/organization-shell/organization-shell.component';
+import { AdminHiringService } from '../../services/admin-hiring.service';
 import { OrganizationConfigurationStore } from '../../services/organization-configuration.store';
 import { AdminConsoleService } from '../admin-console/admin-console.service';
-import { AdminHiringService } from '../../services/admin-hiring.service';
 
 @Component({
   selector: 'app-organization-invitations',
@@ -24,7 +25,7 @@ import { AdminHiringService } from '../../services/admin-hiring.service';
     OrganizationShellComponent,
   ],
   templateUrl: './organization-invitations.component.html',
-  styleUrl: '../../styles/organization-page.scss',
+  styleUrl: './organization-invitations.component.scss',
 })
 export class OrganizationInvitationsComponent {
   readonly store = inject(OrganizationConfigurationStore);
@@ -32,6 +33,7 @@ export class OrganizationInvitationsComponent {
   private readonly api = inject(ApiService);
   private readonly console = inject(AdminConsoleService);
   private readonly destroy = inject(DestroyRef);
+
   readonly rows = signal<OrganizationInvitation[]>([]);
   readonly names = signal<Record<string, string>>({});
   readonly teams = signal<Array<{ _id: string; name: string }>>([]);
@@ -49,9 +51,8 @@ export class OrganizationInvitationsComponent {
     row: OrganizationInvitation;
     action: 'revoke' | 'expire';
   } | null>(null);
-  private request = 0;
-  private loadedContext = '';
   form = { name: '', email: '', teamId: '' };
+
   readonly filtered = computed(() => {
     const search = this.search().trim().toLowerCase();
     return this.rows().filter(
@@ -76,6 +77,10 @@ export class OrganizationInvitationsComponent {
   readonly invitationAllowed = computed(
     () => this.store.committed()?.policies.invitationCreation === true,
   );
+
+  private request = 0;
+  private loadedContext = '';
+
   constructor() {
     effect(() => {
       this.store.context();
@@ -87,6 +92,7 @@ export class OrganizationInvitationsComponent {
       });
     });
   }
+
   load(): void {
     const request = ++this.request;
     const context = this.store.context();
@@ -152,10 +158,12 @@ export class OrganizationInvitationsComponent {
       true,
     );
   }
+
   resend(row: OrganizationInvitation): void {
     if (row.status === 'pending' && row.role === 'recruiter' && this.invitationAllowed())
       this.mutate(this.admin.resendInvitation(row._id), 'Invitation renewed', true);
   }
+
   confirmAction(): void {
     const pending = this.pendingAction();
     this.pendingAction.set(null);
@@ -169,6 +177,14 @@ export class OrganizationInvitationsComponent {
       pending.action === 'expire' ? 'Invitation expired.' : 'Invitation revoked.',
     );
   }
+
+  teamName(id: string | null): string {
+    return (
+      this.teams().find((team) => team._id === id)?.name ||
+      (id ? 'Team unavailable' : 'Organization')
+    );
+  }
+
   private mutate(action: Observable<unknown>, success: string, delivery = false): void {
     if (this.busy() || this.loading()) return;
     const context = this.store.context();
@@ -203,11 +219,5 @@ export class OrganizationInvitationsComponent {
           if ([403, 404, 409].includes(error.status)) this.load();
         },
       });
-  }
-  teamName(id: string | null): string {
-    return (
-      this.teams().find((team) => team._id === id)?.name ||
-      (id ? 'Team unavailable' : 'Organization')
-    );
   }
 }

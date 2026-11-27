@@ -1,6 +1,5 @@
-import { NgModule } from '@angular/core';
+import { NgModule, inject } from '@angular/core';
 import { RouterModule, Routes, RedirectFunction, Router } from '@angular/router';
-import { inject } from '@angular/core';
 
 import { AdminDashboardPageComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { AdminRecruitersPageComponent } from './pages/admin-recruiters/admin-recruiters.component';

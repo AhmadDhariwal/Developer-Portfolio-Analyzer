@@ -6,12 +6,13 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './organization-shell.component.html',
-  styleUrl: '../../styles/organization-page.scss',
+  styleUrl: './organization-shell.component.scss',
 })
 export class OrganizationShellComponent {
   @Input() title = '';
   @Input() description = '';
   @Input() loading = false;
   @Input() error = '';
+
   @Output() refresh = new EventEmitter<void>();
 }

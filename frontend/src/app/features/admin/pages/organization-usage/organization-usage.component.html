@@ -11,12 +11,15 @@
         title="Active Recruiter seats"
         [used]="committed.resources.usage.activeRecruiters"
         [limit]="committed.resources.limits.activeRecruiters"
-      /><app-organization-capacity
+      />
+
+      <app-organization-capacity
         title="Total teams"
         [used]="committed.resources.usage.teams"
         [limit]="committed.resources.limits.teams"
       />
     </div>
+
     <section class="card">
       <h2>How usage is counted</h2>
       <dl>
@@ -27,6 +30,7 @@
             invitations do not reserve seats.
           </dd>
         </div>
+
         <div>
           <dt>Teams</dt>
           <dd>
@@ -35,6 +39,7 @@
             toward total team capacity.
           </dd>
         </div>
+
         <div>
           <dt>Read-only platform limits</dt>
           <dd>
@@ -43,9 +48,11 @@
           </dd>
         </div>
       </dl>
+
       <div class="actions">
-        <a class="button" routerLink="/app/admin/recruiters">Manage Recruiters</a
-        ><a class="button" routerLink="/app/admin/teams">Manage teams</a>
+        <a class="button" routerLink="/app/admin/recruiters">Manage Recruiters</a>
+
+        <a class="button" routerLink="/app/admin/teams">Manage teams</a>
       </div>
     </section>
   }
