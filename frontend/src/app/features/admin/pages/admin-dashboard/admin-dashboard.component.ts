@@ -383,7 +383,7 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
   }
 
   openTeamsView(): void {
-    this.router.navigate(['/app/admin/console'], { queryParams: { tab: 'teams' } });
+    this.router.navigate(['/app/admin/teams']);
   }
 
   openRecruitersView(): void {

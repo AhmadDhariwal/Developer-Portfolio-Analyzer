@@ -1,3 +1,6 @@
+import { DestroyRef as PolicyDestroyRef } from '@angular/core';
+import { takeUntilDestroyed as takeUntilPolicyDestroyed } from '@angular/core/rxjs-interop';
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
@@ -28,6 +31,8 @@ interface ConfirmState {
   standalone: false,
 })
 export class ShortlistsComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
+  private readonly policyDestroy = inject(PolicyDestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly applications = inject(JobApplicationsService);
   private readonly route = inject(ActivatedRoute, { optional: true });
@@ -60,6 +65,20 @@ export class ShortlistsComponent implements OnInit {
   constructor(private matchService: RecruiterMatchService) {}
 
   ngOnInit(): void {
+    this.policies.resourcesChanged$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        this.loadShortlists();
+        this.cdr.markForCheck();
+      });
+    this.policies.contextChanges$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        this.loadVersion++;
+        this.shortlists = [];
+        this.loadShortlists();
+        this.cdr.markForCheck();
+      });
     if (this.route?.snapshot?.queryParamMap?.get('source') === 'applications')
       this.source = 'applications';
     this.loadShortlists();
@@ -80,7 +99,11 @@ export class ShortlistsComponent implements OnInit {
   }
 
   get activeCount(): number {
-    return this.shortlists.filter((item) => {
+    return (
+      this.source === 'applications'
+        ? this.shortlists
+        : this.policies.publicEvaluations(this.shortlists)
+    ).filter((item) => {
       const status = String(item?.status || 'shortlisted').toLowerCase();
       return !['interview', 'rejected'].includes(status);
     }).length;
@@ -127,7 +150,11 @@ export class ShortlistsComponent implements OnInit {
 
   get filteredShortlists(): any[] {
     const query = this.searchTerm.trim().toLowerCase();
-    return this.shortlists.filter((item) => {
+    return (
+      this.source === 'applications'
+        ? this.shortlists
+        : this.policies.publicEvaluations(this.shortlists)
+    ).filter((item) => {
       const status = String(item?.status || 'shortlisted').toLowerCase();
       if (this.stageFilter !== 'all' && status !== this.stageFilter) {
         return false;
@@ -189,30 +216,33 @@ export class ShortlistsComponent implements OnInit {
       source === 'applications'
         ? this.matchService.getApplicationShortlists(this.applicationPage, this.applicationLimit)
         : this.matchService.getShortlists();
-    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
-      next: (response: any) => {
-        if (version !== this.loadVersion || source !== this.source) return;
-        this.shortlists = response?.shortlists || [];
-        if (source === 'applications') {
-          this.applicationTotal = response?.meta?.total ?? this.shortlists.length;
-          this.applicationPages = response?.meta?.pages ?? 1;
-          if (this.applicationPage > Math.max(1, this.applicationPages)) {
-            this.applicationPage = Math.max(1, this.applicationPages);
-            this.loadShortlists(message);
-            return;
+    request
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe({
+        next: (response: any) => {
+          if (version !== this.loadVersion || source !== this.source) return;
+          this.shortlists = response?.shortlists || [];
+          if (source === 'applications') {
+            this.applicationTotal = response?.meta?.total ?? this.shortlists.length;
+            this.applicationPages = response?.meta?.pages ?? 1;
+            if (this.applicationPage > Math.max(1, this.applicationPages)) {
+              this.applicationPage = Math.max(1, this.applicationPages);
+              this.loadShortlists(message);
+              return;
+            }
           }
-        }
-        this.loading = false;
-      },
-      error: (err) => {
-        if (version !== this.loadVersion || source !== this.source) return;
-        this.shortlists = [];
-        this.applicationTotal = 0;
-        this.applicationPages = 0;
-        this.error = err?.error?.message || 'Unable to load shortlists right now.';
-        this.loading = false;
-      },
-    });
+          this.loading = false;
+        },
+        error: (err) => {
+          if (version !== this.loadVersion || source !== this.source) return;
+          this.shortlists = [];
+          this.applicationTotal = 0;
+          this.applicationPages = 0;
+          this.error = this.policies.permissionError(err, 'Unable to load shortlists right now.');
+          this.loading = false;
+        },
+      });
   }
 
   changeApplicationStatus(event: { item: any; status: string }): void {
@@ -237,6 +267,7 @@ export class ShortlistsComponent implements OnInit {
       this.applications
         .status(item.jobId, item.applicationId, status, expectedStatus)
         .pipe(finalize(() => this.cdr.markForCheck()))
+        .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
         .subscribe({
           next: () => {
             if (version !== this.loadVersion) return;
@@ -268,7 +299,11 @@ export class ShortlistsComponent implements OnInit {
   }
 
   advance(item: any): void {
-    if (item?.access?.manage !== true) return;
+    if (
+      item?.access?.manage !== true ||
+      (this.source === 'public' && !this.policies.canManagePublic(item.access))
+    )
+      return;
     if (item.applicationId && !item.access.manageStages) return;
     const id = String(item?._id || '').trim();
     if (!id) {
@@ -294,7 +329,11 @@ export class ShortlistsComponent implements OnInit {
   }
 
   changeStage(event: { item: any; status: string }): void {
-    if (event.item?.access?.manage !== true) return;
+    if (
+      event.item?.access?.manage !== true ||
+      (this.source === 'public' && !this.policies.canManagePublic(event.item.access))
+    )
+      return;
     if (event.item.applicationId && !event.item.access.manageStages) return;
     const { item, status } = event;
     const id = String(item?._id || '').trim();
@@ -320,7 +359,11 @@ export class ShortlistsComponent implements OnInit {
   }
 
   updateNotes(event: { item: any; notes: string }): void {
-    if (event.item?.access?.manage !== true) return;
+    if (
+      event.item?.access?.manage !== true ||
+      (this.source === 'public' && !this.policies.canManagePublic(event.item.access))
+    )
+      return;
     const id = String(event?.item?._id || '').trim();
     if (!id) {
       return;
@@ -339,25 +382,34 @@ export class ShortlistsComponent implements OnInit {
           notes: event.notes,
           expectedVersion: event.item.version,
         });
-    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
-      next: (response: any) => {
-        if (version !== this.loadVersion) return;
-        const updated = response?.shortlist;
-        Object.assign(event.item, updated || { notes: event.notes });
-        this.savingNoteId = '';
-        this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
-      },
-      error: (err) => {
-        if (version !== this.loadVersion) return;
-        this.savingNoteId = '';
-        this.refreshAfterDenied(err);
-        this.error = err?.error?.message || 'Could not update shortlist notes.';
-      },
-    });
+    request
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe({
+        next: (response: any) => {
+          if (version !== this.loadVersion) return;
+          const updated = response?.shortlist;
+          Object.assign(event.item, updated || { notes: event.notes });
+          const canonical = this.shortlists.find((item) => item._id === event.item._id);
+          if (canonical) Object.assign(canonical, updated || { notes: event.notes });
+          this.savingNoteId = '';
+          this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
+        },
+        error: (err) => {
+          if (version !== this.loadVersion) return;
+          this.savingNoteId = '';
+          this.refreshAfterDenied(err);
+          this.error = err?.error?.message || 'Could not update shortlist notes.';
+        },
+      });
   }
 
   remove(item: any): void {
-    if (item?.access?.manage !== true) return;
+    if (
+      item?.access?.manage !== true ||
+      (this.source === 'public' && !this.policies.canManagePublic(item.access))
+    )
+      return;
     if (item.applicationId) return;
     const id = String(item?._id || '').trim();
     if (!id) {
@@ -376,6 +428,7 @@ export class ShortlistsComponent implements OnInit {
         this.matchService
           .removeShortlist(id)
           .pipe(finalize(() => this.cdr.markForCheck()))
+          .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
           .subscribe({
             next: () => {
               this.shortlists = this.shortlists.filter((entry) => entry._id !== id);
@@ -427,7 +480,11 @@ export class ShortlistsComponent implements OnInit {
   }
 
   private applyStageUpdate(item: any, nextStatus: string): void {
-    if (item?.access?.manage !== true) return;
+    if (
+      item?.access?.manage !== true ||
+      (this.source === 'public' && !this.policies.canManagePublic(item.access))
+    )
+      return;
     if (item.applicationId && !item.access.manageStages) return;
     const id = String(item?._id || '').trim();
     if (!id) {
@@ -446,18 +503,23 @@ export class ShortlistsComponent implements OnInit {
           status: nextStatus,
           expectedVersion: item.version,
         });
-    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
-      next: (response: any) => {
-        if (version !== this.loadVersion) return;
-        const updated = response?.shortlist;
-        Object.assign(item, updated || { status: nextStatus });
-        this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
-      },
-      error: (err) => {
-        if (version !== this.loadVersion) return;
-        this.refreshAfterDenied(err);
-        this.error = err?.error?.message || 'Could not update shortlist stage.';
-      },
-    });
+    request
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe({
+        next: (response: any) => {
+          if (version !== this.loadVersion) return;
+          const updated = response?.shortlist;
+          Object.assign(item, updated || { status: nextStatus });
+          const canonical = this.shortlists.find((entry) => entry._id === item._id);
+          if (canonical) Object.assign(canonical, updated || { status: nextStatus });
+          this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
+        },
+        error: (err) => {
+          if (version !== this.loadVersion) return;
+          this.refreshAfterDenied(err);
+          this.error = err?.error?.message || 'Could not update shortlist stage.';
+        },
+      });
   }
 }

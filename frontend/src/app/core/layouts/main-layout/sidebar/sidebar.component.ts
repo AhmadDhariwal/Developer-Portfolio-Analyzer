@@ -302,7 +302,7 @@ export class Sidebar implements OnInit {
     const path = this.normalizePath(this.currentUrl || this.router.url || '');
     const target = this.normalizePath(route);
 
-    if (target === '/app/admin/console') {
+    if (target === '/app/admin/console' || target === '/app/admin/organization') {
       return path === target;
     }
 
@@ -337,84 +337,36 @@ export class Sidebar implements OnInit {
     const isAdmin = role === 'admin';
 
     if (isAdmin) {
-      this.openGroups.add('Admin Workspace');
-      this.openGroups.add('Organization');
+      const icon = this.trustSvg(
+        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4"/></svg>`,
+      );
+      const group = (label: string, items: Array<[string, string]>): NavGroup => ({
+        label,
+        icon,
+        items: items.map(([label, path]) => ({ label, route: '/app/admin/' + path, icon })),
+      });
       this.visibleNavItems = [];
+      this.openGroups.add('Workspace');
       this.visibleNavGroups = [
-        {
-          label: 'Admin Workspace',
-          route: '',
-          icon: this.trustSvg(
-            `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 20h8"></path><path d="M12 18v2"></path></svg>`,
-          ),
-          items: [
-            {
-              label: 'Dashboard',
-              route: '/app/admin/dashboard',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`,
-              ),
-            },
-            {
-              label: 'Recruiters',
-              route: '/app/admin/recruiters',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
-              ),
-            },
-            {
-              label: 'Teams',
-              route: '/app/admin/teams',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
-              ),
-            },
-            {
-              label: 'Developers',
-              route: '/app/admin/developers',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
-              ),
-            },
-            {
-              label: 'Jobs',
-              route: '/app/admin/jobs',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg>`,
-              ),
-            },
-          ],
-        },
-        {
-          label: 'Organization',
-          route: '',
-          icon: this.trustSvg(
-            `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-4h6v4"></path></svg>`,
-          ),
-          items: [
-            {
-              label: 'Org Console',
-              route: '/app/admin/console',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-4h6v4"></path></svg>`,
-              ),
-            },
-            {
-              label: 'Performance & Statistics',
-              route: '/app/admin/console/performance-statistics',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
-              ),
-            },
-            {
-              label: 'Activity Logs',
-              route: '/app/admin/activity-logs',
-              icon: this.trustSvg(
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`,
-              ),
-            },
-          ],
-        },
+        group('Workspace', [['Dashboard', 'dashboard']]),
+        group('Organization Management', [
+          ['Organization Overview', 'organization'],
+          ['General Settings', 'organization/settings'],
+          ['Policies & Permissions', 'organization/policies'],
+          ['Members & Access', 'organization/members'],
+          ['Invitations', 'organization/invitations'],
+          ['Resource Usage', 'organization/usage'],
+        ]),
+        group('Recruitment Management', [
+          ['Recruiters', 'recruiters'],
+          ['Teams', 'teams'],
+          ['Jobs', 'jobs'],
+          ['Developer Discovery', 'developers'],
+        ]),
+        group('Insights & Governance', [
+          ['Performance & Statistics', 'performance'],
+          ['Activity & Audit Logs', 'activity-logs'],
+        ]),
       ]
         .map((group) => ({
           ...group,

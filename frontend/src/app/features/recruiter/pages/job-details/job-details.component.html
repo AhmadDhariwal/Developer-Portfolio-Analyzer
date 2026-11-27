@@ -1,4 +1,10 @@
 <section class="hub-page">
+  <app-organization-policy-notice
+    policy="candidateMatching"
+    title="New matching and ranking"
+    detail="Historical results and independently authorized private application management remain available."
+  />
+
   <div class="top-nav">
     <app-recruiter-back-button fallbackRoute="/app/recruiter/jobs" label="Back to Jobs" />
     <span class="breadcrumb" *ngIf="job">Jobs / {{ job.title }}</span>
@@ -67,7 +73,7 @@
           type="button"
           class="btn-primary"
           *ngIf="job.access?.evaluationManage"
-          [disabled]="generating"
+          [disabled]="generating || !policies.canGenerate(job.access)"
           (click)="generateMatches()"
         >
           {{ generating ? 'Generating...' : 'Generate Match Results' }}
@@ -201,9 +207,11 @@
           <button
             type="button"
             class="btn-secondary discovery-toggle-btn"
-            *ngIf="job.access?.publish"
+            *ngIf="job.access?.edit && (job.published || job.access?.publish)"
             (click)="togglePublication()"
-            [disabled]="publishing"
+            [disabled]="
+              publishing || (!job.published && !policies.allowed('recruiterJobPublication'))
+            "
           >
             {{
               publishing

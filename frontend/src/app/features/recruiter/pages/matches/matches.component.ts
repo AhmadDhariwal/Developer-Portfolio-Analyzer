@@ -1,3 +1,6 @@
+import { DestroyRef as PolicyDestroyRef } from '@angular/core';
+import { takeUntilDestroyed as takeUntilPolicyDestroyed } from '@angular/core/rxjs-interop';
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
@@ -16,6 +19,8 @@ export type MatchStatusFilter = 'all' | 'generated' | 'shortlisted' | 'rejected'
   standalone: false,
 })
 export class MatchesComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
+  private readonly policyDestroy = inject(PolicyDestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
   jobsLoading = true;
   candidatesLoading = true;
@@ -44,6 +49,29 @@ export class MatchesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.policies.resourcesChanged$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        this.matches = [];
+        this.loadJobs();
+        this.loadMatches();
+        this.cdr.markForCheck();
+      });
+    this.policies.contextChanges$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        this.matchesRequest?.unsubscribe();
+        this.matches = [];
+        this.jobs = [];
+        this.candidates = [];
+        this.selectedJobId = '';
+        this.clearSelection();
+        this.clearCompare();
+        this.loadJobs();
+        this.loadCandidates();
+        this.loadMatches();
+        this.cdr.markForCheck();
+      });
     this.route.queryParamMap.subscribe((params) => {
       const requestedJobId = String(params.get('jobId') || '').trim();
       if (requestedJobId && requestedJobId !== this.selectedJobId) {
@@ -56,9 +84,8 @@ export class MatchesComponent implements OnInit {
   }
 
   get canManageSelectedJob(): boolean {
-    return (
-      this.jobs.find((job) => String(job._id || job.id) === this.selectedJobId)?.access
-        ?.evaluationManage === true
+    return this.policies.canGenerate(
+      this.jobs.find((job) => String(job._id || job.id) === this.selectedJobId)?.access,
     );
   }
 
@@ -92,29 +119,30 @@ export class MatchesComponent implements OnInit {
   }
 
   get generatedCount(): number {
-    return this.matches.filter(
-      (match) => String(match?.status || 'generated').toLowerCase() === 'generated',
-    ).length;
+    return this.policies
+      .publicEvaluations(this.matches)
+      .filter((match) => String(match?.status || 'generated').toLowerCase() === 'generated').length;
   }
 
   get shortlistedCount(): number {
-    return this.matches.filter(
-      (match) => String(match?.status || '').toLowerCase() === 'shortlisted',
-    ).length;
+    return this.policies
+      .publicEvaluations(this.matches)
+      .filter((match) => String(match?.status || '').toLowerCase() === 'shortlisted').length;
   }
 
   get rejectedCount(): number {
-    return this.matches.filter((match) => String(match?.status || '').toLowerCase() === 'rejected')
-      .length;
+    return this.policies
+      .publicEvaluations(this.matches)
+      .filter((match) => String(match?.status || '').toLowerCase() === 'rejected').length;
   }
 
   get filteredMatches(): any[] {
     if (this.statusFilter === 'all') {
-      return this.matches;
+      return this.policies.publicEvaluations(this.matches);
     }
-    return this.matches.filter(
-      (match) => String(match?.status || 'generated').toLowerCase() === this.statusFilter,
-    );
+    return this.policies
+      .publicEvaluations(this.matches)
+      .filter((match) => String(match?.status || 'generated').toLowerCase() === this.statusFilter);
   }
 
   get scoreDistributionItems(): PerformanceChartItem[] {
@@ -169,6 +197,7 @@ export class MatchesComponent implements OnInit {
     this.jobService
       .listEvaluationJobs()
       .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: (response: any) => {
           this.jobs = response?.jobs || [];
@@ -191,6 +220,7 @@ export class MatchesComponent implements OnInit {
     this.candidateService
       .listCandidates({ limit: 24, sortBy: 'score-desc' })
       .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: (response: any) => {
           this.candidates = response?.candidates || [];
@@ -215,6 +245,7 @@ export class MatchesComponent implements OnInit {
     this.matchesRequest = this.matchService
       .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
       .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: (response: any) => {
           this.matches = response?.matches || [];
@@ -223,7 +254,7 @@ export class MatchesComponent implements OnInit {
         error: (err) => {
           this.matches = [];
           this.clearCompare();
-          this.error = err?.error?.message || 'Unable to load saved matches.';
+          this.error = this.policies.permissionError(err, 'Unable to load saved matches.');
           this.matchesLoading = false;
         },
       });
@@ -273,6 +304,7 @@ export class MatchesComponent implements OnInit {
         candidateIds: candidateIds.length ? candidateIds : undefined,
       })
       .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: (response: any) => {
           const generatedMatches = response?.matches || [];
@@ -281,6 +313,7 @@ export class MatchesComponent implements OnInit {
           this.matchService
             .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
             .pipe(finalize(() => this.cdr.markForCheck()))
+            .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
             .subscribe({
               next: (persisted: any) => {
                 const hydrated = persisted?.matches || [];
@@ -303,7 +336,7 @@ export class MatchesComponent implements OnInit {
   }
 
   shortlist(match: any): void {
-    if (match?.access?.manage !== true) return;
+    if (!this.policies.canManagePublic(match?.access)) return;
     const candidateId = String(match?.candidate?.id || match?.candidateId || '').trim();
     const jobId = String(match?.job?._id || match?.jobId || this.selectedJobId || '').trim();
     if (!candidateId) {
@@ -318,6 +351,7 @@ export class MatchesComponent implements OnInit {
         jobId: jobId || undefined,
       })
       .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: () => {
           match.status = 'shortlisted';
@@ -332,7 +366,7 @@ export class MatchesComponent implements OnInit {
   }
 
   updateStatus(match: any, status: 'generated' | 'rejected'): void {
-    if (match?.access?.manage !== true) return;
+    if (!this.policies.canManagePublic(match?.access)) return;
     const matchId = String(match?._id || match?.id || '').trim();
     if (!matchId) {
       this.error = 'Reload saved matches before updating this match status.';
@@ -344,6 +378,7 @@ export class MatchesComponent implements OnInit {
     this.matchService
       .updateMatchStatus(matchId, status, match.version)
       .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: (response) => {
           Object.assign(match, response?.match || { status });

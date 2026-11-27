@@ -1,3 +1,7 @@
+import { inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
+import { OrganizationPolicyNoticeComponent } from '../../../../shared/components/organization-policy-notice/organization-policy-notice.component';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +25,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
   selector: 'app-admin-recruiters-page',
   standalone: true,
   imports: [
+    OrganizationPolicyNoticeComponent,
     CommonModule,
     FormsModule,
     AdminLoaderComponent,
@@ -34,6 +39,8 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminRecruitersPageComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
+  private readonly route = inject(ActivatedRoute);
   loading = false;
   directLoading = false;
   message = '';
@@ -94,6 +101,7 @@ export class AdminRecruitersPageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.selectedRecruiterId = this.route.snapshot.queryParamMap.get('member') || '';
     this.loadContext();
     this.loadAll();
   }
@@ -351,6 +359,7 @@ export class AdminRecruitersPageComponent implements OnInit {
   }
 
   inviteRecruiter(): void {
+    if (!this.policies.allowed('invitationCreation')) return;
     if (!this.form.name || !this.form.email) {
       this.messageType = 'warning';
       this.message = 'Name and email are required.';
@@ -555,6 +564,7 @@ export class AdminRecruitersPageComponent implements OnInit {
   }
 
   resendInvitation(inv: PendingInvitation): void {
+    if (!this.policies.allowed('invitationCreation')) return;
     this.loading = true;
     this.adminService.resendInvitation(inv._id).subscribe({
       next: (result) => {

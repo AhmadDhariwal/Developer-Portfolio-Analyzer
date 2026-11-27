@@ -175,7 +175,7 @@ export class Navbar implements OnInit {
       type: 'page',
       label: 'Performance & Statistics',
       sublabel: 'Team velocity and hiring effectiveness',
-      route: '/app/admin/console/performance-statistics',
+      route: '/app/admin/performance',
     },
     {
       type: 'page',
@@ -192,9 +192,39 @@ export class Navbar implements OnInit {
     },
     {
       type: 'page',
-      label: 'Org Console',
-      sublabel: 'Organization preferences, teams, and invitations',
-      route: '/app/admin/console',
+      label: 'Organization Overview',
+      sublabel: 'Organization profile, membership and capacity',
+      route: '/app/admin/organization',
+    },
+    {
+      type: 'page',
+      label: 'General Settings',
+      sublabel: 'Organization control center',
+      route: '/app/admin/organization/settings',
+    },
+    {
+      type: 'page',
+      label: 'Policies & Permissions',
+      sublabel: 'Organization control center',
+      route: '/app/admin/organization/policies',
+    },
+    {
+      type: 'page',
+      label: 'Members & Access',
+      sublabel: 'Organization control center',
+      route: '/app/admin/organization/members',
+    },
+    {
+      type: 'page',
+      label: 'Invitations',
+      sublabel: 'Organization control center',
+      route: '/app/admin/organization/invitations',
+    },
+    {
+      type: 'page',
+      label: 'Resource Usage',
+      sublabel: 'Organization control center',
+      route: '/app/admin/organization/usage',
     },
     {
       type: 'page',
@@ -241,7 +271,7 @@ export class Navbar implements OnInit {
 
   get profileRoute(): string {
     if (this.isSuperAdmin) return '/app/settings';
-    if (this.isAdmin) return '/app/admin/console';
+    if (this.isAdmin) return '/app/admin/organization';
     return this.isRecruiter ? '/app/recruiter/profile' : '/app/profile';
   }
 

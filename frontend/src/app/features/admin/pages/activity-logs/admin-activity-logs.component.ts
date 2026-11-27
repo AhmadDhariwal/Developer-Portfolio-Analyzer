@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { organizationAuditSummary } from '../../utils/organization-audit';
 import { ApiService } from '../../../../shared/services/api.service';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { TenantContextService } from '../../../../shared/services/tenant-context.service';
@@ -81,6 +83,8 @@ const SENSITIVE_KEY_PATTERNS = [
   styleUrls: ['./admin-activity-logs.component.scss'],
 })
 export class AdminActivityLogsComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute, { optional: true });
+  readonly governanceSummary = organizationAuditSummary;
   logs: AuditLogItem[] = [];
   filteredLogs: AuditLogItem[] = [];
   selectedLog: AuditLogItem | null = null;
@@ -138,6 +142,8 @@ export class AdminActivityLogsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (this.route?.snapshot?.queryParamMap?.get('action') === 'ORGANIZATION_CONFIGURATION_UPDATED')
+      this.action = 'ORGANIZATION_CONFIGURATION_UPDATED';
     const currentUser = this.authService.getCurrentUser();
     this.currentUserId = String(currentUser?._id || '');
     const role = String(currentUser?.role || '').toLowerCase();

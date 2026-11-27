@@ -1,3 +1,5 @@
+import { OrganizationPolicyState } from '../../services/organization-policy-state.service';
+import { policyStateFixture } from '../../testing/organization-policy-state.fixture';
 import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -38,7 +40,11 @@ describe('Owner-only application shortlist workflow', () => {
   async function applicants(api: any) {
     await TestBed.configureTestingModule({
       imports: [JobApplicantsComponent],
-      providers: [provideRouter([]), { provide: JobApplicationsService, useValue: api }],
+      providers: [
+        { provide: OrganizationPolicyState, useFactory: policyStateFixture },
+        provideRouter([]),
+        { provide: JobApplicationsService, useValue: api },
+      ],
     }).compileComponents();
     const fixture = TestBed.createComponent(JobApplicantsComponent);
     fixture.componentRef.setInput('jobId', 'job-1');
@@ -136,7 +142,10 @@ describe('Owner-only application shortlist workflow', () => {
   it('separates terminal/internal statuses and never links a private applicant to public candidate details', async () => {
     await TestBed.configureTestingModule({
       imports: [ShortlistCardComponent],
-      providers: [provideRouter([])],
+      providers: [
+        { provide: OrganizationPolicyState, useFactory: policyStateFixture },
+        provideRouter([]),
+      ],
     }).compileComponents();
     const fixture = TestBed.createComponent(ShortlistCardComponent);
     fixture.componentRef.setInput('item', {
@@ -161,6 +170,7 @@ describe('Owner-only application shortlist workflow', () => {
       imports: [CommonModule, FormsModule, RouterLink, ShortlistCardComponent],
       declarations: [ShortlistsComponent],
       providers: [
+        { provide: OrganizationPolicyState, useFactory: policyStateFixture },
         provideRouter([]),
         { provide: RecruiterMatchService, useValue: service },
         { provide: JobApplicationsService, useValue: service.applications || {} },

@@ -1,4 +1,11 @@
 <section class="hub-page">
+  <app-organization-policy-notice
+    *ngIf="source === 'public'"
+    policy="teamManagerEvaluationManagement"
+    title="Shared evaluation management"
+    detail="Current resource grants determine read and management access. Private application workflows are separate."
+  />
+
   <header class="page-header">
     <div class="page-header__copy">
       <span class="page-header__eyebrow">Recruiter Hub · Hiring Pipeline</span>

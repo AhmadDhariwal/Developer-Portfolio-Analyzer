@@ -1,0 +1,169 @@
+<app-organization-shell
+  title="Organization overview"
+  description="Membership, recruitment, capacity and governance at a glance."
+  [loading]="store.loading() || loading()"
+  [error]="store.error() || error()"
+  (refresh)="load()"
+>
+  @if (store.committed(); as committed) {
+    @if (overview(); as data) {
+      <section class="card">
+        @if (safeLogo && !logoFailed()) {
+          <img
+            class="organization-logo"
+            [src]="safeLogo"
+            [alt]="committed.organization.name + ' logo'"
+            referrerpolicy="no-referrer"
+            loading="lazy"
+            (error)="logoFailed.set(true)"
+          />
+        }
+        <span class="badge">Organization active</span>
+        <h2>{{ committed.organization.name }}</h2>
+        <p>{{ committed.organization.description || 'No organization description provided.' }}</p>
+        <div class="actions">
+          <a class="button primary" routerLink="/app/admin/organization/settings"
+            >Edit general settings</a
+          ><a class="button" routerLink="/app/admin/organization/policies">Review policies</a>
+        </div>
+      </section>
+      <div class="metrics">
+        <section class="card">
+          <strong class="stat-value">{{
+            data.membershipSummary?.internalMembersCount ?? data.stats.membersCount
+          }}</strong>
+          <p>Internal members</p>
+        </section>
+        <section class="card">
+          <strong class="stat-value">{{ data.membershipSummary?.adminCount ?? 0 }}</strong>
+          <p>Admin accounts</p>
+        </section>
+        <section class="card">
+          <strong class="stat-value"
+            >{{ data.stats.activeRecruitersCount }} / {{ data.stats.recruitersCount }}</strong
+          >
+          <p>Active / total Recruiters</p>
+        </section>
+        <section class="card">
+          <strong class="stat-value">{{ data.stats.jobsCount }}</strong>
+          <p>Organization jobs</p>
+        </section>
+        <section class="card">
+          <strong class="stat-value">{{ data.stats.pendingInvitationsCount }}</strong>
+          <p>Pending invitations</p>
+        </section>
+      </div>
+      <div class="content-grid">
+        <section class="card">
+          <h2>Organization profile</h2>
+          <dl>
+            <div>
+              <dt>Industry</dt>
+              <dd>{{ committed.organization.industry || 'Not provided' }}</dd>
+            </div>
+            <div>
+              <dt>Website</dt>
+              <dd>{{ committed.organization.website || 'Not provided' }}</dd>
+            </div>
+            <div>
+              <dt>Timezone</dt>
+              <dd>{{ committed.organization.timezone || store.committed()!.defaultTimezone }}</dd>
+            </div>
+            <div>
+              <dt>Owner</dt>
+              <dd>{{ owner() }}</dd>
+            </div>
+            <div>
+              <dt>Created</dt>
+              <dd>{{ data.organization.createdAt | date: 'mediumDate' }}</dd>
+            </div>
+            <div>
+              <dt>Branding</dt>
+              <dd>
+                {{
+                  committed.organization.branding.logoUrl
+                    ? 'Logo URL configured; displayed above when the HTTPS image is available.'
+                    : 'No logo configured'
+                }}
+              </dd>
+            </div>
+          </dl>
+          <details>
+            <summary>Diagnostic identifiers</summary>
+            <small
+              >Organization: {{ committed.organization._id }} · Slug:
+              {{ committed.organization.slug }}</small
+            >
+          </details>
+        </section>
+        <section class="card">
+          <h2>Membership and recruitment</h2>
+          <p>{{ data.stats.teamsCount }} teams · {{ data.stats.activeTeamsCount }} active teams.</p>
+          <p>
+            Internal members are deduplicated users. Public Developer discovery is a separate global
+            talent pool.
+          </p>
+          <div class="actions">
+            <a class="button" routerLink="/app/admin/organization/members">Members & access</a
+            ><a class="button" routerLink="/app/admin/organization/invitations">Invitations</a
+            ><a class="button" routerLink="/app/admin/recruiters">Recruiters</a
+            ><a class="button" routerLink="/app/admin/teams">Teams</a
+            ><a class="button" routerLink="/app/admin/jobs">Jobs</a>
+          </div>
+        </section>
+      </div>
+      <div class="content-grid">
+        <app-organization-capacity
+          title="Active Recruiter seats"
+          [used]="committed.resources.usage.activeRecruiters"
+          [limit]="committed.resources.limits.activeRecruiters"
+        /><app-organization-capacity
+          title="Total teams"
+          [used]="committed.resources.usage.teams"
+          [limit]="committed.resources.limits.teams"
+        />
+      </div>
+      <div class="content-grid">
+        <section class="card stack">
+          <h2>Current policies</h2>
+          @for (policy of catalog; track policy.id) {
+            <div>
+              <span class="badge">{{
+                committed.policies[policy.id] ? 'Enabled' : 'Disabled'
+              }}</span>
+              {{ policy.title }}
+            </div>
+          }
+          <a routerLink="/app/admin/organization/policies">Manage policies & permissions</a>
+        </section>
+        <section class="card stack">
+          <h2>Recent organization activity</h2>
+          @for (log of activity(); track log._id) {
+            <div>
+              <strong>{{
+                log.action === 'ORGANIZATION_CONFIGURATION_UPDATED'
+                  ? 'Organization configuration updated'
+                  : log.action
+              }}</strong>
+              <p>
+                {{ log.actor?.name || 'System or unavailable actor' }} ·
+                {{ log.timestamp | date: 'medium' }}
+              </p>
+            </div>
+          } @empty {
+            <p>No recent activity is available.</p>
+          }
+          <p>
+            Configuration version details are available in the authorized audit workspace where
+            exposed by its API.
+          </p>
+          <a
+            routerLink="/app/admin/activity-logs"
+            [queryParams]="{ action: 'ORGANIZATION_CONFIGURATION_UPDATED' }"
+            >View governance audit activity</a
+          >
+        </section>
+      </div>
+    }
+  }
+</app-organization-shell>

@@ -1,0 +1,211 @@
+<app-organization-shell
+  title="Members & access"
+  description="Internal organization users, account states and scoped memberships. Public Developer discovery remains separate."
+  [loading]="loading()"
+  [error]="error()"
+  (refresh)="load()"
+>
+  @if (!error()) {
+    <div class="metrics">
+      <section class="card">
+        <strong class="stat-value">{{ total() }}</strong>
+        <p>Server directory total</p>
+      </section>
+      <section class="card">
+        <strong class="stat-value">{{ rows().length }}</strong>
+        <p>Unique loaded members</p>
+      </section>
+      <section class="card">
+        <strong class="stat-value">{{ activeCount() }}</strong>
+        <p>Active accounts</p>
+      </section>
+      <section class="card">
+        <strong class="stat-value">{{ filtered().length }}</strong>
+        <p>Matching current filters</p>
+      </section>
+    </div>
+    <section class="card">
+      <div class="toolbar">
+        <label
+          >Search members<input
+            type="search"
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event); page.set(1)"
+            placeholder="Name, email or team"
+        /></label>
+        <label
+          >Account role<select
+            [ngModel]="accountRole()"
+            (ngModelChange)="accountRole.set($event); page.set(1)"
+          >
+            <option value="">All account roles</option>
+            @for (role of accountRoles(); track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Direct or team role<select
+            [ngModel]="membershipRole()"
+            (ngModelChange)="membershipRole.set($event); page.set(1)"
+          >
+            <option value="">All membership roles</option>
+            @for (role of ['admin', 'manager', 'member']; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Membership state<select
+            [ngModel]="membershipStatus()"
+            (ngModelChange)="membershipStatus.set($event); page.set(1)"
+          >
+            <option value="">All membership states</option>
+            @for (status of ['active', 'invited', 'disabled']; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Team<select [ngModel]="team()" (ngModelChange)="team.set($event); page.set(1)">
+            <option value="">All teams</option>
+            @for (option of teamOptions(); track option.teamId) {
+              <option [value]="option.teamId">{{ option.name }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Account state<select
+            [ngModel]="accountStatus()"
+            (ngModelChange)="accountStatus.set($event); page.set(1)"
+          >
+            <option value="">All accounts</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select></label
+        >
+      </div>
+      <p class="muted">
+        {{ filtered().length }} filtered / {{ total() }} server total. Filters and 20-row pages run
+        locally over the authorized dataset.
+      </p>
+      <div class="table-wrap">
+        <table class="directory-table">
+          <caption class="muted">
+            Internal members and access scopes
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Member</th>
+              <th scope="col">Account</th>
+              <th scope="col">Direct membership</th>
+              <th scope="col">Team assignments</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of visible(); track row._id) {
+              <tr>
+                <td data-label="Member">
+                  <button type="button" class="text-button" (click)="show(row)">
+                    {{ row.name }}</button
+                  ><small>{{ row.email }}</small>
+                  @if (row.isOwner) {
+                    <span class="badge">Organization owner</span>
+                  }
+                </td>
+                <td data-label="Account">
+                  {{ row.accountRole
+                  }}<small>{{ row.isActive ? 'Active account' : 'Inactive account' }}</small>
+                </td>
+                <td data-label="Direct membership">
+                  {{ row.organizationMembership?.role || 'No direct membership record'
+                  }}<small>{{
+                    row.organizationMembership?.status ||
+                      'Legacy affiliation or owner access is checked by the server'
+                  }}</small>
+                </td>
+                <td data-label="Team assignments">
+                  {{ row.teams.length }} team memberships<button
+                    type="button"
+                    (click)="show(row)"
+                    [attr.aria-label]="'View access details for ' + row.name"
+                  >
+                    View details
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4">
+                  {{ loading() ? 'Loading members…' : 'No members match these filters.' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button type="button" [disabled]="page() <= 1" (click)="page.set(page() - 1)">
+          Previous</button
+        ><span aria-live="polite">Page {{ page() }} of {{ pages() }}</span
+        ><button type="button" [disabled]="page() >= pages()" (click)="page.set(page() + 1)">
+          Next
+        </button>
+      </div>
+    </section>
+  }
+</app-organization-shell>
+<dialog #details aria-labelledby="member-details-title" (close)="selected.set(null)">
+  <button class="close" type="button" (click)="close()" aria-label="Close member details">
+    Close
+  </button>
+  @if (selected(); as member) {
+    <h2 id="member-details-title">{{ member.name }}</h2>
+    <p>{{ member.email }}</p>
+    <dl>
+      <div>
+        <dt>Account</dt>
+        <dd>{{ member.accountRole }} · {{ member.isActive ? 'Active' : 'Inactive' }}</dd>
+      </div>
+      <div>
+        <dt>Organization owner</dt>
+        <dd>{{ member.isOwner ? 'Yes' : 'No' }}</dd>
+      </div>
+      <div>
+        <dt>Direct organization membership</dt>
+        <dd>
+          {{ member.organizationMembership?.role || 'No direct membership record' }} ·
+          {{ member.organizationMembership?.status || 'Not recorded' }}
+        </dd>
+      </div>
+    </dl>
+    <h3>Team memberships</h3>
+    @for (team of member.teams; track team._id) {
+      <div class="card">
+        <strong>{{ team.name }}</strong>
+        <p>
+          {{ team.role }} · {{ team.status }} membership ·
+          {{ team.isActive ? 'Active team' : 'Inactive team' }}
+        </p>
+      </div>
+    } @empty {
+      <p>No team memberships.</p>
+    }
+    <p>
+      Account roles, direct membership roles and team roles are separate. Management actions use the
+      existing authorized workflows.
+    </p>
+    <div class="actions">
+      @if (member.accountRole === 'recruiter') {
+        <a
+          class="button"
+          routerLink="/app/admin/recruiters"
+          [queryParams]="{ member: member._id }"
+          (click)="close()"
+          >Manage this Recruiter</a
+        >
+      }
+      <a class="button" routerLink="/app/admin/teams" (click)="close()">Manage team assignments</a>
+    </div>
+  }
+</dialog>

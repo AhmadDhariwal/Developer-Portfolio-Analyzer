@@ -88,7 +88,7 @@ describe('Navbar', () => {
     expect(component.isAdmin).toBe(true);
     expect(component.searchPlaceholder).toBe('Search admin workspace...');
     expect(component.dashboardRoute).toBe('/app/admin/dashboard');
-    expect(component.profileRoute).toBe('/app/admin/console');
+    expect(component.profileRoute).toBe('/app/admin/organization');
     expect(component.notificationsRoute).toBe('/app/admin/activity-logs');
 
     component.searchQuery = 'dash';

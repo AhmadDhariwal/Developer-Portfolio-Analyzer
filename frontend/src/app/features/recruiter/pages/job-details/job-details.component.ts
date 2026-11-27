@@ -1,3 +1,10 @@
+import {
+  DestroyRef as PolicyDestroyRef,
+  effect as policyEffect,
+  untracked as policyUntracked,
+} from '@angular/core';
+import { takeUntilDestroyed as takeUntilPolicyDestroyed } from '@angular/core/rxjs-interop';
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +19,8 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   styleUrl: './job-details.component.scss',
 })
 export class JobDetailsComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
+  private readonly policyDestroy = inject(PolicyDestroyRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -32,9 +41,38 @@ export class JobDetailsComponent implements OnInit {
     private readonly router: Router,
     private readonly jobService: RecruiterJobService,
     private readonly matchService: RecruiterMatchService,
-  ) {}
+  ) {
+    policyEffect(() => {
+      const capabilities = this.policies.value();
+      policyUntracked(() => {
+        if (capabilities && this.job?.access?.isOwner === false) {
+          if (!this.policies.allowed('teamSharedJobs')) {
+            this.job = null;
+            this.jobMatches = [];
+            this.error = 'This resource is unavailable. Refresh the authorized workspace.';
+          } else if (!this.policies.allowed('sharedPublicEvaluations')) this.jobMatches = [];
+        }
+        this.cdr.markForCheck();
+      });
+    });
+  }
 
   ngOnInit(): void {
+    this.policies.resourcesChanged$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        this.loadJob();
+        this.cdr.markForCheck();
+      });
+    this.policies.contextChanges$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        this.request?.unsubscribe();
+        this.job = null;
+        this.jobMatches = [];
+        this.loadJob();
+        this.cdr.markForCheck();
+      });
     const paramStream = this.route.paramMap;
     if (paramStream) {
       paramStream.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
@@ -88,6 +126,7 @@ export class JobDetailsComponent implements OnInit {
         ),
         takeUntilDestroyed(this.destroyRef),
       )
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: ({ jobResponse, matchesResponse }) => {
           this.job = jobResponse?.job || null;
@@ -106,27 +145,40 @@ export class JobDetailsComponent implements OnInit {
   }
 
   generateMatches(): void {
-    if (!this.job?._id || !this.job?.access?.evaluationManage || this.generating) return;
+    if (!this.job?._id || !this.policies.canGenerate(this.job?.access) || this.generating) return;
     this.generating = true;
     this.error = '';
-    this.matchService.generateMatches({ jobId: this.job._id }).subscribe({
-      next: () => {
-        this.generating = false;
-        this.cdr.markForCheck();
-        this.router.navigate(['/app/recruiter/matches'], {
-          queryParams: { jobId: this.job._id },
-        });
-      },
-      error: (err) => {
-        this.generating = false;
-        this.error = err?.error?.message || 'Unable to generate matches for this job.';
-        this.cdr.markForCheck();
-      },
-    });
+    this.matchService
+      .generateMatches({ jobId: this.job._id })
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe({
+        next: () => {
+          this.generating = false;
+          this.cdr.markForCheck();
+          this.router.navigate(['/app/recruiter/matches'], {
+            queryParams: { jobId: this.job._id },
+          });
+        },
+        error: (err) => {
+          this.generating = false;
+          this.error = this.policies.permissionError(
+            err,
+            'Unable to generate matches for this job.',
+          );
+          if ([403, 404, 409].includes(err.status)) this.loadJob();
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   togglePublication(): void {
-    if (!this.job?.access?.publish || this.publishing) return;
+    if (
+      !this.job?.access?.edit ||
+      this.publishing ||
+      (!this.job.published &&
+        (!this.job?.access?.publish || !this.policies.allowed('recruiterJobPublication')))
+    )
+      return;
     this.publishing = true;
     this.error = '';
     this.jobService
@@ -134,6 +186,7 @@ export class JobDetailsComponent implements OnInit {
         published: !this.job.published,
         expectedVersion: this.job.version,
       })
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: (response) => {
           this.job = response.job;

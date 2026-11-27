@@ -1,4 +1,11 @@
 <section class="hub-page">
+  <app-organization-policy-notice
+    *ngIf="selectedJobId"
+    policy="candidateMatching"
+    title="Job-based comparison"
+    detail="Permitted general comparison without a job remains available."
+  />
+
   <header class="page-header">
     <div class="page-header__copy">
       <span class="page-header__eyebrow">Recruiter Hub · Matrix View</span>
@@ -23,7 +30,11 @@
       <button
         type="button"
         class="btn-primary"
-        [disabled]="selectedIds.size < 2 || loading"
+        [disabled]="
+          selectedIds.size < 2 ||
+          loading ||
+          (!!selectedJobId && !policies.allowed('candidateMatching'))
+        "
         (click)="loadComparison()"
       >
         {{ loading ? 'Comparing...' : 'Run Comparison' }}

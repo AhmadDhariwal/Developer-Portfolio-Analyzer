@@ -1,0 +1,162 @@
+<app-organization-shell
+  title="General settings"
+  description="Organization identity and the shared Admin dashboard configuration."
+  [loading]="store.loading() || store.saving()"
+  [error]="store.error()"
+  (refresh)="load(conflict())"
+>
+  @if (message()) {
+    <div class="message" role="status">{{ message() }}</div>
+  }
+  @if (conflict() && store.committed()) {
+    <section class="message warning" aria-labelledby="conflict-title">
+      <h2 id="conflict-title">Review concurrent changes</h2>
+      <p>
+        Your local drafts remain unchanged. Current server version:
+        {{ store.committed()!.version }}.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Setting</th>
+              <th scope="col">Your draft</th>
+              <th scope="col">Current server value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (field of fields; track field.key) {
+              <tr>
+                <th scope="row">{{ field.label }}</th>
+                <td>{{ general?.[field.key] || 'Empty' }}</td>
+                <td>{{ serverField(field.key) || 'Empty' }}</td>
+              </tr>
+            }
+            @for (field of dashboardReview; track field.label) {
+              <tr>
+                <th scope="row">{{ field.label }}</th>
+                <td>{{ field.draft }}</td>
+                <td>{{ field.server }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <button type="button" (click)="conflict.set(false)" [disabled]="store.loading()">
+        I reviewed the server changes
+      </button>
+    </section>
+  }
+  @if (store.committed() && general && dashboard) {
+    <form class="card stack" (ngSubmit)="saveGeneral()" novalidate>
+      <div>
+        <h2>Organization identity</h2>
+        <p>
+          Optional fields can be cleared by leaving them empty. Website and logo URLs must use HTTPS
+          without credentials, query strings or fragments.
+        </p>
+      </div>
+      <div class="form-grid">
+        @for (field of fields; track field.key) {
+          <div class="field">
+            <label [for]="field.key">{{ field.label }}</label>
+            @if (field.key === 'description') {
+              <textarea
+                [id]="field.key"
+                [name]="field.key"
+                [(ngModel)]="general[field.key]"
+                [maxlength]="field.limit"
+              ></textarea>
+            } @else {
+              <input
+                [id]="field.key"
+                [name]="field.key"
+                [(ngModel)]="general[field.key]"
+                [maxlength]="field.limit"
+                [required]="field.key === 'name'"
+                [attr.aria-invalid]="fieldError(field.key) ? 'true' : null"
+                [attr.aria-describedby]="field.key + '-help'"
+              />
+            }
+            <small [id]="field.key + '-help'">
+              @if (field.key === 'timezone') {
+                Use a supported IANA timezone, for example Asia/Karachi.
+              } @else {
+                {{ field.limit }} characters maximum.
+              }
+            </small>
+            @if (fieldError(field.key)) {
+              <span class="field-error" role="alert">{{ fieldError(field.key) }}</span>
+            }
+          </div>
+        }
+      </div>
+      <p class="muted">
+        Branding is displayed on Organization Overview using the saved HTTPS logo URL and the
+        existing content security policy. Remote image failures use a text fallback.
+      </p>
+      <div class="actions">
+        <button
+          type="submit"
+          class="primary"
+          [disabled]="!generalDirty || store.loading() || store.saving() || conflict()"
+        >
+          {{ store.saving() ? 'Saving…' : 'Save organization' }}</button
+        ><button type="button" (click)="reset()" [disabled]="!dirty || store.saving()">
+          Cancel changes</button
+        ><a
+          routerLink="/app/admin/activity-logs"
+          [queryParams]="{ action: 'ORGANIZATION_CONFIGURATION_UPDATED' }"
+          >View governance activity</a
+        >
+      </div>
+    </form>
+    <form class="card stack" (ngSubmit)="saveDashboard()">
+      <div>
+        <h2>Organization-wide Admin dashboard</h2>
+        <p>
+          These settings apply to the organization's Admin dashboard. Save or cancel organization
+          identity changes before saving this section.
+        </p>
+      </div>
+      <div class="form-grid">
+        <label
+          >Preferred date range<select name="days" [(ngModel)]="dashboard.preferredDateRangeDays">
+            @for (days of [7, 14, 30, 60, 90]; track days) {
+              <option [ngValue]="days">Last {{ days }} days</option>
+            }
+          </select></label
+        ><label
+          >Default team<select name="defaultTeam" [(ngModel)]="dashboard.defaultTeamId">
+            <option value="">All teams</option>
+            @for (team of teams(); track team._id) {
+              <option [value]="team._id">{{ team.name }}</option>
+            }
+          </select></label
+        >
+      </div>
+      <div class="form-grid">
+        @for (option of visibility; track option.key) {
+          <label class="check-row"
+            ><input type="checkbox" [name]="option.key" [(ngModel)]="dashboard[option.key]" />{{
+              option.label
+            }}</label
+          >
+        }
+      </div>
+      <div class="actions">
+        <button
+          type="submit"
+          class="primary"
+          [disabled]="
+            !dashboardDirty || generalDirty || store.loading() || store.saving() || conflict()
+          "
+        >
+          Save dashboard configuration</button
+        ><button type="button" (click)="reset()" [disabled]="!dirty || store.saving()">
+          Cancel changes</button
+        ><a routerLink="/app/admin/dashboard">Open dashboard</a>
+      </div>
+    </form>
+  }
+</app-organization-shell>

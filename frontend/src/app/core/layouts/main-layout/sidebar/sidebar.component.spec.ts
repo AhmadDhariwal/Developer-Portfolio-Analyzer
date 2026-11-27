@@ -50,12 +50,17 @@ describe('Sidebar', () => {
     expect(routes.filter((route) => !auth.canAccessUrl(route, user))).toEqual([]);
     expect(routes).toEqual([
       '/app/admin/dashboard',
+      '/app/admin/organization',
+      '/app/admin/organization/settings',
+      '/app/admin/organization/policies',
+      '/app/admin/organization/members',
+      '/app/admin/organization/invitations',
+      '/app/admin/organization/usage',
       '/app/admin/recruiters',
       '/app/admin/teams',
-      '/app/admin/developers',
       '/app/admin/jobs',
-      '/app/admin/console',
-      '/app/admin/console/performance-statistics',
+      '/app/admin/developers',
+      '/app/admin/performance',
       '/app/admin/activity-logs',
     ]);
     expect(auth.canAccessUrl('/app/profile', user)).toBe(false);
