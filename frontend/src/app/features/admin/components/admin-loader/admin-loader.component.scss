@@ -1,0 +1,275 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-loader {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.admin-loader__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+
+  p {
+    margin: 0;
+  }
+
+  &--compact {
+    font-size: 12.5px;
+  }
+}
+
+.admin-loader__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex-shrink: 0;
+  animation: adminLoaderPulse 1.2s ease-in-out infinite;
+}
+
+.admin-loader__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 195px), 1fr));
+  gap: 14px;
+}
+
+.admin-loader__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
+  gap: 16px;
+}
+
+.admin-loader__charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 16px;
+}
+
+.admin-loader__stat,
+.admin-loader__card,
+.admin-loader__chart,
+.admin-loader__panel,
+.admin-loader__table-card {
+  min-width: 0;
+  border-radius: var(--dev-radius-surface, 8px);
+  border: 1px solid var(--border-color);
+  background: var(--surface-card);
+  padding: 16px 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.admin-loader__stat {
+  min-height: 104px;
+  align-content: center;
+}
+
+.admin-loader__card {
+  gap: 14px;
+}
+
+.admin-loader__chart {
+  min-height: 260px;
+  align-content: space-between;
+}
+
+.admin-loader__panel {
+  min-height: 170px;
+  align-content: start;
+}
+
+.admin-loader__card-head,
+.admin-loader__card-foot,
+.admin-loader__table-head,
+.admin-loader__table-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-loader__table-card {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.admin-loader__table-head {
+  padding: 12px 16px;
+  background: var(--surface-secondary);
+  border-bottom: 1px solid var(--border-color);
+
+  .admin-loader__line {
+    width: 22%;
+  }
+}
+
+.admin-loader__table-row {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle, var(--border-color));
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  > .admin-loader__line--sm {
+    width: 72px;
+    flex-shrink: 0;
+  }
+}
+
+.admin-loader__stack {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-loader__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-loader__mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-loader__bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+  height: 165px;
+  padding-top: 8px;
+
+  span {
+    display: block;
+    border-radius: 4px;
+    height: 55%;
+
+    &:nth-child(2n) {
+      height: 82%;
+    }
+
+    &:nth-child(3n) {
+      height: 68%;
+    }
+  }
+}
+
+.admin-loader__line,
+.admin-loader__avatar,
+.admin-loader__badge,
+.admin-loader__chip,
+.admin-loader__mini-box,
+.admin-loader__cta,
+.admin-loader__bars span {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 25%,
+    var(--surface-tertiary) 50%,
+    var(--surface-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: adminLoaderShimmer 1.4s ease-in-out infinite;
+}
+
+.admin-loader__line {
+  height: 12px;
+  border-radius: 4px;
+
+  &--sm {
+    width: 42%;
+  }
+
+  &--md {
+    width: 68%;
+  }
+
+  &--lg {
+    width: 90%;
+  }
+
+  &--xl {
+    height: 22px;
+    width: 52%;
+  }
+}
+
+.admin-loader__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.admin-loader__badge {
+  width: 64px;
+  height: 22px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.admin-loader__chip {
+  width: 72px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+.admin-loader__mini-box {
+  height: 52px;
+  border-radius: 6px;
+}
+
+.admin-loader__cta {
+  width: 96px;
+  height: 34px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+@keyframes adminLoaderShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes adminLoaderPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-loader__pulse,
+  .admin-loader__line,
+  .admin-loader__avatar,
+  .admin-loader__badge,
+  .admin-loader__chip,
+  .admin-loader__mini-box,
+  .admin-loader__cta,
+  .admin-loader__bars span {
+    animation: none;
+  }
+}

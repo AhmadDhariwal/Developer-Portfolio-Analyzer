@@ -18,6 +18,8 @@ import {
   AdminTeamOption,
   PendingInvitation,
 } from '../../services/admin-hiring.service';
+import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
+import { AdminStatCardComponent } from '../../components/admin-stat-card/admin-stat-card.component';
 
 type Tab = 'overview' | 'teams' | 'recruiters' | 'invitations' | 'activity' | 'preferences';
 type DataTab = Exclude<Tab, 'activity'>;
@@ -33,7 +35,7 @@ interface TabState {
 @Component({
   selector: 'app-admin-console-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminLoaderComponent, AdminStatCardComponent],
   templateUrl: './admin-console.component.html',
   styleUrl: './admin-console.component.scss',
 })

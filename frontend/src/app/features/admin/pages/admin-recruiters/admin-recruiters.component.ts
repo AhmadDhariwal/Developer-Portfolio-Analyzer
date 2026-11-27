@@ -11,7 +11,8 @@ import {
   PendingInvitation,
 } from '../../services/admin-hiring.service';
 import { AdminConsoleService } from '../admin-console/admin-console.service';
-import { SharedLoaderComponent } from '../../../../shared/components/loader/loader.component';
+import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
+import { AdminStatCardComponent } from '../../components/admin-stat-card/admin-stat-card.component';
 import { SharedMessageComponent } from '../../../../shared/components/message/message.component';
 import { SharedEmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -22,7 +23,8 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
   imports: [
     CommonModule,
     FormsModule,
-    SharedLoaderComponent,
+    AdminLoaderComponent,
+    AdminStatCardComponent,
     SharedMessageComponent,
     SharedEmptyStateComponent,
     ConfirmDialogComponent,

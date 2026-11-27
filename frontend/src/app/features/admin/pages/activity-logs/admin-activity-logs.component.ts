@@ -13,6 +13,7 @@ import {
   SearchableSelectOption,
 } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
 
 interface AuditActor {
   _id: string;
@@ -69,7 +70,13 @@ const SENSITIVE_KEY_PATTERNS = [
 @Component({
   selector: 'app-admin-activity-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableSelectComponent, ConfirmDialogComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SearchableSelectComponent,
+    ConfirmDialogComponent,
+    AdminLoaderComponent,
+  ],
   templateUrl: './admin-activity-logs.component.html',
   styleUrls: ['./admin-activity-logs.component.scss'],
 })

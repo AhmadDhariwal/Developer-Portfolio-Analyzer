@@ -1,5 +1,14 @@
 <section class="admin-dash">
   <header class="hero">
+    <div
+      class="loading-strip"
+      *ngIf="showRefreshState"
+      role="progressbar"
+      aria-label="Refreshing organization dashboard"
+    >
+      <span></span>
+    </div>
+
     <div class="hero__copy">
       <div class="hero__eyebrow">
         <span class="hero__dot"></span>
@@ -20,10 +29,6 @@
       <button type="button" class="btn btn--primary" (click)="refreshAll()">Refresh</button>
     </div>
   </header>
-
-  <div class="loading-strip" *ngIf="showRefreshState">
-    <span></span>
-  </div>
 
   <app-shared-message
     [visible]="!!error"
@@ -84,8 +89,13 @@
     </div>
   </section>
 
-  <div class="skeleton-grid" *ngIf="showInitialSkeleton">
-    <div class="skeleton-card" *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]"></div>
+  <div class="dash-skeleton-stack" *ngIf="showInitialSkeleton">
+    <app-admin-loader
+      variant="stats"
+      [count]="6"
+      label="Loading organization dashboard..."
+    ></app-admin-loader>
+    <app-admin-loader variant="charts" [count]="2" label=""></app-admin-loader>
   </div>
 
   <div
@@ -135,82 +145,74 @@
     </section>
 
     <section class="kpi-grid" *ngIf="dashboardConfig.showKpiCards">
-      <button
-        type="button"
-        class="kpi-card kpi-card--indigo kpi-card--button"
-        (click)="openTeamsView()"
-      >
-        <span class="kpi-card__label">Teams</span>
-        <span class="kpi-card__value">{{ performance.summary.totalTeams }}</span>
-        <span class="kpi-card__meta">{{ overview.activeTeamsCount }} active in organization</span>
-      </button>
+      <app-admin-stat-card
+        label="Teams"
+        [value]="performance.summary.totalTeams"
+        [hint]="overview.activeTeamsCount + ' active in organization'"
+        tone="indigo"
+        [interactive]="true"
+        (cardClick)="openTeamsView()"
+      ></app-admin-stat-card>
 
-      <button
-        type="button"
-        class="kpi-card kpi-card--cyan kpi-card--button"
-        (click)="openRecruitersView()"
-      >
-        <span class="kpi-card__label">Recruiters</span>
-        <span class="kpi-card__value">{{ performance.summary.totalRecruiters }}</span>
-        <span class="kpi-card__meta"
-          >{{ performance.summary.activeRecruiters }} active /
-          {{ performance.summary.inactiveRecruiters || 0 }} inactive</span
-        >
-      </button>
+      <app-admin-stat-card
+        label="Recruiters"
+        [value]="performance.summary.totalRecruiters"
+        [hint]="
+          performance.summary.activeRecruiters +
+          ' active / ' +
+          (performance.summary.inactiveRecruiters || 0) +
+          ' inactive'
+        "
+        tone="emerald"
+        [interactive]="true"
+        (cardClick)="openRecruitersView()"
+      ></app-admin-stat-card>
 
-      <button
-        type="button"
-        class="kpi-card kpi-card--amber kpi-card--button"
-        (click)="openJobsView()"
-      >
-        <span class="kpi-card__label">Jobs</span>
-        <span class="kpi-card__value">{{
-          performance.summary.totalJobs || performance.hiringAnalytics.total
-        }}</span>
-        <span class="kpi-card__meta"
-          >{{ performance.summary.openJobs || performance.hiringAnalytics.open }} open /
-          {{ performance.summary.closedJobs || performance.hiringAnalytics.closed }} closed</span
-        >
-      </button>
+      <app-admin-stat-card
+        label="Jobs"
+        [value]="performance.summary.totalJobs || performance.hiringAnalytics.total"
+        [hint]="
+          (performance.summary.openJobs || performance.hiringAnalytics.open) +
+          ' open / ' +
+          (performance.summary.closedJobs || performance.hiringAnalytics.closed) +
+          ' closed'
+        "
+        tone="sky"
+        [interactive]="true"
+        (cardClick)="openJobsView()"
+      ></app-admin-stat-card>
 
-      <button
-        type="button"
-        class="kpi-card kpi-card--teal kpi-card--button"
-        (click)="openDevelopersView()"
-      >
-        <span class="kpi-card__label">Public Developers</span>
-        <span class="kpi-card__value">{{ overview.globalDevelopersCount }}</span>
-        <span class="kpi-card__meta">Safe public profiles only</span>
-      </button>
+      <app-admin-stat-card
+        label="Public Developers"
+        [value]="overview.globalDevelopersCount"
+        hint="Safe public profiles only"
+        tone="slate"
+        [interactive]="true"
+        (cardClick)="openDevelopersView()"
+      ></app-admin-stat-card>
 
-      <button
-        type="button"
-        class="kpi-card kpi-card--slate kpi-card--button"
-        (click)="openPerformanceView()"
-      >
-        <span class="kpi-card__label">Candidates Analyzed</span>
-        <span class="kpi-card__value">{{
-          performance.candidateAnalytics?.candidatesAnalyzed || 0
-        }}</span>
-        <span class="kpi-card__meta"
-          >{{ performance.candidateAnalytics?.aiEnhancedCandidates || 0 }} AI-enhanced</span
-        >
-      </button>
+      <app-admin-stat-card
+        label="Candidates Analyzed"
+        [value]="performance.candidateAnalytics?.candidatesAnalyzed || 0"
+        [hint]="(performance.candidateAnalytics?.aiEnhancedCandidates || 0) + ' AI-enhanced'"
+        tone="indigo"
+        [interactive]="true"
+        (cardClick)="openPerformanceView()"
+      ></app-admin-stat-card>
 
-      <button
-        type="button"
-        class="kpi-card kpi-card--rose kpi-card--button"
-        (click)="openPerformanceView()"
-      >
-        <span class="kpi-card__label">Matches Generated</span>
-        <span class="kpi-card__value">{{
+      <app-admin-stat-card
+        label="Matches Generated"
+        [value]="
           performance.summary.matchesGenerated || performance.aiEffectiveness?.matchCalls || 0
-        }}</span>
-        <span class="kpi-card__meta"
-          >{{ performance.summary.aiRankUsage || performance.aiEffectiveness?.aiRankCalls || 0 }} AI
-          rank calls</span
-        >
-      </button>
+        "
+        [hint]="
+          (performance.summary.aiRankUsage || performance.aiEffectiveness?.aiRankCalls || 0) +
+          ' AI rank calls'
+        "
+        tone="amber"
+        [interactive]="true"
+        (cardClick)="openPerformanceView()"
+      ></app-admin-stat-card>
     </section>
 
     <section class="dashboard-grid" *ngIf="dashboardConfig.showTeamAnalytics">
@@ -231,14 +233,14 @@
         </div>
 
         <ng-container *ngIf="focusTeam as team; else noTeamData">
-          <div class="focus-card">
-            <div class="focus-card__header">
+          <div class="focus-summary">
+            <div class="focus-summary__head">
               <div>
                 <h3>{{ team.name }}</h3>
                 <span
                   class="badge"
                   [class.badge--green]="team.isActive"
-                  [class.badge--red]="!team.isActive"
+                  [class.badge--slate]="!team.isActive"
                 >
                   {{ team.isActive ? 'Active' : 'Inactive' }}
                 </span>
@@ -264,43 +266,45 @@
                 <strong>{{ team.totalJobs }}</strong>
               </div>
               <div class="mini-stats__item">
-                <span>AI Usage</span>
-                <strong>{{ team.aiUsage || 0 }}</strong>
+                <span>Open / Closed</span>
+                <strong>{{ team.openJobs || 0 }} / {{ team.closedJobs || 0 }}</strong>
+              </div>
+              <div class="mini-stats__item">
+                <span>Matches</span>
+                <strong>{{ team.matchesGenerated || 0 }}</strong>
               </div>
               <div class="mini-stats__item">
                 <span>Candidates</span>
                 <strong>{{ team.candidatesAnalyzed || 0 }}</strong>
               </div>
-            </div>
-
-            <div class="funnel-grid">
-              <div class="funnel-grid__item">
-                <span>Open</span>
-                <strong>{{ team.openJobs || 0 }}</strong>
-              </div>
-              <div class="funnel-grid__item">
-                <span>Draft</span>
-                <strong>{{ team.draftJobs || 0 }}</strong>
-              </div>
-              <div class="funnel-grid__item">
-                <span>Closed</span>
-                <strong>{{ team.closedJobs || 0 }}</strong>
-              </div>
-              <div class="funnel-grid__item">
-                <span>Matches</span>
-                <strong>{{ team.matchesGenerated || 0 }}</strong>
+              <div class="mini-stats__item">
+                <span>AI Usage</span>
+                <strong>{{ team.aiUsage || 0 }}</strong>
               </div>
             </div>
           </div>
         </ng-container>
 
-        <div class="chart-card">
-          <div class="chart-card__header">
+        <div class="funnel-section">
+          <div class="funnel-section__head">
             <h3>Hiring Funnel</h3>
             <span>Jobs and accepted invitations</span>
           </div>
-          <div class="chart-card__canvas" *ngIf="hasHiringFunnelData; else noHiringFunnelData">
-            <canvas #hiringFunnelChart></canvas>
+          <div class="funnel-donut-row" *ngIf="hasHiringFunnelData; else noHiringFunnelData">
+            <div class="funnel-donut-wrap">
+              <canvas #hiringFunnelChart></canvas>
+              <div class="funnel-donut-center">
+                <strong>{{ hiringFunnelTotal }}</strong>
+                <span>Total</span>
+              </div>
+            </div>
+            <div class="funnel-legend">
+              <div class="funnel-legend__row" *ngFor="let item of hiringFunnelLegend">
+                <span class="funnel-legend__dot" [style.background]="item.color"></span>
+                <span class="funnel-legend__label">{{ item.label }}</span>
+                <strong class="funnel-legend__val">{{ item.value }}</strong>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -309,12 +313,12 @@
         <div class="panel__header">
           <div>
             <h2>Team Activity Graph</h2>
-            <p>Engagement score, candidate engagement, and AI usage per team.</p>
+            <p>Engagement score and candidate analysis per team.</p>
           </div>
         </div>
 
-        <div class="chart-card chart-card--panel" *ngIf="performance.teamMetrics.length > 0">
-          <div class="chart-card__canvas chart-card__canvas--lg">
+        <div class="chart-surface" *ngIf="performance.teamMetrics.length > 0">
+          <div class="chart-surface__canvas chart-surface__canvas--lg">
             <canvas #teamActivityChart></canvas>
           </div>
         </div>
@@ -327,7 +331,7 @@
             <div class="bar-list__head">
               <div>
                 <strong>{{ team.name }}</strong>
-                <span>{{ team.recruiterCount }} recruiters - {{ team.totalJobs }} jobs</span>
+                <span>{{ team.recruiterCount }} recruiters &middot; {{ team.totalJobs }} jobs</span>
               </div>
               <button type="button" class="btn btn--ghost btn--sm" (click)="openTeamDetail(team)">
                 Details
@@ -349,22 +353,11 @@
               <span>Candidate Engagement</span>
               <div class="metric-line__track">
                 <div
-                  class="metric-line__fill metric-line__fill--cyan"
+                  class="metric-line__fill metric-line__fill--emerald"
                   [style.width.%]="barPct(team.candidatesAnalyzed || 0, maxTeamCandidates())"
                 ></div>
               </div>
               <strong>{{ team.candidatesAnalyzed || 0 }}</strong>
-            </div>
-
-            <div class="metric-line">
-              <span>AI Usage</span>
-              <div class="metric-line__track">
-                <div
-                  class="metric-line__fill metric-line__fill--teal"
-                  [style.width.%]="barPct(team.aiUsage || 0, maxTeamAiUsage())"
-                ></div>
-              </div>
-              <strong>{{ team.aiUsage || 0 }}</strong>
             </div>
           </article>
         </div>
@@ -436,12 +429,12 @@
         <a class="btn btn--ghost btn--sm" routerLink="/app/admin/recruiters">Manage Recruiters</a>
       </div>
 
-      <div class="chart-card chart-card--panel" *ngIf="recruiterHighlights.length > 0">
-        <div class="chart-card__header">
+      <div class="chart-surface chart-surface--panel" *ngIf="recruiterHighlights.length > 0">
+        <div class="chart-surface__header">
           <h3>Recruiter Comparison</h3>
           <span>Jobs, matches, and AI calls</span>
         </div>
-        <div class="chart-card__canvas chart-card__canvas--lg">
+        <div class="chart-surface__canvas">
           <canvas #recruiterPerformanceChart></canvas>
         </div>
       </div>
@@ -459,7 +452,7 @@
             <span
               class="badge"
               [class.badge--green]="recruiter.isActive"
-              [class.badge--red]="!recruiter.isActive"
+              [class.badge--slate]="!recruiter.isActive"
             >
               {{ recruiter.isActive ? 'Active' : 'Inactive' }}
             </span>
@@ -496,28 +489,21 @@
         <div class="panel__header">
           <div>
             <h2>Job Trends</h2>
-            <p>Monthly jobs trend and stack mix for the current filters.</p>
+            <p>Monthly requisitions velocity for the selected filter window.</p>
           </div>
-        </div>
-
-        <div class="trend-chart">
-          <button
-            type="button"
-            class="trend-chart__col trend-chart__col--button"
-            *ngFor="let trend of performance.hiringAnalytics.monthlyTrend"
-            (click)="openTrendDetail(trend.label)"
-            [attr.title]="'Open detailed analytics for ' + trend.label"
-          >
-            <span class="trend-chart__value" *ngIf="trend.count > 0">{{ trend.count }}</span>
-            <div class="trend-chart__bar-wrap">
-              <div
-                class="trend-chart__bar"
-                [style.height.%]="barPct(trend.count, maxMonthlyTrend())"
-              ></div>
-            </div>
-            <span class="trend-chart__label">{{ trend.label }}</span>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="openTrendDetail('all')">
+            Deep Analytics
           </button>
         </div>
+
+        <app-admin-chart
+          [bare]="true"
+          mode="area"
+          tone="indigo"
+          [height]="220"
+          [items]="monthlyTrendChartItems"
+          emptyMessage="No monthly job trends recorded yet."
+        ></app-admin-chart>
       </div>
 
       <div class="panel">
@@ -687,14 +673,14 @@
             <p>Current recruiter filter focus with direct drill-in.</p>
           </div>
         </div>
-        <div class="focus-card" *ngIf="focusRecruiterMetric as recruiter; else noRecruiterData">
-          <div class="focus-card__header">
+        <div class="focus-summary" *ngIf="focusRecruiterMetric as recruiter; else noRecruiterData">
+          <div class="focus-summary__head">
             <div>
               <h3>{{ recruiter.name }}</h3>
               <span
                 class="badge"
                 [class.badge--green]="recruiter.isActive"
-                [class.badge--red]="!recruiter.isActive"
+                [class.badge--slate]="!recruiter.isActive"
               >
                 {{ recruiter.isActive ? 'Active' : 'Inactive' }}
               </span>

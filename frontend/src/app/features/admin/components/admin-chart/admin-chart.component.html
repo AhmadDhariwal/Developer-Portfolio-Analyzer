@@ -1,0 +1,41 @@
+<section class="chart-shell" [class.chart-shell--bare]="bare">
+  <header class="chart-head" *ngIf="title || subtitle || badgeText">
+    <div class="chart-titles">
+      <h3 *ngIf="title">{{ title }}</h3>
+      <p *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+    <span class="chart-badge" *ngIf="badgeText">{{ badgeText }}</span>
+  </header>
+
+  <ng-container *ngIf="hasData; else emptyState">
+    <div class="donut-layout" *ngIf="mode === 'donut'; else cartesianChart">
+      <div class="donut-canvas-wrap">
+        <canvas #canvas [attr.aria-label]="title || 'Distribution chart'"></canvas>
+        <div class="donut-center">
+          <strong>{{ donutTotal }}</strong>
+          <span>{{ centerLabel }}</span>
+        </div>
+      </div>
+
+      <div class="donut-legend">
+        <div class="legend-row" *ngFor="let item of donutItems; let idx = index">
+          <span class="legend-dot" [style.background]="colorAt(idx)"></span>
+          <span class="legend-label">{{ item.label }}</span>
+          <strong class="legend-val">{{ item.value }} ({{ donutShare(item) }}%)</strong>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #cartesianChart>
+      <div class="canvas-wrap" [style.height.px]="height">
+        <canvas #canvas [attr.aria-label]="title || 'Analytics chart'"></canvas>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #emptyState>
+    <div class="chart-empty">
+      <p>{{ emptyMessage }}</p>
+    </div>
+  </ng-template>
+</section>

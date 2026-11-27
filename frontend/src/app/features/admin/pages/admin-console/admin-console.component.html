@@ -1,5 +1,8 @@
 <div class="oc-shell">
   <header class="oc-header">
+    <div class="oc-loading-bar" *ngIf="loading" role="progressbar" aria-label="Loading">
+      <div class="oc-loading-bar__shimmer"></div>
+    </div>
     <div class="oc-header__left">
       <div class="oc-header__eyebrow">
         <span class="oc-eyebrow-dot"></span>
@@ -45,10 +48,6 @@
       </button>
     </div>
   </header>
-
-  <div class="oc-loading-bar" *ngIf="loading" role="progressbar" aria-label="Loading">
-    <div class="oc-loading-bar__shimmer"></div>
-  </div>
 
   <div class="oc-alert oc-alert--error" *ngIf="error" role="alert">
     <svg
@@ -231,7 +230,7 @@
     </button>
   </nav>
 
-  <div class="oc-tab-error" *ngIf="hasCurrentTabError()">
+  <div class="oc-tab-error" role="alert" aria-live="polite" *ngIf="hasCurrentTabError()">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="15"
@@ -292,104 +291,137 @@
       </div>
 
       <div class="oc-stats-grid">
-        <div class="oc-stat-card oc-stat-card--indigo">
-          <div class="oc-stat-card__accent"></div>
-          <span class="oc-stat-card__value">{{ overview.stats.membersCount || 0 }}</span>
-          <span class="oc-stat-card__label">Total Members</span>
-        </div>
-        <div class="oc-stat-card oc-stat-card--blue">
-          <div class="oc-stat-card__accent"></div>
-          <span class="oc-stat-card__value">{{ overview.stats.teamsCount || 0 }}</span>
-          <span class="oc-stat-card__label">Teams</span>
-        </div>
-        <div class="oc-stat-card oc-stat-card--green">
-          <div class="oc-stat-card__accent"></div>
-          <span class="oc-stat-card__value">{{ overview.stats.recruitersCount || 0 }}</span>
-          <span class="oc-stat-card__label">Recruiters</span>
-        </div>
-        <div class="oc-stat-card oc-stat-card--amber">
-          <div class="oc-stat-card__accent"></div>
-          <span class="oc-stat-card__value">{{ overview.stats.jobsCount || 0 }}</span>
-          <span class="oc-stat-card__label">Jobs</span>
-        </div>
-        <div class="oc-stat-card oc-stat-card--purple">
-          <div class="oc-stat-card__accent"></div>
-          <span class="oc-stat-card__value">{{ overview.stats.pendingInvitationsCount || 0 }}</span>
-          <span class="oc-stat-card__label">Pending Invitations</span>
-        </div>
-        <div class="oc-stat-card oc-stat-card--teal">
-          <div class="oc-stat-card__accent"></div>
-          <span class="oc-stat-card__value">{{ overview.stats.activeRecruitersCount || 0 }}</span>
-          <span class="oc-stat-card__label">Active Recruiters</span>
-        </div>
+        <app-admin-stat-card
+          label="Total Members"
+          [value]="overview.stats.membersCount || 0"
+          tone="indigo"
+        ></app-admin-stat-card>
+        <app-admin-stat-card
+          label="Teams"
+          [value]="overview.stats.teamsCount || 0"
+          tone="sky"
+        ></app-admin-stat-card>
+        <app-admin-stat-card
+          label="Recruiters"
+          [value]="overview.stats.recruitersCount || 0"
+          tone="emerald"
+        ></app-admin-stat-card>
+        <app-admin-stat-card
+          label="Jobs"
+          [value]="overview.stats.jobsCount || 0"
+          tone="amber"
+        ></app-admin-stat-card>
+        <app-admin-stat-card
+          label="Pending Invitations"
+          [value]="overview.stats.pendingInvitationsCount || 0"
+          tone="indigo"
+        ></app-admin-stat-card>
+        <app-admin-stat-card
+          label="Active Recruiters"
+          [value]="overview.stats.activeRecruitersCount || 0"
+          tone="emerald"
+        ></app-admin-stat-card>
       </div>
 
-      <div class="oc-section" *ngIf="overview.membershipSummary as membershipSummary">
-        <h3 class="oc-section__title">Membership Summary</h3>
-        <div class="oc-stats-grid">
-          <div class="oc-stat-card oc-stat-card--indigo">
-            <div class="oc-stat-card__accent"></div>
-            <span class="oc-stat-card__value">{{
-              membershipSummary.internalMembersCount || 0
-            }}</span>
+      <section class="oc-membership-card" *ngIf="overview.membershipSummary as membershipSummary">
+        <div class="oc-membership-card__head">
+          <h3 class="oc-section__title">Membership Summary</h3>
+          <span class="oc-org-badge"
+            >{{ membershipSummary.internalMembersCount || 0 }} internal seats</span
+          >
+        </div>
+
+        <div class="oc-membership-strip">
+          <div class="oc-membership-item">
             <span class="oc-stat-card__label">Internal Members</span>
+            <strong class="oc-membership-item__val">{{
+              membershipSummary.internalMembersCount || 0
+            }}</strong>
           </div>
-          <div class="oc-stat-card oc-stat-card--blue">
-            <div class="oc-stat-card__accent"></div>
-            <span class="oc-stat-card__value">{{ membershipSummary.adminCount || 0 }}</span>
+          <div class="oc-membership-item">
             <span class="oc-stat-card__label">Admins</span>
+            <strong class="oc-membership-item__val">{{ membershipSummary.adminCount || 0 }}</strong>
           </div>
-          <div class="oc-stat-card oc-stat-card--green">
-            <div class="oc-stat-card__accent"></div>
-            <span class="oc-stat-card__value">{{ membershipSummary.recruiterCount || 0 }}</span>
+          <div class="oc-membership-item">
             <span class="oc-stat-card__label">Recruiters</span>
+            <strong class="oc-membership-item__val">{{
+              membershipSummary.recruiterCount || 0
+            }}</strong>
           </div>
-          <div class="oc-stat-card oc-stat-card--amber">
-            <div class="oc-stat-card__accent"></div>
-            <span class="oc-stat-card__value">{{ membershipSummary.memberCount || 0 }}</span>
+          <div class="oc-membership-item">
             <span class="oc-stat-card__label">Team Members</span>
+            <strong class="oc-membership-item__val">{{
+              membershipSummary.memberCount || 0
+            }}</strong>
           </div>
         </div>
+
         <p class="oc-text-muted">
           Public developers stay in the separate global talent pool and are not counted as
           organization members.
         </p>
-      </div>
+      </section>
 
       <div class="oc-section">
         <h3 class="oc-section__title">Quick Actions</h3>
         <div class="oc-action-grid">
           <button type="button" class="oc-action-card" (click)="setTab('teams')">
-            <span class="oc-action-card__title">Manage Teams</span>
-            <span class="oc-action-card__sub">Create, assign, and organize recruiter teams.</span>
+            <div>
+              <span class="oc-action-card__title">Manage Teams</span>
+              <span class="oc-action-card__sub">Create, assign, and organize recruiter teams.</span>
+            </div>
+            <span class="oc-action-card__arrow" aria-hidden="true">&rarr;</span>
           </button>
           <button type="button" class="oc-action-card" (click)="setTab('recruiters')">
-            <span class="oc-action-card__title">Recruiters</span>
-            <span class="oc-action-card__sub">Invite recruiters and review account status.</span>
+            <div>
+              <span class="oc-action-card__title">Recruiters</span>
+              <span class="oc-action-card__sub">Invite recruiters and review account status.</span>
+            </div>
+            <span class="oc-action-card__arrow" aria-hidden="true">&rarr;</span>
           </button>
           <button type="button" class="oc-action-card" (click)="setTab('invitations')">
-            <span class="oc-action-card__title">Invitations</span>
-            <span class="oc-action-card__sub">Track pending, expired, and revoked invites.</span>
+            <div>
+              <span class="oc-action-card__title">Invitations</span>
+              <span class="oc-action-card__sub">Track pending, expired, and revoked invites.</span>
+            </div>
+            <span class="oc-action-card__arrow" aria-hidden="true">&rarr;</span>
           </button>
           <button type="button" class="oc-action-card" (click)="setTab('preferences')">
-            <span class="oc-action-card__title">Preferences</span>
-            <span class="oc-action-card__sub"
-              >Update organization settings and dashboard defaults.</span
-            >
+            <div>
+              <span class="oc-action-card__title">Preferences</span>
+              <span class="oc-action-card__sub"
+                >Update organization settings and dashboard defaults.</span
+              >
+            </div>
+            <span class="oc-action-card__arrow" aria-hidden="true">&rarr;</span>
           </button>
           <button type="button" class="oc-action-card" (click)="goToPerformanceStatistics()">
-            <span class="oc-action-card__title">Performance</span>
-            <span class="oc-action-card__sub">Open the full Performance & Statistics page.</span>
+            <div>
+              <span class="oc-action-card__title">Performance</span>
+              <span class="oc-action-card__sub">Open the full Performance & Statistics page.</span>
+            </div>
+            <span class="oc-action-card__arrow" aria-hidden="true">&rarr;</span>
           </button>
           <button type="button" class="oc-action-card" (click)="goToActivityLogs()">
-            <span class="oc-action-card__title">Activity Logs</span>
-            <span class="oc-action-card__sub">Open the organization audit center.</span>
+            <div>
+              <span class="oc-action-card__title">Activity Logs</span>
+              <span class="oc-action-card__sub">Open the organization audit center.</span>
+            </div>
+            <span class="oc-action-card__arrow" aria-hidden="true">&rarr;</span>
           </button>
         </div>
       </div>
     </div>
 
     <ng-template #overviewEmpty>
+      <div class="oc-skeleton-stack" *ngIf="isTabLoading('overview')">
+        <app-admin-loader
+          variant="stats"
+          [count]="6"
+          label="Loading organization overview..."
+        ></app-admin-loader>
+        <app-admin-loader variant="cards" [count]="3" label=""></app-admin-loader>
+      </div>
       <div class="oc-empty" *ngIf="!isTabLoading('overview')">
         <p>No overview data available yet.</p>
       </div>
@@ -507,6 +539,13 @@
         <span class="oc-count-badge">{{ teams.length }}</span>
       </h2>
     </div>
+
+    <app-admin-loader
+      *ngIf="teams.length === 0 && isTabLoading('teams')"
+      variant="cards"
+      [count]="4"
+      label="Loading teams..."
+    ></app-admin-loader>
 
     <div class="oc-empty" *ngIf="teams.length === 0 && !isTabLoading('teams')">
       <p>No teams found for this organization.</p>
@@ -893,6 +932,13 @@
       </h2>
     </div>
 
+    <app-admin-loader
+      *ngIf="filteredRecruiters.length === 0 && isTabLoading('recruiters')"
+      variant="cards"
+      [count]="4"
+      label="Loading recruiters..."
+    ></app-admin-loader>
+
     <div class="oc-empty" *ngIf="filteredRecruiters.length === 0 && !isTabLoading('recruiters')">
       <p>No recruiters match the current filters.</p>
     </div>
@@ -1021,6 +1067,13 @@
         <span class="oc-count-badge">{{ pendingInvitations.length }}</span>
       </h2>
     </div>
+
+    <app-admin-loader
+      *ngIf="pendingInvitations.length === 0 && isTabLoading('invitations')"
+      variant="table"
+      [count]="4"
+      label="Loading invitations..."
+    ></app-admin-loader>
 
     <div class="oc-empty" *ngIf="pendingInvitations.length === 0 && !isTabLoading('invitations')">
       <p>No invitations are currently pending for this organization.</p>
@@ -1412,6 +1465,12 @@
     </div>
 
     <ng-template #preferencesEmpty>
+      <app-admin-loader
+        *ngIf="isTabLoading('preferences')"
+        variant="panels"
+        [count]="2"
+        label="Loading organization preferences..."
+      ></app-admin-loader>
       <div class="oc-empty" *ngIf="!isTabLoading('preferences')">
         <p>No preferences data available.</p>
       </div>

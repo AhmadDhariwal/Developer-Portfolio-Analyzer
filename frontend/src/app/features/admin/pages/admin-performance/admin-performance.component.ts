@@ -2,6 +2,12 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
+import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
+import { AdminStatCardComponent } from '../../components/admin-stat-card/admin-stat-card.component';
+import {
+  AdminChartComponent,
+  AdminChartPoint,
+} from '../../components/admin-chart/admin-chart.component';
 import { Subscription, catchError, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 import {
   AdminPerformanceService,
@@ -29,7 +35,14 @@ interface FilterState {
 @Component({
   selector: 'app-admin-performance',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    AdminLoaderComponent,
+    AdminStatCardComponent,
+    AdminChartComponent,
+  ],
   templateUrl: './admin-performance.component.html',
   styleUrls: ['./admin-performance.component.scss'],
 })
@@ -59,6 +72,54 @@ export class AdminPerformanceComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
   ) {}
+
+  get monthlyTrendPoints(): AdminChartPoint[] {
+    return (this.data?.hiringAnalytics?.monthlyTrend || []).map((item) => ({
+      label: item.label,
+      value: Number(item.count || 0),
+    }));
+  }
+
+  get skillGapChartPoints(): AdminChartPoint[] {
+    return (this.data?.skillGapTrends || []).slice(0, 8).map((item) => ({
+      label: item.skill,
+      value: Number(item.count || 0),
+    }));
+  }
+
+  get portfolioQualityPoints(): AdminChartPoint[] {
+    const pq = this.data?.portfolioQuality;
+    if (!pq || !pq.sampleSize) return [];
+    return [
+      { label: 'GitHub', value: Number(pq.avgGithubScore || 0) },
+      { label: 'Resume', value: Number(pq.avgResumeScore || 0) },
+      { label: 'Growth', value: Number(pq.avgGrowthPotential || 0) },
+    ];
+  }
+
+  get jobStatusChartPoints(): AdminChartPoint[] {
+    const hiring = this.data?.hiringAnalytics;
+    if (!hiring) return [];
+    return [
+      { label: 'Open', value: Number(hiring.open || 0) },
+      { label: 'Draft', value: Number(hiring.draft || 0) },
+      { label: 'Closed', value: Number(hiring.closed || 0) },
+    ];
+  }
+
+  get stackDistributionPoints(): AdminChartPoint[] {
+    return (this.data?.hiringAnalytics?.stackDistribution || []).map((item) => ({
+      label: item.stack,
+      value: Number(item.count || 0),
+    }));
+  }
+
+  get aiByRecruiterPoints(): AdminChartPoint[] {
+    return (this.data?.aiStats?.analysesByRecruiter || []).slice(0, 10).map((item) => ({
+      label: `${item.name} (${item.recentCount || 0} recent)`,
+      value: Number(item.count || 0),
+    }));
+  }
 
   ngOnInit(): void {
     this.routeSub = this.route.queryParamMap

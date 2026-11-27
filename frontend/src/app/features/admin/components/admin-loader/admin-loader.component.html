@@ -1,0 +1,91 @@
+<div
+  class="admin-loader"
+  [class]="'admin-loader admin-loader--' + variant"
+  role="status"
+  aria-live="polite"
+>
+  <div
+    class="admin-loader__label"
+    *ngIf="label"
+    [class.admin-loader__label--compact]="compactLabel"
+  >
+    <span class="admin-loader__pulse" aria-hidden="true"></span>
+    <p>{{ label }}</p>
+  </div>
+
+  <ng-container [ngSwitch]="variant">
+    <div class="admin-loader__stats" *ngSwitchCase="'stats'">
+      <article class="admin-loader__stat" *ngFor="let item of items; trackBy: trackByIndex">
+        <i class="admin-loader__line admin-loader__line--sm"></i>
+        <i class="admin-loader__line admin-loader__line--xl"></i>
+        <i class="admin-loader__line admin-loader__line--md"></i>
+      </article>
+    </div>
+
+    <div class="admin-loader__cards" *ngSwitchCase="'cards'">
+      <article class="admin-loader__card" *ngFor="let item of items; trackBy: trackByIndex">
+        <div class="admin-loader__card-head">
+          <i class="admin-loader__avatar"></i>
+          <div class="admin-loader__stack">
+            <i class="admin-loader__line admin-loader__line--md"></i>
+            <i class="admin-loader__line admin-loader__line--sm"></i>
+          </div>
+          <i class="admin-loader__badge"></i>
+        </div>
+        <div class="admin-loader__chips">
+          <i class="admin-loader__chip"></i>
+          <i class="admin-loader__chip"></i>
+          <i class="admin-loader__chip"></i>
+        </div>
+        <div class="admin-loader__mini-grid">
+          <i class="admin-loader__mini-box"></i>
+          <i class="admin-loader__mini-box"></i>
+          <i class="admin-loader__mini-box"></i>
+        </div>
+        <div class="admin-loader__card-foot">
+          <i class="admin-loader__line admin-loader__line--sm"></i>
+          <i class="admin-loader__cta"></i>
+        </div>
+      </article>
+    </div>
+
+    <div class="admin-loader__table" *ngSwitchCase="'table'">
+      <div class="admin-loader__table-card">
+        <div class="admin-loader__table-head">
+          <i class="admin-loader__line admin-loader__line--sm"></i>
+          <i class="admin-loader__line admin-loader__line--sm"></i>
+          <i class="admin-loader__line admin-loader__line--sm"></i>
+        </div>
+        <div class="admin-loader__table-row" *ngFor="let item of items; trackBy: trackByIndex">
+          <i class="admin-loader__line admin-loader__line--sm"></i>
+          <div class="admin-loader__stack">
+            <i class="admin-loader__line admin-loader__line--md"></i>
+            <i class="admin-loader__line admin-loader__line--sm"></i>
+          </div>
+          <i class="admin-loader__badge"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-loader__charts" *ngSwitchCase="'charts'">
+      <article class="admin-loader__chart" *ngFor="let item of items; trackBy: trackByIndex">
+        <div class="admin-loader__stack">
+          <i class="admin-loader__line admin-loader__line--md"></i>
+          <i class="admin-loader__line admin-loader__line--sm"></i>
+        </div>
+        <div class="admin-loader__bars">
+          <span *ngFor="let bar of [0, 1, 2, 3, 4, 5]; trackBy: trackByIndex"></span>
+        </div>
+      </article>
+    </div>
+
+    <div class="admin-loader__charts" *ngSwitchDefault>
+      <article class="admin-loader__panel" *ngFor="let item of items; trackBy: trackByIndex">
+        <i class="admin-loader__line admin-loader__line--md"></i>
+        <i class="admin-loader__line admin-loader__line--lg"></i>
+        <i class="admin-loader__line admin-loader__line--md"></i>
+        <i class="admin-loader__line admin-loader__line--sm"></i>
+      </article>
+    </div>
+  </ng-container>
+</div>

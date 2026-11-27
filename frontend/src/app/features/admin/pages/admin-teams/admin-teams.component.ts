@@ -7,6 +7,11 @@ import { catchError, debounceTime, filter, startWith, switchMap, tap } from 'rxj
 
 import { AdminConsoleService } from '../admin-console/admin-console.service';
 import { AdminHiringService, AdminRecruiter } from '../../services/admin-hiring.service';
+import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
+import {
+  AdminChartComponent,
+  AdminChartPoint,
+} from '../../components/admin-chart/admin-chart.component';
 
 type SortOption = {
   label: string;
@@ -17,7 +22,7 @@ type SortOption = {
 @Component({
   selector: 'app-admin-teams-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminLoaderComponent, AdminChartComponent],
   templateUrl: './admin-teams.component.html',
   styleUrls: ['./admin-teams.component.scss'],
 })
@@ -104,6 +109,27 @@ export class AdminTeamsPageComponent implements OnInit {
     private readonly consoleService: AdminConsoleService,
     private readonly hiringService: AdminHiringService,
   ) {}
+
+  get topTeamsChartPoints(): AdminChartPoint[] {
+    return (this.topTeams || []).map((t) => ({
+      label: t.name,
+      value: Number(t.performanceScore || 0),
+    }));
+  }
+
+  get recruiterDistributionChartPoints(): AdminChartPoint[] {
+    return (this.recruiterDistribution || []).map((d) => ({
+      label: d.name,
+      value: Number(d.count || 0),
+    }));
+  }
+
+  get teamActivityChartPoints(): AdminChartPoint[] {
+    return (this.teamActivityTrend || []).map((a) => ({
+      label: a.name,
+      value: Number(a.activityCount || 0),
+    }));
+  }
 
   ngOnInit(): void {
     this.destroyRef.onDestroy(() => clearTimeout(this.feedbackTimeout));

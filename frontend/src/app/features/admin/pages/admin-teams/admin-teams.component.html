@@ -1,6 +1,11 @@
 <div class="teams-page">
   <!-- ── Header ─────────────────────────────────────────────────────── -->
   <header class="page-header">
+    <progress
+      class="teams-progress"
+      *ngIf="loading"
+      aria-label="Loading organization teams"
+    ></progress>
     <div class="page-header__text">
       <span class="page-header__eyebrow">
         <svg
@@ -188,8 +193,13 @@
     </button>
   </div>
 
-  <!-- ── Loading ──────────────────────────────────────────────────────── -->
-  <progress class="teams-progress" *ngIf="loading"></progress>
+  <!-- ── Loading Skeleton (initial empty load) ────────────────────────── -->
+  <app-admin-loader
+    *ngIf="loading && teams.length === 0"
+    variant="cards"
+    [count]="6"
+    label="Loading organization teams..."
+  ></app-admin-loader>
 
   <!-- ── Empty State ──────────────────────────────────────────────────── -->
   <div class="teams-empty" *ngIf="!loading && !teamsLoadFailed && teams.length === 0">
@@ -230,7 +240,11 @@
   <!-- ═══════════════════════════════════════════════════════════════════
        GRID VIEW
   ════════════════════════════════════════════════════════════════════ -->
-  <div class="teams-grid" *ngIf="!loading && teams.length > 0 && viewMode === 'grid'">
+  <div
+    class="teams-grid"
+    *ngIf="teams.length > 0 && viewMode === 'grid'"
+    [class.teams-refreshing]="loading"
+  >
     <div
       class="team-card"
       *ngFor="let team of teams; trackBy: trackByTeamId"
@@ -424,7 +438,11 @@
   <!-- ═══════════════════════════════════════════════════════════════════
        TABLE VIEW
   ════════════════════════════════════════════════════════════════════ -->
-  <div class="teams-table-wrap" *ngIf="!loading && teams.length > 0 && viewMode === 'table'">
+  <div
+    class="teams-table-wrap"
+    *ngIf="teams.length > 0 && viewMode === 'table'"
+    [class.teams-refreshing]="loading"
+  >
     <table class="teams-table" aria-label="Teams list">
       <thead>
         <tr>
@@ -589,7 +607,12 @@
   </div>
 
   <!-- ── Pagination ───────────────────────────────────────────────────── -->
-  <nav class="teams-pagination" *ngIf="!loading && teams.length > 0" aria-label="Teams pagination">
+  <nav
+    class="teams-pagination"
+    *ngIf="teams.length > 0"
+    [class.teams-refreshing]="loading"
+    aria-label="Teams pagination"
+  >
     <span class="teams-pagination__info"
       >{{ total === 0 ? '0' : rangeStart }} – {{ rangeEnd }} of {{ total }}</span
     >
@@ -653,10 +676,18 @@
   <!-- ═══════════════════════════════════════════════════════════════════
        ANALYTICS SECTION (lightweight)
   ════════════════════════════════════════════════════════════════════ -->
-  <p class="teams-analytics__empty" *ngIf="!loading && teams.length > 0 && analyticsLoadFailed">
+  <p
+    class="teams-analytics__empty"
+    role="alert"
+    *ngIf="!loading && teams.length > 0 && analyticsLoadFailed"
+  >
     Failed to load team analytics.
   </p>
-  <section class="teams-analytics" *ngIf="!loading && teams.length > 0 && !analyticsLoadFailed">
+  <section
+    class="teams-analytics"
+    *ngIf="teams.length > 0 && !analyticsLoadFailed"
+    [class.teams-refreshing]="loading"
+  >
     <h2 class="teams-analytics__title">
       <svg
         viewBox="0 0 24 24"
@@ -674,53 +705,35 @@
       Team Analytics
     </h2>
     <div class="teams-analytics__grid">
-      <!-- Top Teams -->
-      <div class="teams-analytics__card">
-        <h3 class="teams-analytics__card-title">Top Teams · Performance Composite</h3>
-        <div class="teams-analytics__list" *ngIf="topTeams.length > 0; else noDataTop">
-          <div class="teams-analytics__item" *ngFor="let t of topTeams; let i = index">
-            <span class="teams-analytics__rank">#{{ i + 1 }}</span>
-            <span class="teams-analytics__item-name">{{ t.name }}</span>
-            <div class="teams-analytics__item-bar">
-              <span class="teams-analytics__item-fill" [style.width.%]="t.performanceScore"></span>
-            </div>
-            <span class="teams-analytics__item-score">{{ t.performanceScore }}</span>
-          </div>
-        </div>
-        <ng-template #noDataTop><p class="teams-analytics__empty">No data yet</p></ng-template>
-      </div>
+      <app-admin-chart
+        title="Top Teams · Performance Composite"
+        subtitle="Highest organization score by engineering squad"
+        mode="horizontal-bar"
+        tone="indigo"
+        [suggestedMax]="100"
+        [height]="200"
+        [items]="topTeamsChartPoints"
+        emptyMessage="No data yet"
+      ></app-admin-chart>
 
-      <!-- Recruiter Distribution -->
-      <div class="teams-analytics__card">
-        <h3 class="teams-analytics__card-title">Recruiter Distribution</h3>
-        <div
-          class="teams-analytics__list"
-          *ngIf="recruiterDistribution.length > 0; else noDataDist"
-        >
-          <div class="teams-analytics__item" *ngFor="let d of recruiterDistribution">
-            <span class="teams-analytics__item-name">{{ d.name }}</span>
-            <span class="teams-analytics__item-badge"
-              >{{ d.count }} recruiter{{ d.count !== 1 ? 's' : '' }}</span
-            >
-          </div>
-        </div>
-        <ng-template #noDataDist><p class="teams-analytics__empty">No data yet</p></ng-template>
-      </div>
+      <app-admin-chart
+        title="Recruiter Distribution"
+        subtitle="Headcount allocation across teams"
+        mode="donut"
+        [items]="recruiterDistributionChartPoints"
+        centerLabel="Recruiters"
+        emptyMessage="No data yet"
+      ></app-admin-chart>
 
-      <!-- Activity Trend -->
-      <div class="teams-analytics__card">
-        <h3 class="teams-analytics__card-title">Team Activity Trend</h3>
-        <div class="teams-analytics__list" *ngIf="teamActivityTrend.length > 0; else noDataTrend">
-          <div class="teams-analytics__item" *ngFor="let a of teamActivityTrend">
-            <span class="teams-analytics__item-name">{{ a.name }}</span>
-            <span class="teams-analytics__item-activity">{{ a.activityCount }} actions</span>
-            <span class="teams-analytics__item-pill" [ngClass]="getHealthClass(a.health)">{{
-              a.health || 'N/A'
-            }}</span>
-          </div>
-        </div>
-        <ng-template #noDataTrend><p class="teams-analytics__empty">No data yet</p></ng-template>
-      </div>
+      <app-admin-chart
+        title="Team Activity Trend"
+        subtitle="Operational and hiring actions recorded per team"
+        mode="bar"
+        tone="emerald"
+        [height]="200"
+        [items]="teamActivityChartPoints"
+        emptyMessage="No data yet"
+      ></app-admin-chart>
     </div>
   </section>
 </div>

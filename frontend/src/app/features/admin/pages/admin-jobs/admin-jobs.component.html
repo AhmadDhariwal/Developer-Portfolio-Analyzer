@@ -1,5 +1,13 @@
 <section class="admin-page">
   <header class="page-header">
+    <div
+      class="page-progress"
+      *ngIf="jobsLoading || rankingLoading"
+      role="progressbar"
+      aria-label="Loading jobs and ranking data"
+    >
+      <span></span>
+    </div>
     <div class="page-header__text">
       <div class="page-header__eyebrow">
         <span class="eyebrow-dot"></span>
@@ -11,7 +19,7 @@
         developer pool.
       </p>
     </div>
-    <div class="page-header__meta" *ngIf="!jobsLoading">
+    <div class="page-header__meta" [class.page-header__meta--loading]="jobsLoading">
       <span class="stat-pill stat-pill--blue">{{ total }} Job{{ total !== 1 ? 's' : '' }}</span>
       <span class="stat-pill stat-pill--slate">{{ rangeStart }}-{{ rangeEnd }} visible</span>
       <span class="stat-pill stat-pill--amber">10 per page</span>
@@ -126,8 +134,6 @@
       </div>
     </div>
   </section>
-
-  <app-shared-loader [loading]="jobsLoading" label="Loading organization jobs"></app-shared-loader>
 
   <div class="jobs-layout">
     <section class="create-panel">
@@ -259,11 +265,18 @@
           <h3>Jobs List</h3>
           <p>Organization-scoped jobs with pagination, stable actions, and clean summaries.</p>
         </div>
-        <div class="results-meta" *ngIf="!jobsLoading && total > 0">
-          <strong>{{ rangeStart }}-{{ rangeEnd }}</strong>
+        <div class="results-meta" [class.results-meta--loading]="jobsLoading">
+          <strong>{{ total > 0 ? rangeStart + '-' + rangeEnd : '0-0' }}</strong>
           <span>of {{ total }}</span>
         </div>
       </div>
+
+      <app-admin-loader
+        *ngIf="jobsLoading"
+        variant="cards"
+        [count]="3"
+        label="Loading organization jobs"
+      ></app-admin-loader>
 
       <app-shared-empty-state
         *ngIf="!jobsLoading && hasLoadedJobs && jobs.length === 0"
@@ -441,13 +454,20 @@
       [text]="rankingMessage"
       (dismiss)="rankingMessage = ''"
     ></app-shared-message>
-    <app-shared-loader [loading]="rankingLoading" label="Running AI ranking"></app-shared-loader>
+    <app-admin-loader
+      *ngIf="rankingLoading"
+      variant="cards"
+      [count]="2"
+      label="Running AI ranking"
+    ></app-admin-loader>
 
-    <app-shared-empty-state
-      *ngIf="!rankingLoading && ranking.length === 0"
-      title="No ranking results yet"
-      subtitle="Choose a job and run AI ranking to review matched candidates, breakdowns, and recommendations."
-    ></app-shared-empty-state>
+    <div class="ranking-empty" *ngIf="!rankingLoading && ranking.length === 0">
+      <strong>No ranking results yet</strong>
+      <p>
+        Choose a job and run AI ranking to review matched candidates, breakdowns, and
+        recommendations.
+      </p>
+    </div>
 
     <div class="ranking-list" *ngIf="!rankingLoading && ranking.length > 0">
       <article class="rank-card" *ngFor="let item of ranking">

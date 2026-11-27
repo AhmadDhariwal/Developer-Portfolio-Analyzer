@@ -1,5 +1,14 @@
 <div class="ps-shell">
   <header class="ps-header">
+    <div
+      class="ps-loading-bar"
+      *ngIf="loading"
+      role="progressbar"
+      aria-label="Loading performance analytics"
+    >
+      <div class="ps-loading-bar__fill"></div>
+    </div>
+
     <div class="ps-header__left">
       <div class="ps-header__eyebrow">
         <span class="ps-eyebrow-dot"></span>
@@ -12,6 +21,39 @@
     </div>
 
     <div class="ps-header__right">
+      <button type="button" class="ps-btn-ghost" (click)="resetFilters()">Reset</button>
+      <button type="button" class="ps-btn-ghost" (click)="refresh()" [disabled]="loading">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          width="14"
+          height="14"
+        >
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Refresh
+      </button>
+      <a class="ps-btn-ghost ps-nav-console" routerLink="/app/admin/console">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          width="14"
+          height="14"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Console
+      </a>
+    </div>
+  </header>
+
+  <section class="ps-filters-card" aria-label="Analytics filters">
+    <div class="ps-filters-grid">
       <select
         class="ps-select"
         [(ngModel)]="selectedTeamId"
@@ -64,39 +106,8 @@
       >
         <option *ngFor="let d of dayOptions" [value]="d">Last {{ d }} days</option>
       </select>
-
-      <button type="button" class="ps-btn-ghost" (click)="resetFilters()">Reset</button>
-      <button type="button" class="ps-btn-ghost" (click)="refresh()" [disabled]="loading">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          width="14"
-          height="14"
-        >
-          <polyline points="23 4 23 10 17 10"></polyline>
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-        </svg>
-        Refresh
-      </button>
-      <a class="ps-btn-ghost" routerLink="/app/admin/console">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          width="14"
-          height="14"
-        >
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-        Console
-      </a>
     </div>
-  </header>
-
-  <div class="ps-loading-bar" *ngIf="loading"><div class="ps-loading-bar__fill"></div></div>
+  </section>
 
   <div class="ps-alert ps-alert--error" *ngIf="error" role="alert">
     <svg
@@ -157,99 +168,91 @@
     </button>
   </nav>
 
-  <section class="ps-skeleton" *ngIf="loading && !data">
-    <div class="ps-kpi-grid">
-      <div class="ps-skeleton-card" *ngFor="let _ of skeletonCards"></div>
-    </div>
-    <div class="ps-row">
-      <div class="ps-card">
-        <div class="ps-skeleton-line ps-skeleton-line--lg"></div>
-        <div class="ps-skeleton-line" *ngFor="let _ of skeletonRows"></div>
-      </div>
-      <div class="ps-card">
-        <div class="ps-skeleton-line ps-skeleton-line--lg"></div>
-        <div class="ps-skeleton-line" *ngFor="let _ of skeletonRows"></div>
-      </div>
-    </div>
-  </section>
+  <div class="ps-skeleton-stack" *ngIf="loading && !data">
+    <app-admin-loader
+      variant="stats"
+      [count]="6"
+      label="Loading performance analytics..."
+    ></app-admin-loader>
+    <app-admin-loader variant="charts" [count]="2" label=""></app-admin-loader>
+  </div>
 
   <div *ngIf="data">
     <section *ngIf="activeSection === 'overview'">
       <div class="ps-kpi-grid">
-        <div class="ps-kpi ps-kpi--indigo">
-          <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Recruiters</span>
-          <span class="ps-kpi__value">{{ data.summary.totalRecruiters }}</span>
-          <span class="ps-kpi__sub">{{ data.summary.activeRecruiters }} active</span>
-        </div>
-        <div class="ps-kpi ps-kpi--green">
-          <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Teams</span>
-          <span class="ps-kpi__value">{{ data.summary.totalTeams }}</span>
-          <span class="ps-kpi__sub">{{ data.summary.topTeam || 'No top team yet' }}</span>
-        </div>
-        <div class="ps-kpi ps-kpi--blue">
-          <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Jobs In Period</span>
-          <span class="ps-kpi__value">{{ data.hiringAnalytics.recentJobs }}</span>
-          <span class="ps-kpi__sub">{{ data.hiringAnalytics.total }} total in scope</span>
-          <span
-            class="ps-delta"
-            [class.ps-delta--positive]="comparisonTone(comparison('jobsCreated')) === 'positive'"
-            [class.ps-delta--negative]="comparisonTone(comparison('jobsCreated')) === 'negative'"
-          >
-            {{ comparisonLabel(comparison('jobsCreated')) }}
-          </span>
-        </div>
-        <div class="ps-kpi ps-kpi--amber">
-          <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Acceptance Rate</span>
-          <span class="ps-kpi__value">{{ data.hiringAnalytics.acceptanceRate }}%</span>
-          <span class="ps-kpi__sub"
-            >{{ data.hiringAnalytics.invitationFunnel.accepted }} accepted</span
-          >
-          <span
-            class="ps-delta"
-            [class.ps-delta--positive]="
-              comparisonTone(comparison('invitationAcceptanceRate')) === 'positive'
-            "
-            [class.ps-delta--negative]="
-              comparisonTone(comparison('invitationAcceptanceRate')) === 'negative'
-            "
-          >
-            {{ comparisonLabel(comparison('invitationAcceptanceRate'), '%') }}
-          </span>
-        </div>
-        <div class="ps-kpi ps-kpi--purple">
-          <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">AI Analyses</span>
-          <span class="ps-kpi__value">{{ data.aiStats.recentAnalyses }}</span>
-          <span class="ps-kpi__sub">{{ data.aiStats.totalAnalyses }} all time</span>
-          <span
-            class="ps-delta"
-            [class.ps-delta--positive]="comparisonTone(comparison('aiAnalyses')) === 'positive'"
-            [class.ps-delta--negative]="comparisonTone(comparison('aiAnalyses')) === 'negative'"
-          >
-            {{ comparisonLabel(comparison('aiAnalyses')) }}
-          </span>
-        </div>
-        <div class="ps-kpi ps-kpi--teal">
-          <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Organization Performance Composite</span>
-          <span class="ps-kpi__value">{{ data.summary.organizationPerformanceScore }}</span>
-          <span class="ps-kpi__sub">{{ data.summary.topRecruiter || 'No leader yet' }}</span>
-          <span
-            class="ps-delta"
-            [class.ps-delta--positive]="
-              comparisonTone(comparison('organizationPerformanceScore')) === 'positive'
-            "
-            [class.ps-delta--negative]="
-              comparisonTone(comparison('organizationPerformanceScore')) === 'negative'
-            "
-          >
-            {{ comparisonLabel(comparison('organizationPerformanceScore')) }}
-          </span>
-        </div>
+        <app-admin-stat-card
+          label="Recruiters"
+          [value]="data.summary.totalRecruiters"
+          [hint]="data.summary.activeRecruiters + ' active'"
+          tone="indigo"
+        ></app-admin-stat-card>
+
+        <app-admin-stat-card
+          label="Teams"
+          [value]="data.summary.totalTeams"
+          [hint]="data.summary.topTeam || 'No top team yet'"
+          tone="emerald"
+        ></app-admin-stat-card>
+
+        <app-admin-stat-card
+          label="Jobs In Period"
+          [value]="data.hiringAnalytics.recentJobs"
+          [hint]="data.hiringAnalytics.total + ' total in scope'"
+          [badge]="comparisonLabel(comparison('jobsCreated'))"
+          [badgeTone]="
+            comparisonTone(comparison('jobsCreated')) === 'positive'
+              ? 'positive'
+              : comparisonTone(comparison('jobsCreated')) === 'negative'
+                ? 'negative'
+                : 'neutral'
+          "
+          tone="sky"
+        ></app-admin-stat-card>
+
+        <app-admin-stat-card
+          label="Acceptance Rate"
+          [value]="data.hiringAnalytics.acceptanceRate + '%'"
+          [hint]="data.hiringAnalytics.invitationFunnel.accepted + ' accepted'"
+          [badge]="comparisonLabel(comparison('invitationAcceptanceRate'), '%')"
+          [badgeTone]="
+            comparisonTone(comparison('invitationAcceptanceRate')) === 'positive'
+              ? 'positive'
+              : comparisonTone(comparison('invitationAcceptanceRate')) === 'negative'
+                ? 'negative'
+                : 'neutral'
+          "
+          tone="amber"
+        ></app-admin-stat-card>
+
+        <app-admin-stat-card
+          label="AI Analyses"
+          [value]="data.aiStats.recentAnalyses"
+          [hint]="data.aiStats.totalAnalyses + ' all time'"
+          [badge]="comparisonLabel(comparison('aiAnalyses'))"
+          [badgeTone]="
+            comparisonTone(comparison('aiAnalyses')) === 'positive'
+              ? 'positive'
+              : comparisonTone(comparison('aiAnalyses')) === 'negative'
+                ? 'negative'
+                : 'neutral'
+          "
+          tone="indigo"
+        ></app-admin-stat-card>
+
+        <app-admin-stat-card
+          label="Organization Performance Composite"
+          [value]="data.summary.organizationPerformanceScore ?? 0"
+          [hint]="data.summary.topRecruiter || 'No leader yet'"
+          [badge]="comparisonLabel(comparison('organizationPerformanceScore'))"
+          [badgeTone]="
+            comparisonTone(comparison('organizationPerformanceScore')) === 'positive'
+              ? 'positive'
+              : comparisonTone(comparison('organizationPerformanceScore')) === 'negative'
+                ? 'negative'
+                : 'neutral'
+          "
+          tone="emerald"
+        ></app-admin-stat-card>
       </div>
 
       <div class="ps-row">
@@ -284,7 +287,7 @@
                 class="ps-score-pill"
                 [class.ps-score-pill--green]="scoreColor(r.score) === 'green'"
                 [class.ps-score-pill--amber]="scoreColor(r.score) === 'amber'"
-                [class.ps-score-pill--red]="scoreColor(r.score) === 'red'"
+                [class.ps-score-pill--slate]="scoreColor(r.score) === 'red'"
               >
                 {{ r.score }}
               </div>
@@ -328,7 +331,7 @@
                 class="ps-score-pill"
                 [class.ps-score-pill--green]="scoreColor(t.engagementScore) === 'green'"
                 [class.ps-score-pill--amber]="scoreColor(t.engagementScore) === 'amber'"
-                [class.ps-score-pill--red]="scoreColor(t.engagementScore) === 'red'"
+                [class.ps-score-pill--slate]="scoreColor(t.engagementScore) === 'red'"
               >
                 {{ t.engagementScore }}
               </div>
@@ -340,88 +343,46 @@
         </div>
       </div>
 
-      <div class="ps-card">
-        <h3 class="ps-card__title">Monthly Job Trend</h3>
-        <div class="ps-bar-chart">
-          <div class="ps-bar-chart__col" *ngFor="let t of data.hiringAnalytics.monthlyTrend">
-            <div class="ps-bar-chart__bar-wrap">
-              <span class="ps-bar-chart__val" *ngIf="t.count > 0">{{ t.count }}</span>
-              <div
-                class="ps-bar-chart__bar ps-bar-chart__bar--indigo"
-                [style.height.%]="barPct(t.count, maxTrend(data.hiringAnalytics.monthlyTrend))"
-              ></div>
-            </div>
-            <span class="ps-bar-chart__label">{{ t.label }}</span>
-          </div>
-        </div>
-      </div>
+      <app-admin-chart
+        class="ps-chart-block"
+        title="Monthly Job Trend"
+        subtitle="Requisition velocity across the selected period"
+        [badgeText]="data.hiringAnalytics.recentJobs + ' recent'"
+        mode="area"
+        tone="indigo"
+        [height]="245"
+        [items]="monthlyTrendPoints"
+        emptyMessage="No monthly job trends recorded yet."
+      ></app-admin-chart>
 
       <div class="ps-row">
-        <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">Skill Gap Trends</h3>
-          <div class="ps-empty-sm" *ngIf="(data.skillGapTrends?.length || 0) === 0">
-            No skill gap data in this period.
-          </div>
-          <div class="ps-hbar-chart" *ngIf="(data.skillGapTrends?.length || 0) > 0">
-            <div class="ps-hbar-chart__row" *ngFor="let s of data.skillGapTrends || []">
-              <span class="ps-hbar-chart__label">{{ s.skill }}</span>
-              <div class="ps-hbar-chart__track">
-                <div
-                  class="ps-hbar-chart__fill"
-                  [style.width.%]="barPct(s.count, data.skillGapTrends?.[0]?.count || 1)"
-                ></div>
-              </div>
-              <span class="ps-hbar-chart__val">{{ s.count }}</span>
-            </div>
-          </div>
-        </div>
+        <app-admin-chart
+          title="Skill Gap Trends"
+          subtitle="High-demand capabilities in open requisitions"
+          mode="horizontal-bar"
+          tone="sky"
+          [height]="205"
+          [items]="skillGapChartPoints"
+          emptyMessage="No skill gap data in this period."
+        ></app-admin-chart>
 
-        <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">Portfolio Quality</h3>
-          <div class="ps-empty-sm" *ngIf="(data.portfolioQuality?.sampleSize || 0) === 0">
-            No portfolio analyses in this period.
-          </div>
-          <div *ngIf="(data.portfolioQuality?.sampleSize || 0) > 0">
-            <div class="ps-funnel">
-              <div class="ps-funnel__row">
-                <span class="ps-funnel__label">GitHub</span>
-                <div class="ps-funnel__bar-wrap">
-                  <div
-                    class="ps-funnel__bar ps-funnel__bar--indigo"
-                    [style.width.%]="data.portfolioQuality?.avgGithubScore || 0"
-                  ></div>
-                </div>
-                <span class="ps-funnel__val">{{ data.portfolioQuality?.avgGithubScore || 0 }}</span>
-              </div>
-              <div class="ps-funnel__row">
-                <span class="ps-funnel__label">Resume</span>
-                <div class="ps-funnel__bar-wrap">
-                  <div
-                    class="ps-funnel__bar ps-funnel__bar--green"
-                    [style.width.%]="data.portfolioQuality?.avgResumeScore || 0"
-                  ></div>
-                </div>
-                <span class="ps-funnel__val">{{ data.portfolioQuality?.avgResumeScore || 0 }}</span>
-              </div>
-              <div class="ps-funnel__row">
-                <span class="ps-funnel__label">Growth</span>
-                <div class="ps-funnel__bar-wrap">
-                  <div
-                    class="ps-funnel__bar ps-funnel__bar--amber"
-                    [style.width.%]="data.portfolioQuality?.avgGrowthPotential || 0"
-                  ></div>
-                </div>
-                <span class="ps-funnel__val">{{
-                  data.portfolioQuality?.avgGrowthPotential || 0
-                }}</span>
-              </div>
-            </div>
-            <div class="ps-meta">Sample size: {{ data.portfolioQuality?.sampleSize }}</div>
-          </div>
-        </div>
+        <app-admin-chart
+          title="Portfolio Quality"
+          subtitle="Average GitHub, resume, and growth readiness"
+          [badgeText]="(data.portfolioQuality?.sampleSize || 0) + ' profiles'"
+          mode="horizontal-bar"
+          tone="emerald"
+          [height]="205"
+          [suggestedMax]="100"
+          [items]="portfolioQualityPoints"
+          emptyMessage="No portfolio analyses in this period."
+        ></app-admin-chart>
 
-        <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">Engagement Heatmap</h3>
+        <div class="ps-card">
+          <div class="ps-card__head">
+            <h3 class="ps-card__title">Engagement Heatmap</h3>
+            <span class="ps-meta">7-Day Activity Matrix</span>
+          </div>
           <div class="ps-empty-sm" *ngIf="(data.engagementHeatmap?.max || 0) === 0">
             No engagement events in this period.
           </div>
@@ -445,8 +406,17 @@
                 [attr.title]="day + ' ' + (data.engagementHeatmap?.buckets?.[bi] || '') + ': ' + v"
               ></div>
             </div>
-            <div class="ps-meta">
-              Jobs, candidate creation, and AI recruiter actions for the selected period.
+            <div class="ps-heatmap__footer">
+              <span class="ps-meta">Jobs, candidate evaluations &amp; AI calls</span>
+              <div class="ps-heatmap__legend" aria-hidden="true">
+                <span>Low</span>
+                <i class="ps-heatmap__cell ps-heatmap__cell--0"></i>
+                <i class="ps-heatmap__cell ps-heatmap__cell--1"></i>
+                <i class="ps-heatmap__cell ps-heatmap__cell--2"></i>
+                <i class="ps-heatmap__cell ps-heatmap__cell--3"></i>
+                <i class="ps-heatmap__cell ps-heatmap__cell--4"></i>
+                <span>Peak</span>
+              </div>
             </div>
           </div>
         </div>
@@ -735,47 +705,14 @@
           </div>
         </div>
 
-        <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">Job Status Breakdown</h3>
-          <div class="ps-donut-wrap">
-            <div
-              class="ps-donut-ring"
-              role="img"
-              [attr.aria-label]="
-                'Job status breakdown: ' +
-                data.hiringAnalytics.open +
-                ' open, ' +
-                data.hiringAnalytics.draft +
-                ' draft, ' +
-                data.hiringAnalytics.closed +
-                ' closed'
-              "
-              [style.background]="jobStatusDonutGradient"
-            >
-              <div class="ps-donut-ring__center">
-                <strong>{{ data.hiringAnalytics.total }}</strong>
-                <span>Total</span>
-              </div>
-            </div>
-            <div class="ps-donut-legend">
-              <div class="ps-donut-legend__item">
-                <span class="ps-donut-legend__dot ps-donut-legend__dot--green"></span
-                ><span>Open</span><strong>{{ data.hiringAnalytics.open }}</strong>
-              </div>
-              <div class="ps-donut-legend__item">
-                <span class="ps-donut-legend__dot ps-donut-legend__dot--amber"></span
-                ><span>Draft</span><strong>{{ data.hiringAnalytics.draft }}</strong>
-              </div>
-              <div class="ps-donut-legend__item">
-                <span class="ps-donut-legend__dot ps-donut-legend__dot--red"></span
-                ><span>Closed</span><strong>{{ data.hiringAnalytics.closed }}</strong>
-              </div>
-              <div class="ps-donut-legend__item ps-donut-legend__item--total">
-                <span>Total</span><strong>{{ data.hiringAnalytics.total }}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-admin-chart
+          title="Job Status Breakdown"
+          subtitle="Open, draft, and closed requisition distribution"
+          mode="donut"
+          [items]="jobStatusChartPoints"
+          centerLabel="Total"
+          emptyMessage="No job status distribution recorded yet."
+        ></app-admin-chart>
       </div>
 
       <div class="ps-row">
@@ -870,69 +807,45 @@
         </div>
       </div>
 
-      <div class="ps-card">
-        <h3 class="ps-card__title">Jobs by Tech Stack</h3>
-        <div class="ps-hbar-chart">
-          <div class="ps-hbar-chart__row" *ngFor="let s of data.hiringAnalytics.stackDistribution">
-            <span class="ps-hbar-chart__label">{{ s.stack }}</span>
-            <div class="ps-hbar-chart__track">
-              <div
-                class="ps-hbar-chart__fill"
-                [style.width.%]="barPct(s.count, maxStack(data.hiringAnalytics.stackDistribution))"
-              ></div>
-            </div>
-            <span class="ps-hbar-chart__val">{{ s.count }}</span>
-          </div>
-          <div class="ps-empty-sm" *ngIf="data.hiringAnalytics.stackDistribution.length === 0">
-            No stack data yet.
-          </div>
-        </div>
-      </div>
+      <app-admin-chart
+        class="ps-chart-block"
+        title="Jobs by Tech Stack"
+        subtitle="Active job demand distributed across engineering stacks"
+        mode="horizontal-bar"
+        tone="indigo"
+        [height]="220"
+        [items]="stackDistributionPoints"
+        emptyMessage="No stack data yet."
+      ></app-admin-chart>
     </section>
 
     <section *ngIf="activeSection === 'ai'">
       <div class="ps-kpi-grid ps-kpi-grid--2">
-        <div class="ps-kpi ps-kpi--purple">
-          <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Total Analyses</span>
-          <span class="ps-kpi__value">{{ data.aiStats.totalAnalyses }}</span>
-          <span class="ps-kpi__sub">Scoped all-time usage</span>
-        </div>
-        <div class="ps-kpi ps-kpi--indigo">
-          <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Recent Analyses</span>
-          <span class="ps-kpi__value">{{ data.aiStats.recentAnalyses }}</span>
-          <span class="ps-kpi__sub">Last {{ selectedDays }} days</span>
-        </div>
+        <app-admin-stat-card
+          label="Total Analyses"
+          [value]="data.aiStats.totalAnalyses"
+          hint="Scoped all-time usage"
+          tone="indigo"
+        ></app-admin-stat-card>
+
+        <app-admin-stat-card
+          label="Recent Analyses"
+          [value]="data.aiStats.recentAnalyses"
+          [hint]="'Last ' + selectedDays + ' days'"
+          tone="emerald"
+        ></app-admin-stat-card>
       </div>
 
-      <div class="ps-card">
-        <h3 class="ps-card__title">AI Usage by Recruiter</h3>
-        <div class="ps-hbar-chart">
-          <div class="ps-hbar-chart__row" *ngFor="let a of data.aiStats.analysesByRecruiter">
-            <span
-              class="ps-hbar-chart__label"
-              [attr.title]="
-                'All time: ' + a.count + ' | Last ' + selectedDays + 'd: ' + (a.recentCount || 0)
-              "
-            >
-              {{ a.name }} ({{ a.recentCount || 0 }} recent)
-            </span>
-            <div class="ps-hbar-chart__track">
-              <div
-                class="ps-hbar-chart__fill ps-hbar-chart__fill--purple"
-                [style.width.%]="
-                  barPct(a.count, maxAnalysisCount(data.aiStats.analysesByRecruiter))
-                "
-              ></div>
-            </div>
-            <span class="ps-hbar-chart__val">{{ a.count }}</span>
-          </div>
-          <div class="ps-empty-sm" *ngIf="data.aiStats.analysesByRecruiter.length === 0">
-            No AI usage data yet.
-          </div>
-        </div>
-      </div>
+      <app-admin-chart
+        class="ps-chart-block"
+        title="AI Usage by Recruiter"
+        subtitle="All-time AI evaluation and scoring calls per recruiter"
+        mode="horizontal-bar"
+        tone="indigo"
+        [height]="260"
+        [items]="aiByRecruiterPoints"
+        emptyMessage="No AI usage data yet."
+      ></app-admin-chart>
     </section>
   </div>
 
