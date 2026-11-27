@@ -230,6 +230,28 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
     );
   }
 
+  get monthlyTrendChartItems(): Array<{ label: string; value: number }> {
+    return (this.performance?.hiringAnalytics?.monthlyTrend || []).map((item) => ({
+      label: item.label,
+      value: Number(item.count || 0),
+    }));
+  }
+
+  get hiringFunnelTotal(): number {
+    return this.hiringFunnelValues.reduce((sum, value) => sum + Number(value || 0), 0);
+  }
+
+  get hiringFunnelLegend(): Array<{ label: string; value: number; color: string }> {
+    const values = this.hiringFunnelValues;
+    const labels = ['Open Jobs', 'Draft Jobs', 'Closed Jobs', 'Accepted Invites'];
+    const colors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b'];
+    return labels.map((label, idx) => ({
+      label,
+      value: values[idx] || 0,
+      color: colors[idx],
+    }));
+  }
+
   loadDashboard(): void {
     if (this.dashboardLoading) return;
 
@@ -587,7 +609,12 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
 
   private renderTeamActivityChart(): void {
     const canvas = this.teamActivityChartRef?.nativeElement;
-    if (!canvas || !this.performance?.teamMetrics.length) {
+    if (
+      !canvas ||
+      !this.performance?.teamMetrics.length ||
+      typeof canvas.getContext !== 'function' ||
+      !canvas.getContext('2d')
+    ) {
       return;
     }
 
@@ -601,19 +628,23 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
             type: 'bar',
             label: 'Engagement Score',
             data: teams.map((team) => this.chartValue(team.engagementScore)),
-            backgroundColor: 'rgba(99, 102, 241, 0.72)',
-            borderRadius: 8,
+            backgroundColor: '#4f46e5',
+            borderRadius: 6,
+            borderSkipped: false,
             maxBarThickness: 28,
           },
           {
             type: 'line',
             label: 'Candidates Analyzed',
             data: teams.map((team) => this.chartValue(team.candidatesAnalyzed)),
-            borderColor: '#22d3ee',
-            backgroundColor: 'rgba(34, 211, 238, 0.18)',
-            tension: 0.35,
-            fill: false,
-            pointRadius: 3,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.14)',
+            tension: 0.36,
+            borderWidth: 2.5,
+            fill: true,
+            pointRadius: 3.5,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#10b981',
             yAxisID: 'y1',
           },
         ],
@@ -629,7 +660,12 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
 
   private renderRecruiterPerformanceChart(): void {
     const canvas = this.recruiterPerformanceChartRef?.nativeElement;
-    if (!canvas || !this.performance?.recruiterMetrics.length) {
+    if (
+      !canvas ||
+      !this.performance?.recruiterMetrics.length ||
+      typeof canvas.getContext !== 'function' ||
+      !canvas.getContext('2d')
+    ) {
       return;
     }
 
@@ -642,22 +678,25 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
           {
             label: 'Jobs',
             data: recruiters.map((recruiter) => this.chartValue(recruiter.totalJobs)),
-            backgroundColor: 'rgba(14, 165, 233, 0.76)',
-            borderRadius: 8,
+            backgroundColor: '#4f46e5',
+            borderRadius: 6,
+            borderSkipped: false,
             maxBarThickness: 22,
           },
           {
             label: 'Matches',
             data: recruiters.map((recruiter) => this.chartValue(recruiter.matchesGenerated)),
-            backgroundColor: 'rgba(45, 212, 191, 0.76)',
-            borderRadius: 8,
+            backgroundColor: '#10b981',
+            borderRadius: 6,
+            borderSkipped: false,
             maxBarThickness: 22,
           },
           {
             label: 'AI Calls',
             data: recruiters.map((recruiter) => this.chartValue(recruiter.totalAnalyses)),
-            backgroundColor: 'rgba(244, 114, 182, 0.76)',
-            borderRadius: 8,
+            backgroundColor: '#0ea5e9',
+            borderRadius: 6,
+            borderSkipped: false,
             maxBarThickness: 22,
           },
         ],
@@ -671,10 +710,16 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
   private renderHiringFunnelChart(): void {
     const canvas = this.hiringFunnelChartRef?.nativeElement;
     const values = this.hiringFunnelValues;
-    if (!canvas || !values.some((value) => value > 0)) {
+    if (
+      !canvas ||
+      !values.some((value) => value > 0) ||
+      typeof canvas.getContext !== 'function' ||
+      !canvas.getContext('2d')
+    ) {
       return;
     }
 
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const config: ChartConfiguration<'doughnut'> = {
       type: 'doughnut',
       data: {
@@ -682,36 +727,32 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
         datasets: [
           {
             data: values,
-            backgroundColor: [
-              this.chartToken('--color-primary'),
-              this.chartToken('--color-info'),
-              this.chartToken('--color-success'),
-              this.chartToken('--color-warning'),
-            ],
-            borderColor: this.chartToken('--chart-donut-border'),
+            backgroundColor: ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b'],
+            borderColor: this.chartToken('--surface-card') || (isDark ? '#141720' : '#ffffff'),
             borderWidth: 2,
-            hoverOffset: 6,
+            borderRadius: 4,
+            spacing: 2,
+            hoverOffset: 4,
           },
         ],
       },
       options: {
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
+        cutout: '75%',
         plugins: {
           legend: {
-            position: 'bottom',
-            labels: {
-              color: this.chartToken('--chart-label'),
-              boxWidth: 12,
-              padding: 16,
-            },
+            display: false,
           },
           tooltip: {
-            backgroundColor: this.chartToken('--surface-modal'),
-            borderColor: this.chartToken('--border-color'),
+            backgroundColor: isDark ? '#1e293b' : '#0f172a',
+            borderColor: isDark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(255, 255, 255, 0.12)',
             borderWidth: 1,
-            titleColor: this.chartToken('--text-primary'),
-            bodyColor: this.chartToken('--text-secondary'),
+            padding: 10,
+            cornerRadius: 8,
+            titleColor: '#f8fafc',
+            bodyColor: '#e2e8f0',
           },
         },
       },
@@ -724,7 +765,10 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
     leftTitle?: string;
     rightTitle?: string;
   }): ChartConfiguration<'bar' | 'line'>['options'] {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const gridColor = isDark ? 'rgba(148, 163, 184, 0.14)' : 'rgba(203, 213, 225, 0.55)';
     return {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
       interaction: {
@@ -733,44 +777,57 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
       },
       plugins: {
         legend: {
-          position: 'bottom',
+          position: 'top',
+          align: 'end',
           labels: {
-            color: this.chartToken('--chart-label'),
-            boxWidth: 12,
-            padding: 16,
+            color: this.chartToken('--chart-label') || '#64748b',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            boxWidth: 8,
+            boxHeight: 8,
+            padding: 14,
+            font: { size: 11.5, weight: 500 },
           },
         },
         tooltip: {
-          backgroundColor: this.chartToken('--surface-modal'),
-          borderColor: this.chartToken('--border-color'),
+          backgroundColor: isDark ? '#1e293b' : '#0f172a',
+          borderColor: isDark ? 'rgba(148, 163, 184, 0.28)' : 'rgba(255, 255, 255, 0.12)',
           borderWidth: 1,
-          titleColor: this.chartToken('--text-primary'),
-          bodyColor: this.chartToken('--text-secondary'),
+          padding: 10,
+          cornerRadius: 8,
+          titleColor: '#f8fafc',
+          bodyColor: '#e2e8f0',
         },
       },
       scales: {
         x: {
           ticks: {
-            color: this.chartToken('--chart-tick'),
+            color: this.chartToken('--chart-tick') || '#64748b',
+            font: { size: 11 },
           },
+          border: { display: false },
           grid: {
-            color: this.chartToken('--chart-grid'),
+            display: false,
           },
         },
         y: {
           beginAtZero: true,
           ticks: {
-            color: this.chartToken('--chart-tick'),
+            precision: 0,
+            color: this.chartToken('--chart-tick') || '#64748b',
+            font: { size: 11 },
           },
+          border: { display: false },
           title: axisTitles?.leftTitle
             ? {
                 display: true,
                 text: axisTitles.leftTitle,
-                color: this.chartToken('--chart-tick'),
+                color: this.chartToken('--chart-tick') || '#64748b',
+                font: { size: 11, weight: 600 },
               }
             : undefined,
           grid: {
-            color: this.chartToken('--chart-grid'),
+            color: gridColor,
           },
         },
         ...(axisTitles?.rightTitle && {
@@ -779,13 +836,17 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
             type: 'linear',
             beginAtZero: true,
             position: 'right',
+            border: { display: false },
             ticks: {
-              color: this.chartToken('--chart-tick'),
+              precision: 0,
+              color: this.chartToken('--chart-tick') || '#64748b',
+              font: { size: 11 },
             },
             title: {
               display: true,
               text: axisTitles.rightTitle,
-              color: this.chartToken('--chart-tick'),
+              color: this.chartToken('--chart-tick') || '#64748b',
+              font: { size: 11, weight: 600 },
             },
             grid: {
               drawOnChartArea: false,

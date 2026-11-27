@@ -6,6 +6,9 @@ import { AdminRoutingModule } from './admin-routing.module';
 import { SharedLoaderComponent } from '../../shared/components/loader/loader.component';
 import { SharedMessageComponent } from '../../shared/components/message/message.component';
 import { SharedEmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { AdminLoaderComponent } from './components/admin-loader/admin-loader.component';
+import { AdminStatCardComponent } from './components/admin-stat-card/admin-stat-card.component';
+import { AdminChartComponent } from './components/admin-chart/admin-chart.component';
 
 import { AdminDashboardPageComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { AdminRecruitersPageComponent } from './pages/admin-recruiters/admin-recruiters.component';
@@ -24,6 +27,9 @@ import { AdminTeamsPageComponent } from './pages/admin-teams/admin-teams.compone
     SharedLoaderComponent,
     SharedMessageComponent,
     SharedEmptyStateComponent,
+    AdminLoaderComponent,
+    AdminStatCardComponent,
+    AdminChartComponent,
     AdminRecruitersPageComponent,
     AdminConsolePageComponent,
     AdminActivityLogsComponent,

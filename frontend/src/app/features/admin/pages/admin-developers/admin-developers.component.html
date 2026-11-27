@@ -1,5 +1,13 @@
 <section class="admin-page">
   <header class="page-header">
+    <div
+      class="page-progress"
+      *ngIf="loading"
+      role="progressbar"
+      aria-label="Loading public developers"
+    >
+      <span></span>
+    </div>
     <div class="page-header__text">
       <div class="page-header__eyebrow">
         <span class="eyebrow-dot"></span>
@@ -7,12 +15,12 @@
       </div>
       <h1>Public Developer Profiles</h1>
       <p>
-        Browse the shared public developer pool across organizations with production-grade filters,
-        score visibility, and read-only details.
+        Browse the shared public developer pool across organizations with server-side filters, score
+        visibility, and read-only details.
       </p>
     </div>
 
-    <div class="page-header__meta" *ngIf="!loading">
+    <div class="page-header__meta" [class.page-header__meta--loading]="loading">
       <span class="stat-pill stat-pill--emerald"
         >{{ total }} Developer{{ total !== 1 ? 's' : '' }}</span
       >
@@ -31,53 +39,17 @@
     <button type="button" class="btn-secondary" (click)="retry()">Retry</button>
   </div>
 
-  <section class="hero-grid">
-    <article class="summary-card summary-card--accent">
-      <span class="summary-card__label">Talent Pool Scope</span>
-      <strong class="summary-card__value">Public only</strong>
-      <span class="summary-card__hint"
-        >Developers appear here only when User is Public or their public profile visibility is
-        enabled.</span
-      >
-    </article>
-    <article class="summary-card">
-      <span class="summary-card__label">Pagination</span>
-      <strong class="summary-card__value">{{ totalPages }}</strong>
-      <span class="summary-card__hint"
-        >Page{{ totalPages !== 1 ? 's' : '' }} available with server-side loading.</span
-      >
-    </article>
-    <article class="summary-card">
-      <span class="summary-card__label">Sort Mode</span>
-      <strong class="summary-card__value">{{ activeSort.label }}</strong>
-      <span class="summary-card__hint"
-        >Ordering is handled by backend queries to keep the page scalable.</span
-      >
-    </article>
-  </section>
-
-  <section class="notice-card">
-    <div class="notice-card__icon">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 8v4" />
-        <path d="M12 16h.01" />
-      </svg>
+  <section class="scope-banner">
+    <div class="scope-banner__info">
+      <span class="scope-banner__badge">Public Only</span>
+      <span class="scope-banner__text">
+        Read-only global directory — shows developers who enabled public visibility across
+        organizations.
+      </span>
     </div>
-    <div class="notice-card__text">
-      <strong>Read-only public talent pool.</strong>
-      <span
-        >These developers are globally visible candidates, not members of your organization. Only
-        safe professional information is shown.</span
-      >
+    <div class="scope-banner__stats">
+      <span>{{ totalPages }} page{{ totalPages !== 1 ? 's' : '' }}</span>
+      <span>Sort: {{ activeSort.label }}</span>
     </div>
   </section>
 
@@ -172,7 +144,12 @@
     </div>
   </section>
 
-  <app-shared-loader [loading]="loading" label="Loading public developers"></app-shared-loader>
+  <app-admin-loader
+    *ngIf="loading"
+    variant="cards"
+    [count]="6"
+    label="Loading public developers"
+  ></app-admin-loader>
 
   <section class="results-shell" *ngIf="!loading">
     <div class="results-bar" *ngIf="total > 0">

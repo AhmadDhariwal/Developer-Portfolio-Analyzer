@@ -1,5 +1,13 @@
 <div class="page">
   <div class="page-header">
+    <div
+      class="page-progress"
+      *ngIf="loading"
+      role="progressbar"
+      aria-label="Loading activity logs"
+    >
+      <span></span>
+    </div>
     <div class="page-header__text">
       <div class="page-header__eyebrow">
         <span class="eyebrow-dot"></span>
@@ -12,7 +20,7 @@
       </p>
     </div>
     <div class="page-header__meta">
-      <span class="stat-pill" *ngIf="total > 0">
+      <span class="stat-pill">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="12"
@@ -247,7 +255,7 @@
     </div>
   </div>
 
-  <div class="status-msg" *ngIf="statusMessage">
+  <div class="status-msg" *ngIf="statusMessage" role="status" aria-live="polite">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="14"
@@ -310,8 +318,11 @@
       </div>
 
       <div class="logs-loading" *ngIf="loading && logs.length === 0">
-        <div class="loading-spinner"></div>
-        <span>Loading logs…</span>
+        <app-admin-loader
+          variant="table"
+          [count]="7"
+          label="Loading activity logs..."
+        ></app-admin-loader>
       </div>
 
       <div class="logs-empty" *ngIf="!loading && logs.length === 0">
@@ -349,7 +360,7 @@
         <p>No results match your search. Try different keywords.</p>
       </div>
 
-      <div class="table-wrap" *ngIf="filteredLogs.length > 0">
+      <div class="table-wrap" *ngIf="filteredLogs.length > 0" [class.table-wrap--loading]="loading">
         <table>
           <thead>
             <tr>

@@ -1,0 +1,27 @@
+<ng-template #inner>
+  <div class="stat-top">
+    <span class="stat-label">{{ label }}</span>
+    <span class="stat-dot" aria-hidden="true"></span>
+  </div>
+  <div class="stat-mid">
+    <strong class="stat-value" [class.stat-value--muted]="isUnavailable">{{ value }}</strong>
+    <span *ngIf="badge" class="stat-badge" [attr.data-badge-tone]="badgeTone">{{ badge }}</span>
+  </div>
+  <span *ngIf="hint" class="stat-hint">{{ hint }}</span>
+</ng-template>
+
+<button
+  *ngIf="interactive; else staticCard"
+  type="button"
+  class="stat-surface stat-surface--interactive"
+  [attr.data-tone]="tone"
+  (click)="onActivate()"
+>
+  <ng-container *ngTemplateOutlet="inner"></ng-container>
+</button>
+
+<ng-template #staticCard>
+  <article class="stat-surface" [attr.data-tone]="tone">
+    <ng-container *ngTemplateOutlet="inner"></ng-container>
+  </article>
+</ng-template>
