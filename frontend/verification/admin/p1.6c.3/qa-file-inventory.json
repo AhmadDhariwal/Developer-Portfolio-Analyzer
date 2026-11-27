@@ -1,0 +1,185 @@
+{
+  "qaFileCount": 45,
+  "files": [
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/baseline.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\baseline.json"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/file-preservation.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\file-preservation.json"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/preserve.cjs",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\preserve.cjs"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/qa-acceptance.test.cjs",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\qa-acceptance.test.cjs"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/qa-evidence.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\qa-evidence.json"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/qa-harness.cjs",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\qa-harness.cjs"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/qa-run.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\qa-run.log"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-dark-organization-invitations.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-dark-organization-invitations.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-dark-organization-members.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-dark-organization-members.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-dark-organization-policies.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-dark-organization-policies.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-dark-organization-settings.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-dark-organization-settings.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-dark-organization-usage.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-dark-organization-usage.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-dark-organization.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-dark-organization.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-light-organization-invitations.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-light-organization-invitations.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-light-organization-members.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-light-organization-members.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-light-organization-policies.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-light-organization-policies.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-light-organization-settings.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-light-organization-settings.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-light-organization-usage.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-light-organization-usage.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/1440x900-light-organization.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\1440x900-light-organization.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/320x640-light-organization-policies.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\320x640-light-organization-policies.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/320x640-light-organization-usage.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\320x640-light-organization-usage.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/320x640-light-organization.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\320x640-light-organization.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/390x844-dark-organization-invitations.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\390x844-dark-organization-invitations.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/390x844-dark-organization-members.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\390x844-dark-organization-members.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/390x844-dark-organization-settings.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\390x844-dark-organization-settings.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/390x844-dark-organization.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\390x844-dark-organization.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/768x1024-light-organization.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\768x1024-light-organization.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/conflict-409-settings.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\conflict-409-settings.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/invitations-restricted.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\invitations-restricted.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/mobile-390-drawer-dark.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\mobile-390-drawer-dark.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/recruiter-matching-restricted.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\recruiter-matching-restricted.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-admin-activity-logs.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-admin-activity-logs.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-admin-dashboard.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-admin-dashboard.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-admin-performance.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-admin-performance.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-admin-recruiters.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-admin-recruiters.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-admin-teams.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-admin-teams.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-developer-dashboard.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-developer-dashboard.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-developer-jobs.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-developer-jobs.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-recruiter-dashboard.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-recruiter-dashboard.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-recruiter-jobs.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-recruiter-jobs.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-recruiter-shortlists.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-recruiter-shortlists.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-superadmin-dashboard.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-superadmin-dashboard.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-superadmin-organizations.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-superadmin-organizations.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/screenshots/reg-superadmin-settings.png",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\screenshots\\reg-superadmin-settings.png"
+    },
+    {
+      "relativePath": "frontend/verification/admin/p1.6c.3/vitest.qa.mjs",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\verification\\admin\\p1.6c.3\\vitest.qa.mjs"
+    }
+  ]
+}
