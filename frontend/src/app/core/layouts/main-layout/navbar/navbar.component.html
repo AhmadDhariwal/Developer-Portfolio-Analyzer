@@ -111,31 +111,77 @@
       </div>
     </div>
 
-    <div class="team-switcher" *ngIf="organizations.length > 0">
-      <div class="switcher-group" *ngIf="isSuperAdmin">
-        <a routerLink="/super-admin/dashboard" class="sa-console-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div
+      class="team-switcher"
+      *ngIf="showWorkspaceScopeBar"
+      role="region"
+      aria-label="Workspace context"
+    >
+      <!-- Super Admin: Platform governance scope + console shortcut -->
+      <ng-container *ngIf="isSuperAdmin; else tenantContextContent">
+        <a
+          routerLink="/super-admin/dashboard"
+          class="sa-console-btn"
+          title="Open Super Admin console"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
           </svg>
           <span>Super Admin</span>
         </a>
-      </div>
-
-      <div
-        class="switcher-group switcher-group--org-pill"
-        *ngIf="isAdmin && organizations.length === 1; else orgSelectGroup"
-      >
-        <span class="org-label">Organization</span>
+        <span class="scope-divider" aria-hidden="true"></span>
         <span
-          class="org-scope-pill"
-          [title]="'Active organization scope: ' + organizations[0].name"
+          class="org-scope-pill org-scope-pill--platform"
+          title="Platform-wide governance scope"
         >
-          {{ organizations[0].name }}
+          Platform Scope
         </span>
-      </div>
-      <ng-template #orgSelectGroup>
-        <div class="switcher-group">
-          <label for="organization-switch">Organization</label>
+      </ng-container>
+
+      <!-- Tenant roles: Admin (Organization scope), Recruiter (Org + Assigned Team), Multi-org Member (Selectors) -->
+      <ng-template #tenantContextContent>
+        <div class="switcher-item" *ngIf="showOrgPill">
+          <span class="scope-label">
+            <svg
+              class="scope-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M3 21h18"></path>
+              <path d="M5 21V7l7-4 7 4v14"></path>
+              <path d="M9 21v-4h6v4"></path>
+            </svg>
+            <span class="scope-prefix-label">Org</span>
+          </span>
+          <span class="org-scope-pill" [title]="'Active organization scope: ' + activeOrgName">
+            {{ activeOrgName }}
+          </span>
+        </div>
+
+        <div class="switcher-item" *ngIf="showOrgSelect">
+          <label for="organization-switch" class="scope-label">
+            <svg
+              class="scope-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M3 21h18"></path>
+              <path d="M5 21V7l7-4 7 4v14"></path>
+            </svg>
+            <span class="scope-prefix-label">Org</span>
+          </label>
           <select
             id="organization-switch"
             class="switch-select"
@@ -147,23 +193,72 @@
             <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
           </select>
         </div>
+
+        <ng-container *ngIf="showRecruiterTeamPill">
+          <span class="scope-divider" aria-hidden="true"></span>
+          <div class="switcher-item">
+            <span class="scope-label">
+              <svg
+                class="scope-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span class="scope-prefix-label">Team</span>
+            </span>
+            <span class="org-scope-pill org-scope-pill--team" [title]="recruiterTeamTitle">
+              {{ recruiterTeamLabel }}
+            </span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="showTeamSelect">
+          <span class="scope-divider" aria-hidden="true"></span>
+          <div class="switcher-item">
+            <label for="team-switch" class="scope-label">
+              <svg
+                class="scope-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+              <span class="scope-prefix-label">Team</span>
+            </label>
+            <select
+              id="team-switch"
+              class="switch-select"
+              title="Select team context"
+              [ngModel]="selectedTeamId"
+              (ngModelChange)="onTeamSwitch($event)"
+            >
+              <option value="">All teams</option>
+              <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+            </select>
+          </div>
+        </ng-container>
       </ng-template>
 
-      <div class="switcher-group">
-        <label for="team-switch">Team</label>
-        <select
-          id="team-switch"
-          class="switch-select"
-          title="Select team context"
-          [ngModel]="selectedTeamId"
-          (ngModelChange)="onTeamSwitch($event)"
-        >
-          <option value="">All teams</option>
-          <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
-        </select>
-      </div>
-
-      <span class="role-badge" *ngIf="selectedRole">{{ selectedRole }}</span>
+      <span
+        class="role-badge"
+        *ngIf="roleBadgeLabel"
+        [class.role-badge--admin]="isAdmin && !isSuperAdmin"
+        [class.role-badge--recruiter]="isRecruiter && !isAdmin && !isSuperAdmin"
+        [class.role-badge--super]="isSuperAdmin"
+      >
+        {{ roleBadgeLabel }}
+      </span>
     </div>
   </div>
 

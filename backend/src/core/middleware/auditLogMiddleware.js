@@ -124,6 +124,7 @@ const auditLogMiddleware = (req, res, next) => {
   if (!req.originalUrl.startsWith('/api/')) return next();
   const isRecruiterRoute = /^\/api\/recruiter(?:-hub)?(?:\/|\?|$)/.test(req.originalUrl);
   const omitPayload =
+    /^\/api\/admin-console\/(?:governance|preferences)(?:\/|\?|$)/i.test(req.originalUrl) ||
     isRecruiterRoute ||
     /^\/api\/(?:auth|integrations)(?:\/|\?|$)/i.test(req.originalUrl) ||
     /\/(?:invitations?|invite-recruiter|applications)(?:\/|\?|$)/i.test(req.originalUrl) ||
@@ -131,7 +132,8 @@ const auditLogMiddleware = (req, res, next) => {
 
   const actor = req.user?._id || resolveActorFromToken(req) || null;
   const ipAddress =
-    (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() || null;
+    (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() ||
+    null;
   const userAgent = req.headers['user-agent']?.slice(0, 500) || null;
 
   const before = {
@@ -151,7 +153,11 @@ const auditLogMiddleware = (req, res, next) => {
 
   res.on('finish', async () => {
     try {
-      if (req.recruiterAuditRecorded && res.statusCode < 400) return;
+      if (
+        (req.recruiterAuditRecorded || req.organizationGovernanceAuditRecorded) &&
+        res.statusCode < 400
+      )
+        return;
       const loggedRoute = requestLogPath(req);
       const action = `${req.method} ${loggedRoute}`;
       const { organizationId, teamId } = isRecruiterRoute

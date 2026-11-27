@@ -76,6 +76,29 @@ describe('Admin Console request settlement', () => {
     };
   }
 
+  it('sends the loaded configuration version when saving existing preferences', async () => {
+    const { fixture, component } = await setup();
+    const updatePreferences = vi.fn(() => new Subject());
+    Object.assign(TestBed.inject(AdminConsoleService), { updatePreferences });
+    component.preferences = {
+      organization: {
+        _id: 'org',
+        name: 'Closure',
+        slug: 'closure',
+        description: '',
+        ownerId: 'owner',
+        createdAt: '2026-11-26',
+        governanceVersion: 7,
+      },
+    };
+    component.prefForm.name = 'Updated organization';
+    component.savePreferences();
+    expect(updatePreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedVersion: 7, name: 'Updated organization' }),
+    );
+    fixture.destroy();
+  });
+
   for (const first of ['overview', 'teams']) {
     for (const overviewFails of [false, true]) {
       for (const teamsFail of [false, true]) {

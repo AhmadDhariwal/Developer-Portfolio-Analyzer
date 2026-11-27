@@ -1,0 +1,365 @@
+{
+  "routes": {
+    "id": "/api/tenant/invitations/:invitationId/accept",
+    "token": "/api/tenant/invitations/accept/:token",
+    "auth": "/api/auth/accept-invite",
+    "onboard": "/api/tenant/invitations/accept/:token/onboard"
+  },
+  "denials": [
+    {
+      "phase": "before-toggle",
+      "kind": "id",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "before-toggle",
+      "kind": "token",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "before-toggle",
+      "kind": "auth",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "before-toggle",
+      "kind": "onboard",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "policy-disabled",
+      "kind": "id",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "policy-disabled",
+      "kind": "token",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "policy-disabled",
+      "kind": "auth",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "policy-disabled",
+      "kind": "onboard",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "policy-reenabled",
+      "kind": "id",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "policy-reenabled",
+      "kind": "token",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "policy-reenabled",
+      "kind": "auth",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "policy-reenabled",
+      "kind": "onboard",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "revocation-first-race",
+      "kind": "id",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "acceptance-first-followup",
+      "kind": "id",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "revocation-first-race",
+      "kind": "token",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "acceptance-first-followup",
+      "kind": "token",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "revocation-first-race",
+      "kind": "auth",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "acceptance-first-followup",
+      "kind": "auth",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "revocation-first-race",
+      "kind": "onboard",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    },
+    {
+      "phase": "acceptance-first-followup",
+      "kind": "onboard",
+      "status": 403,
+      "invitationStatus": "pending",
+      "accountCreated": false,
+      "roleGranted": false,
+      "membershipCreated": false,
+      "jwtMinted": false,
+      "jwtReturned": false,
+      "cookieReturned": false
+    }
+  ],
+  "compatibility": [
+    {
+      "label": "active-direct-admin",
+      "status": 200,
+      "role": "recruiter",
+      "membershipCount": 1,
+      "invitationStatus": "accepted",
+      "serverJwtMints": 0
+    },
+    {
+      "label": "admin-owner",
+      "status": 200,
+      "role": "recruiter",
+      "membershipCount": 1,
+      "invitationStatus": "accepted",
+      "serverJwtMints": 0
+    },
+    {
+      "label": "super-admin-owner",
+      "status": 200,
+      "role": "recruiter",
+      "membershipCount": 1,
+      "invitationStatus": "accepted",
+      "serverJwtMints": 1
+    },
+    {
+      "label": "legacy-affiliated-admin",
+      "status": 200,
+      "role": "recruiter",
+      "membershipCount": 1,
+      "invitationStatus": "accepted",
+      "serverJwtMints": 0
+    },
+    {
+      "label": "legacy-member-onboarding",
+      "status": 200,
+      "role": "developer",
+      "membershipCount": 1,
+      "invitationStatus": "accepted",
+      "serverJwtMints": 1
+    }
+  ],
+  "races": [
+    {
+      "kind": "id",
+      "ordering": "revocation-first",
+      "status": 403,
+      "realWriteConflicts": 1,
+      "finalStateVerified": true
+    },
+    {
+      "kind": "id",
+      "ordering": "acceptance-first",
+      "status": 200,
+      "competingUpdateObserved": true,
+      "revocationPendingAtRelease": true,
+      "subsequentStatus": 403,
+      "finalStateVerified": true
+    },
+    {
+      "kind": "token",
+      "ordering": "revocation-first",
+      "status": 403,
+      "realWriteConflicts": 1,
+      "finalStateVerified": true
+    },
+    {
+      "kind": "token",
+      "ordering": "acceptance-first",
+      "status": 200,
+      "competingUpdateObserved": true,
+      "revocationPendingAtRelease": true,
+      "subsequentStatus": 403,
+      "finalStateVerified": true
+    },
+    {
+      "kind": "auth",
+      "ordering": "revocation-first",
+      "status": 403,
+      "realWriteConflicts": 1,
+      "finalStateVerified": true
+    },
+    {
+      "kind": "auth",
+      "ordering": "acceptance-first",
+      "status": 200,
+      "competingUpdateObserved": true,
+      "revocationPendingAtRelease": true,
+      "subsequentStatus": 403,
+      "finalStateVerified": true
+    },
+    {
+      "kind": "onboard",
+      "ordering": "revocation-first",
+      "status": 403,
+      "realWriteConflicts": 1,
+      "finalStateVerified": true
+    },
+    {
+      "kind": "onboard",
+      "ordering": "acceptance-first",
+      "status": 200,
+      "competingUpdateObserved": true,
+      "revocationPendingAtRelease": true,
+      "subsequentStatus": 403,
+      "finalStateVerified": true
+    }
+  ],
+  "network": "loopback only",
+  "policyVersionAfterToggle": 2,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 210,
+    "productionDataUsed": false
+  }
+}

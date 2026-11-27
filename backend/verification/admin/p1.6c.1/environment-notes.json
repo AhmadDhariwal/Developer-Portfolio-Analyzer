@@ -1,0 +1,50 @@
+{
+  "sandbox": {
+    "loopbackFailure": "connect EACCES 127.0.0.1",
+    "initialFocusedRun": {
+      "passed": 53,
+      "failedDuringMongoStartup": 2
+    },
+    "retryInterrupted": true
+  },
+  "finalMongoVerification": {
+    "execution": "Automatically approved outside sandbox",
+    "database": "Disposable isolated replica sets only",
+    "populatedAianalyzerUsed": false
+  },
+  "frontendInitial": {
+    "files": 144,
+    "tests": 848,
+    "passed": 844,
+    "failed": 4,
+    "failures": [
+      "Career Sprint timeout",
+      "GitHub Analyzer timeout",
+      "Resume Analyzer timeout",
+      "Concurrent navbar Super Admin expression-change error"
+    ]
+  },
+  "developerRetry": {
+    "files": 3,
+    "passed": 64,
+    "failed": 0
+  },
+  "build": {
+    "exitCode": 0,
+    "warnings": [
+      "Initial bundle 4.19 MB exceeds 4.00 MB warning budget",
+      "Developer jobs stylesheet 54.40 kB exceeds 48.00 kB warning budget",
+      "Public portfolio stylesheet 49.97 kB exceeds 48.00 kB warning budget"
+    ]
+  },
+  "finalFrontendRetry": {
+    "files": 2,
+    "passed": 20,
+    "failed": 0,
+    "includes": [
+      "Admin preferences version forwarding",
+      "Concurrent navbar tests"
+    ],
+    "allObservedFrontendFailuresResolved": true
+  }
+}

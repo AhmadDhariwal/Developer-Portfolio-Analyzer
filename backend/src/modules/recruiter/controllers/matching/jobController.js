@@ -15,12 +15,17 @@ const createRecruiterJob = async (req, res) => {
 
     const job = await createJob({
       recruiterId: req.user._id,
+      sessionRevision: Number(req.user.sessionRevision || 0),
       organizationId: req.organizationId,
       payload
     });
 
     return res.status(201).json({ job });
   } catch (error) {
+    if (error.statusCode)
+      return res
+        .status(error.statusCode)
+        .json({ message: error.message, restriction: error.restriction });
     if (error.code === 400) {
       return res.status(400).json({ message: error.message });
     }
@@ -35,6 +40,7 @@ const updateRecruiterJob = async (req, res) => {
     const job = await updateJob({
       organizationId: req.organizationId,
       recruiterId: req.user._id,
+      sessionRevision: Number(req.user.sessionRevision || 0),
       jobId: req.params.id,
       payload: req.body || {}
     });
@@ -45,6 +51,10 @@ const updateRecruiterJob = async (req, res) => {
 
     return res.status(200).json({ job });
   } catch (error) {
+    if (error.statusCode)
+      return res
+        .status(error.statusCode)
+        .json({ message: error.message, restriction: error.restriction });
     if (error.code === 400) {
       return res.status(400).json({ message: error.message });
     }
@@ -59,6 +69,7 @@ const deleteRecruiterJob = async (req, res) => {
     const deleted = await deleteJob({
       organizationId: req.organizationId,
       recruiterId: req.user._id,
+      sessionRevision: Number(req.user.sessionRevision || 0),
       jobId: req.params.id
     });
 
@@ -68,6 +79,10 @@ const deleteRecruiterJob = async (req, res) => {
 
     return res.status(200).json({ message: 'Job deleted successfully.' });
   } catch (error) {
+    if (error.statusCode)
+      return res
+        .status(error.statusCode)
+        .json({ message: error.message, restriction: error.restriction });
     if (error.code === 400) {
       return res.status(400).json({ message: error.message });
     }
@@ -79,9 +94,17 @@ const deleteRecruiterJob = async (req, res) => {
 
 const getRecruiterJobs = async (req, res) => {
   try {
-    const jobs = await listJobs({ organizationId: req.organizationId, recruiterId: req.user._id });
+    const jobs = await listJobs({
+      organizationId: req.organizationId,
+      recruiterId: req.user._id,
+      sessionRevision: Number(req.user.sessionRevision || 0)
+    });
     return res.status(200).json({ jobs });
   } catch (error) {
+    if (error.statusCode)
+      return res
+        .status(error.statusCode)
+        .json({ message: error.message, restriction: error.restriction });
     if (error.code === 400) {
       return res.status(400).json({ message: error.message });
     }

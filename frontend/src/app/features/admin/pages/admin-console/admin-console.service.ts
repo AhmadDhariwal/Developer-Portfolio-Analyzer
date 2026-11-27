@@ -92,6 +92,7 @@ export interface ActivityLog {
 
 export interface ConsolePreferences {
   organization: {
+    governanceVersion?: number;
     _id: string;
     name: string;
     slug: string;
@@ -124,7 +125,10 @@ export class AdminConsoleService {
     return this.http.get<ConsoleAnalytics>(`${this.base}/analytics`);
   }
 
-  getActivity(page = 1, limit = 25): Observable<{ logs: ActivityLog[]; total: number; page: number; totalPages: number }> {
+  getActivity(
+    page = 1,
+    limit = 25,
+  ): Observable<{ logs: ActivityLog[]; total: number; page: number; totalPages: number }> {
     return this.http.get<any>(`${this.base}/activity?page=${page}&limit=${limit}`);
   }
 
@@ -158,19 +162,35 @@ export class AdminConsoleService {
       }
     });
     const suffix = query.toString();
-    return this.http.get<any>(suffix ? `${this.base}/performance?${suffix}` : `${this.base}/performance`);
+    return this.http.get<any>(
+      suffix ? `${this.base}/performance?${suffix}` : `${this.base}/performance`,
+    );
   }
 
-  createTeam(payload: { name: string; slug?: string; description?: string; recruiterId?: string }): Observable<{ team: ConsoleTeam }> {
+  createTeam(payload: {
+    name: string;
+    slug?: string;
+    description?: string;
+    recruiterId?: string;
+  }): Observable<{ team: ConsoleTeam }> {
     return this.http.post<{ team: ConsoleTeam }>(`${this.base}/teams`, payload);
   }
 
-  updateTeam(id: string, payload: { name?: string; slug?: string; description?: string }): Observable<{ team: ConsoleTeam }> {
-    return this.http.patch<{ team: ConsoleTeam }>(`${this.base}/teams/${encodeURIComponent(id)}`, payload);
+  updateTeam(
+    id: string,
+    payload: { name?: string; slug?: string; description?: string },
+  ): Observable<{ team: ConsoleTeam }> {
+    return this.http.patch<{ team: ConsoleTeam }>(
+      `${this.base}/teams/${encodeURIComponent(id)}`,
+      payload,
+    );
   }
 
   setTeamActive(id: string, isActive: boolean): Observable<{ team: ConsoleTeam }> {
-    return this.http.patch<{ team: ConsoleTeam }>(`${this.base}/teams/${encodeURIComponent(id)}/active`, { isActive });
+    return this.http.patch<{ team: ConsoleTeam }>(
+      `${this.base}/teams/${encodeURIComponent(id)}/active`,
+      { isActive },
+    );
   }
 
   deleteTeam(id: string): Observable<{ message: string }> {
@@ -178,11 +198,16 @@ export class AdminConsoleService {
   }
 
   assignRecruiterToTeam(id: string, recruiterId: string): Observable<{ team: ConsoleTeam }> {
-    return this.http.post<{ team: ConsoleTeam }>(`${this.base}/teams/${encodeURIComponent(id)}/recruiters`, { recruiterId });
+    return this.http.post<{ team: ConsoleTeam }>(
+      `${this.base}/teams/${encodeURIComponent(id)}/recruiters`,
+      { recruiterId },
+    );
   }
 
   removeRecruiterFromTeam(id: string, recruiterId: string): Observable<{ team: ConsoleTeam }> {
-    return this.http.delete<{ team: ConsoleTeam }>(`${this.base}/teams/${encodeURIComponent(id)}/recruiters/${encodeURIComponent(recruiterId)}`);
+    return this.http.delete<{ team: ConsoleTeam }>(
+      `${this.base}/teams/${encodeURIComponent(id)}/recruiters/${encodeURIComponent(recruiterId)}`,
+    );
   }
 
   getPreferences(): Observable<ConsolePreferences> {
@@ -190,6 +215,7 @@ export class AdminConsoleService {
   }
 
   updatePreferences(payload: {
+    expectedVersion: number;
     name: string;
     description: string;
     dashboardConfig?: {

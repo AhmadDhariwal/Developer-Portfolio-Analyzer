@@ -7,6 +7,8 @@ const { requireObjectId } = require('../recruiterValidation');
 const { isRoleAtLeast } = require('../../../admin/services/tenantService');
 const { Types } = require('mongoose');
 const workflowBudget = require('./applicationWorkflowBudget');
+const { policyValues, restrictionError } = require('../../../admin/config/organizationPolicies');
+const { platformInSession } = require('../../../admin/services/organizationGovernanceService');
 
 const denied = (message = 'Job access is unavailable.', statusCode = 403) =>
   Object.assign(new Error(message), { statusCode });
@@ -72,6 +74,9 @@ async function context(scope, session, atomicActorFence = false) {
         .setOptions(workflowBudget.cursorOptions(session))
         .lean();
   if (!actor || !organization) throw denied();
+  const platform = await platformInSession(session);
+  if (platform.recruiter?.enableRecruiterAccess === false)
+    throw restrictionError('recruiterAccess', 'platform_policy');
   if (!atomicActorFence)
     await fence(User, actor, { ...fenceFilter, organizationId: organization._id }, session);
   if (!atomicActorFence)
@@ -104,26 +109,47 @@ async function context(scope, session, atomicActorFence = false) {
   // Legacy direct organization affiliation keeps creator access, never a team grant.
   if (memberships.length && !direct && !grants.size)
     throw denied('Organization membership is not active.');
-  return { recruiterId, organizationId, actor, grants, session };
+  return {
+    recruiterId,
+    organizationId,
+    actor,
+    grants,
+    session,
+    organization,
+    policies: policyValues(organization),
+    platform
+  };
 }
 
 function permissions(job, ctx) {
   const isOwner = String(job.recruiterId) === ctx.recruiterId;
-  const grant = job.teamShared === true ? ctx.grants.get(String(job.teamId)) : null;
+  const policies = ctx.policies || policyValues(ctx.organization);
+  const grant =
+    job.teamShared === true && policies.teamSharedJobs ? ctx.grants.get(String(job.teamId)) : null;
   const view = isOwner || Boolean(grant);
   const manage = isOwner || Boolean(grant && isRoleAtLeast(grant.role, 'manager'));
   return {
     isOwner,
     view,
     edit: manage,
-    publish: manage,
+    publish: manage && policies.recruiterJobPublication,
     archive: manage,
     delete: isOwner,
     manageSharing: isOwner,
     privateEvidence: isOwner,
-    matching: isOwner,
-    evaluationView: isOwner || Boolean(grant && job.evaluationShared === true),
-    evaluationManage: isOwner || Boolean(grant && job.evaluationShared === true && manage)
+    matching: isOwner && policies.candidateMatching,
+    evaluationView:
+      isOwner ||
+      Boolean(grant && job.evaluationShared === true && policies.sharedPublicEvaluations),
+    evaluationManage:
+      isOwner ||
+      Boolean(
+        grant &&
+        job.evaluationShared === true &&
+        manage &&
+        policies.sharedPublicEvaluations &&
+        policies.teamManagerEvaluationManagement
+      )
   };
 }
 

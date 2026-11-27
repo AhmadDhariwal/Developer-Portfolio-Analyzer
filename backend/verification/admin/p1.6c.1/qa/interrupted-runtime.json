@@ -1,0 +1,5 @@
+{
+  "NodePid": 34300,
+  "MongoPid": 3764,
+  "MongoCommandLine": "\"C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe\" --dbpath C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-lxJls1 --bind_ip 127.0.0.1 --port 52059 --replSet p16c1-independent-qa --wiredTigerCacheSizeGB 0.25 --quiet"
+}

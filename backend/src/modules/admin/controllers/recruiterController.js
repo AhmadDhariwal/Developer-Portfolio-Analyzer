@@ -1,3 +1,5 @@
+const governance = require('../services/organizationGovernanceService');
+const { assertRecruiterInviterAuthority } = require('../services/invitationAcceptanceService');
 const crypto = require('node:crypto');
 
 const bcrypt = require('bcryptjs');
@@ -11,10 +13,7 @@ const RecruiterMatch = require('../../recruiter/models/RecruiterMatch');
 const RecruiterShortlist = require('../../recruiter/models/RecruiterShortlist');
 const AuditLog = require('../models/auditLog');
 const { sendRecruiterInvitationEmail } = require('../../../core/messaging/emailService');
-const {
-  getOrganizationSettingsSync,
-  getRecruiterSettingsSync
-} = require('../../super-admin/services/platformSettingsService');
+const { getRecruiterSettingsSync } = require('../../super-admin/services/platformSettingsService');
 const { validatePasswordAgainstPolicy } = require('../../auth/utils/passwordPolicy');
 const {
   createRecruiterLimitError,
@@ -31,7 +30,9 @@ const normalizePhone = (value) => String(value || '').trim();
 const normalizeLinkedIn = (value) => String(value || '').trim();
 const sanitizeText = (value) => String(value || '').trim();
 const average = (values = []) => {
-  const numeric = values.map((value) => Number(value || 0)).filter((value) => Number.isFinite(value));
+  const numeric = values
+    .map((value) => Number(value || 0))
+    .filter((value) => Number.isFinite(value));
   if (!numeric.length) return 0;
   return Math.round((numeric.reduce((sum, value) => sum + value, 0) / numeric.length) * 10) / 10;
 };
@@ -55,7 +56,8 @@ const buildRecruiterProfileCompleted = (user = {}) => {
   const hasBackground = Boolean(
     sanitizeText(user.recruiterDetails?.education) ||
     Number(user.recruiterDetails?.yearsOfExperience || 0) > 0 ||
-    (Array.isArray(user.recruiterDetails?.certifications) && user.recruiterDetails.certifications.length > 0)
+    (Array.isArray(user.recruiterDetails?.certifications) &&
+      user.recruiterDetails.certifications.length > 0)
   );
   return hasName && hasPhone && hasProfessionalLink && hasBasicInfo && hasBackground;
 };
@@ -81,11 +83,15 @@ const sanitizeRecruiter = (user, teams = [], organization = null, metrics = {}) 
       : [],
     yearsOfExperience: Number(user.recruiterDetails?.yearsOfExperience || 0),
     experienceSummary: sanitizeText(user.recruiterDetails?.experienceSummary),
-    specialties: Array.isArray(user.recruiterDetails?.specialties) ? user.recruiterDetails.specialties : [],
+    specialties: Array.isArray(user.recruiterDetails?.specialties)
+      ? user.recruiterDetails.specialties
+      : [],
     toolsAndPlatforms: Array.isArray(user.recruiterDetails?.toolsAndPlatforms)
       ? user.recruiterDetails.toolsAndPlatforms
       : [],
-    languages: Array.isArray(user.recruiterDetails?.languages) ? user.recruiterDetails.languages : []
+    languages: Array.isArray(user.recruiterDetails?.languages)
+      ? user.recruiterDetails.languages
+      : []
   },
   isActive: user.isActive !== false,
   profileCompleted: buildRecruiterProfileCompleted(user),
@@ -225,8 +231,12 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
     const recruiterMatches = matchesByRecruiter.get(recruiterId) || [];
     const recruiterShortlists = shortlistsByRecruiter.get(recruiterId) || [];
     const recruiterLogs = logsByRecruiter.get(recruiterId) || [];
-    const viewedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_VIEWED').length;
-    const analyzedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED').length;
+    const viewedCount = recruiterLogs.filter(
+      (log) => log.action === 'RECRUITER_CANDIDATE_VIEWED'
+    ).length;
+    const analyzedCount = recruiterLogs.filter(
+      (log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED'
+    ).length;
     const aiUsageCount = recruiterLogs.filter((log) =>
       /ANALYZED|MATCH/.test(String(log.action || ''))
     ).length;
@@ -271,7 +281,9 @@ const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap
           [
             Boolean(String(recruiter.name || '').trim()),
             Boolean(normalizePhone(recruiter.phoneNumber)),
-            Boolean(String(recruiter.githubUsername || '').trim() || normalizeLinkedIn(recruiter.linkedin)),
+            Boolean(
+              String(recruiter.githubUsername || '').trim() || normalizeLinkedIn(recruiter.linkedin)
+            ),
             Boolean(String(recruiter.jobTitle || '').trim() || String(recruiter.bio || '').trim()),
             Boolean(
               sanitizeText(recruiter.recruiterDetails?.education) ||
@@ -372,7 +384,6 @@ const inviteRecruiter = async (req, res) => {
       return res.status(400).json({ message: 'name and email are required.' });
     }
 
-    const organizationSettings = getOrganizationSettingsSync();
     const [existingUser, existingPendingInvite, organization] = await Promise.all([
       User.findOne({ email }).lean(),
       Invitation.findOne({
@@ -386,8 +397,13 @@ const inviteRecruiter = async (req, res) => {
       Organization.findById(req.organizationId).select('name').lean()
     ]);
 
-    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
-      return res.status(403).json({ message: 'This email is already assigned to another organization.' });
+    if (
+      existingUser?.organizationId &&
+      String(existingUser.organizationId) !== String(req.organizationId)
+    ) {
+      return res
+        .status(403)
+        .json({ message: 'This email is already assigned to another organization.' });
     }
 
     if (existingUser?.role === 'recruiter' && existingUser.isActive !== false) {
@@ -416,12 +432,35 @@ const inviteRecruiter = async (req, res) => {
     const invitation = await withOrganizationCapacityFence({
       organizationId: req.organizationId,
       mutate: async (session, organizationId) => {
+        const organization = await governance.organizationPolicyInSession(
+          organizationId,
+          session,
+          'invitationCreation'
+        );
+        const { actor, organizationRole, owner, membership } = await governance.actorInSession(
+          { actorId: req.user._id, sessionRevision: Number(req.user.sessionRevision || 0) },
+          organization,
+          session
+        );
+        if (actor.role !== 'admin')
+          throw governance.fail(403, 'Organization Admin account role required.');
+        const platform = await governance.platformInSession(session);
+        if (platform.recruiter?.enableRecruiterAccess === false)
+          throw governance.restrictionError('recruiterAccess', 'platform_policy');
+        assertRecruiterInviterAuthority({
+          inviter: actor,
+          organization,
+          organizationRole,
+          owner,
+          membership,
+          platform
+        });
         const recruiterCount = await User.countDocuments({
           role: 'recruiter',
           organizationId,
           isActive: { $ne: false }
         }).session(session);
-        const recruiterLimit = Number(organizationSettings.recruiterLimitPerOrg || 5);
+        const recruiterLimit = Number(platform.organization?.recruiterLimitPerOrg ?? 5);
         if (recruiterCount >= recruiterLimit) throw createRecruiterLimitError(recruiterLimit);
 
         const pendingInvite = await Invitation.findOne({
@@ -435,9 +474,12 @@ const inviteRecruiter = async (req, res) => {
           .session(session)
           .lean();
         if (pendingInvite) {
-          throw Object.assign(new Error('An active recruiter invitation already exists for this email.'), {
-            status: 409
-          });
+          throw Object.assign(
+            new Error('An active recruiter invitation already exists for this email.'),
+            {
+              status: 409
+            }
+          );
         }
 
         const [createdInvitation] = await Invitation.create(
@@ -494,7 +536,10 @@ const inviteRecruiter = async (req, res) => {
       }
     });
   } catch (error) {
-    if (error?.status) return res.status(error.status).json({ message: error.message });
+    if (error?.status)
+      return res
+        .status(error.status)
+        .json({ message: error.message, restriction: error.restriction });
     console.error('Admin invite recruiter error:', error.message);
     return res.status(500).json({ message: 'Failed to invite recruiter.' });
   }
@@ -531,7 +576,8 @@ const upsertDirectRecruiterRecord = async ({
     recruiter.isVerified = true;
     recruiter.isActive = true;
     recruiter.onboardingCompleted = true;
-    recruiter.activeCareerStack = recruiter.activeCareerStack || recruiter.careerStack || 'Full Stack';
+    recruiter.activeCareerStack =
+      recruiter.activeCareerStack || recruiter.careerStack || 'Full Stack';
     recruiter.activeExperienceLevel =
       recruiter.activeExperienceLevel || recruiter.experienceLevel || 'Student';
     await recruiter.save({ session });
@@ -558,7 +604,13 @@ const upsertDirectRecruiterRecord = async ({
   return recruiter;
 };
 
-const upsertRecruiterMemberships = async ({ organizationId, recruiterId, teamId, invitedBy, session }) => {
+const upsertRecruiterMemberships = async ({
+  organizationId,
+  recruiterId,
+  teamId,
+  invitedBy,
+  session
+}) => {
   const orgMembership = await Membership.findOneAndUpdate(
     {
       organizationId,
@@ -621,7 +673,6 @@ const addRecruiterDirect = async (req, res) => {
       return res.status(validationError.status).json({ message: validationError.message });
     }
 
-    const organizationSettings = getOrganizationSettingsSync();
     const [existingUser, organization, team] = await Promise.all([
       User.findOne({ email }).lean(),
       Organization.findById(req.organizationId).select('name').lean(),
@@ -640,13 +691,20 @@ const addRecruiterDirect = async (req, res) => {
       return res.status(404).json({ message: 'Team not found in this organization.' });
     }
 
-    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
-      return res.status(403).json({ message: 'This email is already assigned to another organization.' });
+    if (
+      existingUser?.organizationId &&
+      String(existingUser.organizationId) !== String(req.organizationId)
+    ) {
+      return res
+        .status(403)
+        .json({ message: 'This email is already assigned to another organization.' });
     }
 
     const restrictedRole = String(existingUser?.role || '').toLowerCase();
     if (restrictedRole === 'admin' || restrictedRole === 'super_admin') {
-      return res.status(409).json({ message: 'This email is already linked to a restricted account role.' });
+      return res
+        .status(409)
+        .json({ message: 'This email is already linked to a restricted account role.' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -655,10 +713,16 @@ const addRecruiterDirect = async (req, res) => {
       organizationId: req.organizationId,
       mutate: async (session, organizationId) => {
         const currentUser = await User.findOne({ email }).session(session).lean();
-        if (currentUser?.organizationId && String(currentUser.organizationId) !== String(organizationId)) {
-          throw Object.assign(new Error('This email is already assigned to another organization.'), {
-            status: 403
-          });
+        if (
+          currentUser?.organizationId &&
+          String(currentUser.organizationId) !== String(organizationId)
+        ) {
+          throw Object.assign(
+            new Error('This email is already assigned to another organization.'),
+            {
+              status: 403
+            }
+          );
         }
 
         const recruiterCount = await User.countDocuments({
@@ -666,18 +730,26 @@ const addRecruiterDirect = async (req, res) => {
           organizationId,
           isActive: { $ne: false }
         }).session(session);
-        const recruiterLimit = Number(organizationSettings.recruiterLimitPerOrg || 5);
+        const platform = await governance.platformInSession(session);
+        if (platform.recruiter?.enableRecruiterAccess === false)
+          throw governance.restrictionError('recruiterAccess', 'platform_policy');
+        const recruiterLimit = Number(platform.organization?.recruiterLimitPerOrg ?? 5);
         if (recruiterCount >= recruiterLimit) throw createRecruiterLimitError(recruiterLimit);
 
         const currentRole = String(currentUser?.role || '').toLowerCase();
         if (currentRole === 'admin' || currentRole === 'super_admin') {
-          throw Object.assign(new Error('This email is already linked to a restricted account role.'), {
-            status: 409
-          });
+          throw Object.assign(
+            new Error('This email is already linked to a restricted account role.'),
+            {
+              status: 409
+            }
+          );
         }
 
         const currentTeam = teamId
-          ? await Team.findOne({ _id: teamId, organizationId, isActive: true }).session(session).lean()
+          ? await Team.findOne({ _id: teamId, organizationId, isActive: true })
+              .session(session)
+              .lean()
           : null;
         if (teamId && !currentTeam)
           throw Object.assign(new Error('Team not found in this organization.'), { status: 404 });
@@ -721,7 +793,10 @@ const addRecruiterDirect = async (req, res) => {
       team: result.team
     });
   } catch (error) {
-    if (error?.status) return res.status(error.status).json({ message: error.message });
+    if (error?.status)
+      return res
+        .status(error.status)
+        .json({ message: error.message, restriction: error.restriction });
     if (error?.code === 11000)
       return res.status(409).json({ message: 'Another account already uses this email.' });
     console.error('Admin direct recruiter create error:', error.message);
@@ -790,7 +865,6 @@ const setRecruiterActive = async (req, res) => {
       return res.status(400).json({ message: 'isActive must be a boolean.' });
     }
 
-    const organizationSettings = getOrganizationSettingsSync();
     const recruiter = await withOrganizationCapacityFence({
       organizationId: req.organizationId,
       mutate: async (session, organizationId) => {
@@ -807,7 +881,10 @@ const setRecruiterActive = async (req, res) => {
             organizationId,
             isActive: { $ne: false }
           }).session(session);
-          const recruiterLimit = Number(organizationSettings.recruiterLimitPerOrg || 5);
+          const platform = await governance.platformInSession(session);
+          if (platform.recruiter?.enableRecruiterAccess === false)
+            throw governance.restrictionError('recruiterAccess', 'platform_policy');
+          const recruiterLimit = Number(platform.organization?.recruiterLimitPerOrg ?? 5);
           if (activeRecruiters >= recruiterLimit) throw createRecruiterLimitError(recruiterLimit);
         }
 
@@ -819,7 +896,10 @@ const setRecruiterActive = async (req, res) => {
 
     return res.status(200).json({ recruiter: sanitizeRecruiter(recruiter) });
   } catch (error) {
-    if (error?.status) return res.status(error.status).json({ message: error.message });
+    if (error?.status)
+      return res
+        .status(error.status)
+        .json({ message: error.message, restriction: error.restriction });
     console.error('Admin recruiter activation error:', error.message);
     return res.status(500).json({ message: 'Failed to update recruiter status.' });
   }
@@ -894,12 +974,40 @@ const getPendingInvitations = async (req, res) => {
 
 const resendInvitation = async (req, res) => {
   try {
-    const invitation = await Invitation.findOne({
-      _id: req.params.id,
-      organizationId: req.organizationId,
-      role: 'recruiter',
-      status: 'pending'
-    }).lean();
+    const invitation = await governance.withGovernance(
+      {
+        actorId: req.user._id,
+        organizationId: req.organizationId,
+        sessionRevision: Number(req.user.sessionRevision || 0)
+      },
+      async ({ organization, actor, organizationRole, owner, membership, session }) => {
+        if (actor.role !== 'admin')
+          throw governance.fail(403, 'Organization Admin account role required.');
+        const { assertPolicy } = require('../config/organizationPolicies');
+        assertPolicy(organization, 'invitationCreation');
+        const platform = await governance.platformInSession(session);
+        if (platform.recruiter?.enableRecruiterAccess === false)
+          throw governance.restrictionError('recruiterAccess', 'platform_policy');
+        assertRecruiterInviterAuthority({
+          inviter: actor,
+          organization,
+          organizationRole,
+          owner,
+          membership,
+          platform
+        });
+        return Invitation.findOne({
+          _id: req.params.id,
+          organizationId: req.organizationId,
+          role: 'recruiter',
+          status: 'pending',
+          expiresAt: { $gt: new Date() }
+        })
+          .session(session)
+          .lean();
+      },
+      false
+    );
 
     if (!invitation) {
       return res.status(404).json({ message: 'Pending invitation not found.' });
@@ -928,6 +1036,10 @@ const resendInvitation = async (req, res) => {
       }
     });
   } catch (error) {
+    if (error.statusCode || error.status)
+      return res
+        .status(error.statusCode || error.status)
+        .json({ message: error.message, restriction: error.restriction });
     console.error('Admin resend invitation error:', error.message);
     return res.status(500).json({ message: 'Failed to resend invitation.' });
   }

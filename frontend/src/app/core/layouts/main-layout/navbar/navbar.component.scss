@@ -95,17 +95,17 @@
       position: relative;
       display: flex;
       align-items: center;
-      flex: 0 1 260px;
+      flex: 0 1 240px;
       width: 100%;
-      max-width: 260px;
-      min-width: 140px;
+      max-width: 240px;
+      min-width: 120px;
       transition:
         max-width var(--transition-fast),
         flex-basis var(--transition-fast);
 
       &:focus-within {
-        flex-basis: 300px;
-        max-width: 300px;
+        flex-basis: 280px;
+        max-width: 280px;
       }
 
       @media (max-width: 768px) {
@@ -296,65 +296,104 @@
     }
 
     .team-switcher {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 6px 12px;
-      border-radius: 6px;
+      gap: 8px;
+      padding: 0 10px;
+      border-radius: 8px;
       border: 1px solid var(--border-color);
       background: var(--surface-secondary);
-      height: 38px;
+      height: 36px;
+      min-width: 0;
+      max-width: 100%;
+      flex: 0 1 auto;
 
-      .switcher-group {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-
-        label,
-        .org-label {
-          font-size: 0.64rem;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-          color: var(--text-muted);
-          font-weight: 600;
-        }
+      .switcher-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
       }
 
-      .switcher-group--org-pill {
-        min-width: 0;
+      .scope-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin: 0;
+        font-size: 0.6875rem;
+        line-height: 1;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .scope-icon {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+        color: var(--text-muted);
+      }
+
+      .scope-divider {
+        width: 1px;
+        height: 16px;
+        background: var(--border-color);
+        flex-shrink: 0;
       }
 
       .org-scope-pill {
         display: inline-flex;
         align-items: center;
-        height: 22px;
-        max-width: 190px;
-        padding: 0 8px;
-        border-radius: 4px;
+        height: 24px;
+        max-width: 170px;
+        min-width: 0;
+        padding: 0 9px;
+        border-radius: 6px;
         border: 1px solid var(--border-color);
         background: var(--surface-card, #ffffff);
         color: var(--text-primary);
-        font-size: 0.75rem;
+        font-size: 0.76rem;
         font-weight: 600;
+        line-height: 1;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+
+        &--team {
+          background: var(--color-info-soft, #eff6ff);
+          border-color: var(--color-info-border, #bfdbfe);
+          color: var(--color-info-text, #1e40af);
+          max-width: 155px;
+        }
+
+        &--platform {
+          background: var(--color-secondary-soft, #f3e8ff);
+          border-color: var(--color-secondary-border, #ddd6fe);
+          color: var(--color-secondary-text, #6d28d9);
+        }
       }
 
       .switch-select {
-        height: 22px;
-        border-radius: 4px;
+        height: 24px;
+        border-radius: 6px;
         border: 1px solid var(--border-color);
         background: var(--surface-input, #ffffff);
         color: var(--text-primary);
-        padding: 0 6px;
-        min-width: 130px;
-        font-size: 0.75rem;
+        padding: 0 8px;
+        min-width: 115px;
+        max-width: 165px;
+        font-size: 0.76rem;
+        font-weight: 500;
+        line-height: 1;
         transition: all var(--transition-fast);
 
         &:focus {
           outline: none;
           border-color: var(--color-primary);
+          box-shadow: 0 0 0 2px var(--color-primary-soft, rgba(79, 70, 229, 0.12));
         }
 
         option {
@@ -364,43 +403,84 @@
       }
 
       .sa-console-btn {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 6px;
+        height: 24px;
         background: var(--color-primary-soft, #eef2ff);
         border: 1px solid var(--color-primary-border, #c7d2fe);
         color: var(--color-primary-text, var(--color-primary));
-        padding: 4px 10px;
+        padding: 0 9px;
         border-radius: 6px;
         font-size: 0.75rem;
         font-weight: 600;
+        line-height: 1;
         text-decoration: none;
+        white-space: nowrap;
+        flex-shrink: 0;
         transition: background var(--transition-fast);
-        margin-right: 4px;
 
         svg {
           width: 13px;
           height: 13px;
+          flex-shrink: 0;
         }
 
         &:hover {
-          background: var(--color-primary-soft, #e0e7ff);
+          background: var(--color-primary-border, #e0e7ff);
         }
       }
 
       .role-badge {
+        display: inline-flex;
+        align-items: center;
+        height: 22px;
         font-size: 0.68rem;
-        font-weight: 600;
+        font-weight: 700;
+        line-height: 1;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        padding: 3px 7px;
+        padding: 0 8px;
         border-radius: 999px;
+        white-space: nowrap;
+        flex-shrink: 0;
         background: var(--color-primary-soft, #eef2ff);
         color: var(--color-primary-text, var(--color-primary));
         border: 1px solid var(--color-primary-border, #c7d2fe);
+
+        &--admin {
+          background: var(--color-primary-soft, #eef2ff);
+          color: var(--color-primary-text, #4338ca);
+          border-color: var(--color-primary-border, #c7d2fe);
+        }
+
+        &--recruiter {
+          background: var(--color-success-soft, #ecfdf5);
+          color: var(--color-success-text, #047857);
+          border-color: var(--color-success-border, #a7f3d0);
+        }
+
+        &--super {
+          background: var(--color-secondary-soft, #f3e8ff);
+          color: var(--color-secondary-text, #6d28d9);
+          border-color: var(--color-secondary-border, #ddd6fe);
+        }
       }
 
-      @media (max-width: 1320px) {
+      @media (max-width: 1180px) {
+        gap: 6px;
+        padding: 0 8px;
+
+        .scope-prefix-label {
+          display: none;
+        }
+
+        .org-scope-pill {
+          max-width: 125px;
+        }
+      }
+
+      @media (max-width: 960px) {
         display: none;
       }
     }
@@ -969,7 +1049,8 @@
 
 @media (max-width: 768px) {
   :host-context(.developer-workspace) .navbar,
-  :host-context(.recruiter-workspace) .navbar {
+  :host-context(.recruiter-workspace) .navbar,
+  :host-context(.admin-workspace) .navbar {
     padding-inline: 14px;
     gap: 10px;
 
@@ -1000,7 +1081,8 @@
 
 @media (max-width: 640px) {
   :host-context(.developer-workspace) .navbar,
-  :host-context(.recruiter-workspace) .navbar {
+  :host-context(.recruiter-workspace) .navbar,
+  :host-context(.admin-workspace) .navbar {
     padding-inline: 12px;
     gap: 8px;
 
@@ -1016,7 +1098,8 @@
 
 @media (max-width: 360px) {
   :host-context(.developer-workspace) .navbar,
-  :host-context(.recruiter-workspace) .navbar {
+  :host-context(.recruiter-workspace) .navbar,
+  :host-context(.admin-workspace) .navbar {
     padding-inline: 10px;
     gap: 6px;
 
@@ -1050,7 +1133,7 @@
 
   .navbar-right .user-info {
     min-width: 0;
-    max-width: clamp(64px, 12vw, 160px);
+    max-width: clamp(88px, 14vw, 185px);
 
     .user-name,
     .user-handle {

@@ -1,9 +1,7 @@
-const { matchCandidatesToJob } = require('../../services/matching/matchingService');
-const { rankCandidates } = require('../../services/matching/aiRankingService');
-const { listCandidates } = require('../../services/matching/matchingService');
-const Job = require('../../models/Job');
-const { requireObjectId, validateCandidateIds } = require('../../utils/recruiterValidation');
-
+const {
+  matchCandidatesToJob,
+  rankRecruiterCandidates
+} = require('../../services/matching/matchingService');
 const matchCandidates = async (req, res) => {
   try {
     const { jobId, candidateIds = [] } = req.body || {};
@@ -15,12 +13,17 @@ const matchCandidates = async (req, res) => {
     const result = await matchCandidatesToJob({
       organizationId: req.organizationId,
       recruiterId: req.user._id,
+      sessionRevision: Number(req.user.sessionRevision || 0),
       jobId,
       candidateIds
     });
 
     return res.status(200).json(result);
   } catch (error) {
+    if (error.statusCode)
+      return res
+        .status(error.statusCode)
+        .json({ message: error.message, restriction: error.restriction });
     if (error.code === 404) {
       return res.status(404).json({ message: error.message });
     }
@@ -36,62 +39,18 @@ const matchCandidates = async (req, res) => {
 
 const aiRankCandidates = async (req, res) => {
   try {
-    const {
-      jobId,
-      job: inlineJob,
-      candidates: inlineCandidates = [],
-      candidateIds = []
-    } = req.body || {};
-
-    let resolvedJob = inlineJob || null;
-    if (!resolvedJob && jobId) {
-      resolvedJob = await Job.findOne({
-        _id: requireObjectId(jobId, 'jobId'),
+    return res.json(
+      await rankRecruiterCandidates({
+        recruiterId: req.user._id,
+        sessionRevision: Number(req.user.sessionRevision || 0),
         organizationId: req.organizationId,
-        recruiterId: req.user._id
-      }).lean();
-    }
-
-    if (!resolvedJob) {
-      return res.status(400).json({ message: 'A valid jobId or job object is required.' });
-    }
-
-    let candidates = Array.isArray(inlineCandidates) ? inlineCandidates : [];
-
-    if (!candidates.length) {
-      const allowed = new Set(validateCandidateIds(candidateIds));
-      if (allowed.size) {
-        const allCandidates = await listCandidates({
-          organizationId: req.organizationId,
-          limit: 300
-        });
-        candidates = allCandidates.filter((candidate) => {
-          const candidateId = String(candidate.id || '');
-          const userId = String(candidate.userId || '');
-          return allowed.has(candidateId) || allowed.has(userId);
-        });
-      } else {
-        candidates = await listCandidates({
-          organizationId: req.organizationId,
-          stack: resolvedJob.stack,
-          limit: 300
-        });
-      }
-    }
-
-    const ranked = rankCandidates({
-      job: resolvedJob,
-      candidates
-    });
-
-    return res.status(200).json({
-      job: resolvedJob,
-      ...ranked
-    });
+        payload: req.body || {}
+      })
+    );
   } catch (error) {
-    if (error.statusCode === 400) return res.status(400).json({ message: error.message });
-    console.error('AI rank candidates error:', error.message);
-    return res.status(500).json({ message: 'Failed to rank candidates.' });
+    return res
+      .status(error.statusCode || error.code || 500)
+      .json({ message: error.message, restriction: error.restriction });
   }
 };
 

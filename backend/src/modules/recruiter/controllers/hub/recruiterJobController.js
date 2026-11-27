@@ -19,6 +19,7 @@ const listJobs = async (req, res) => {
     return res.status(error.statusCode || 500).json({
       message: error.message || "Failed to load jobs.",
       errors: error.errors || undefined,
+      restriction: error.restriction,
     });
   }
 };
@@ -37,6 +38,7 @@ const getJobDetails = async (req, res) => {
     return res.status(error.statusCode || 500).json({
       message: error.message || "Failed to load job details.",
       errors: error.errors || undefined,
+      restriction: error.restriction,
     });
   }
 };
@@ -71,6 +73,7 @@ const createJob = async (req, res) => {
     return res.status(error.statusCode || 500).json({
       message: error.message || "Failed to create job.",
       errors: error.errors || undefined,
+      restriction: error.restriction,
     });
   }
 };
@@ -110,6 +113,7 @@ const updateJob = async (req, res) => {
     return res.status(error.statusCode || 500).json({
       message: error.message || "Failed to update job.",
       errors: error.errors || undefined,
+      restriction: error.restriction,
     });
   }
 };
@@ -145,6 +149,7 @@ const archiveJob = async (req, res) => {
     return res.status(error.statusCode || 500).json({
       message: error.message || "Failed to archive job.",
       errors: error.errors || undefined,
+      restriction: error.restriction,
     });
   }
 };
@@ -178,6 +183,7 @@ const deleteJob = async (req, res) => {
     return res.status(error.statusCode || 500).json({
       message: error.message || "Failed to delete job.",
       errors: error.errors || undefined,
+      restriction: error.restriction,
     });
   }
 };

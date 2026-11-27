@@ -1,0 +1,20 @@
+{
+  "isolatedReplicaSet": true,
+  "sourceModified": false,
+  "inviterAccountRole": "admin",
+  "inviterAccountActive": true,
+  "inviterDirectMembershipStatus": "disabled",
+  "createdStatus": 201,
+  "createAfterRevocationStatus": 403,
+  "resendAfterRevocationStatus": 403,
+  "acceptanceExpectedStatus": 403,
+  "acceptanceActualStatus": 200,
+  "invitationStoredStatus": "accepted",
+  "recipientStoredRole": "recruiter",
+  "governanceVersion": 2,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 199,
+    "productionDataUsed": false
+  }
+}

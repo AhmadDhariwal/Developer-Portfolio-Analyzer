@@ -12,10 +12,18 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function startMongo({
   replicaSet = "integration-live",
   temporaryRoot = os.tmpdir(),
-  readinessAttempts = 50,
+  readinessAttempts = Number.parseInt(
+    process.env.INTEGRATION_TEST_MONGO_READINESS_ATTEMPTS || "50",
+    10,
+  ),
   port: requestedPort = 0,
 } = {}) {
   assert.match(replicaSet, /^[a-zA-Z0-9_-]{1,64}$/);
+  assert.ok(
+    Number.isInteger(readinessAttempts) &&
+      readinessAttempts > 0 &&
+      readinessAttempts <= 500,
+  );
   const binary =
     process.env.INTEGRATION_TEST_MONGOD ||
     "C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe";
@@ -54,8 +62,14 @@ async function startMongo({
       "0.25",
       "--quiet",
     ],
-    { windowsHide: true, stdio: ["ignore", "ignore", "ignore"] },
+    { windowsHide: true, stdio: ["ignore", "pipe", "pipe"] },
   );
+  let startupOutput = "";
+  const captureStartup = (chunk) => {
+    startupOutput = (startupOutput + chunk.toString()).slice(-4000);
+  };
+  child.stdout.on("data", captureStartup);
+  child.stderr.on("data", captureStartup);
   let launchError;
   child.on("error", (error) => {
     launchError = error;
@@ -114,6 +128,7 @@ async function startMongo({
       productionDataUsed: false,
     };
   }
+  let connectionError;
   try {
     for (let attempt = 0; attempt < readinessAttempts; attempt++) {
       if (launchError) throw launchError;
@@ -128,13 +143,17 @@ async function startMongo({
       try {
         await direct.connect();
         break;
-      } catch {
+      } catch (error) {
+        connectionError = error;
         await direct.close();
         direct = null;
         await delay(150);
       }
     }
-    assert.ok(direct, "Disposable Mongo readiness deadline");
+    assert.ok(
+      direct,
+      `Disposable Mongo readiness deadline: ${connectionError?.message || "unknown connection error"}. Server startup: ${startupOutput}`,
+    );
     await direct.db("admin").command({
       replSetInitiate: {
         _id: replicaSet,

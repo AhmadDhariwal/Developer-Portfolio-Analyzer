@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-27",
+  "branch": "admin/ui",
+  "head": "229c7cfb",
+  "prTarget": "not applicable",
+  "formatter": {
+    "write": true,
+    "check": true,
+    "sourceFiles": 32
+  },
+  "javascriptSyntax": {
+    "passed": 27
+  },
+  "typeScript": {
+    "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+    "exitCode": 0,
+    "repeatedAfterCleanup": true
+  },
+  "gitWhitespace": {
+    "unstagedExitCode": 0,
+    "stagedExitCode": 0,
+    "note": "Git emitted line-ending conversion warnings; no whitespace errors."
+  },
+  "stagedFiles": [],
+  "historicalEvidenceUnchanged": true,
+  "noSourceMovesOrDeletions": true,
+  "build": {
+    "command": "npm run build -- --output-path <task temporary directory>",
+    "exitCode": 0,
+    "repeatedAfterCleanup": true,
+    "warnings": 3
+  },
+  "postCleanupGovernance": {
+    "passed": 21,
+    "failed": 0,
+    "skipped": 0
+  },
+  "finalFrontendFocused": {
+    "passed": 20,
+    "failed": 0
+  }
+}

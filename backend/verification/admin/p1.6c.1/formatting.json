@@ -1,0 +1,64 @@
+{
+  "formatter": "frontend/node_modules/prettier/bin/prettier.cjs",
+  "groups": [
+    {
+      "files": [
+        "backend/src/core/middleware/auditLogMiddleware.js",
+        "backend/src/core/middleware/platformSettingsMiddleware.js",
+        "backend/src/modules/admin/controllers/adminConsoleController.js",
+        "backend/src/modules/admin/controllers/recruiterController.js",
+        "backend/src/modules/admin/controllers/tenantcontroller.js",
+        "backend/src/modules/admin/models/organization.js",
+        "backend/src/modules/admin/routes/adminConsole.routes.js",
+        "backend/src/modules/admin/services/invitationAcceptanceService.js",
+        "backend/src/modules/admin/services/teamCapacityService.js",
+        "backend/src/modules/recruiter/controllers/hub/comparisonController.js",
+        "backend/src/modules/recruiter/controllers/matching/jobController.js",
+        "backend/src/modules/recruiter/controllers/matching/matchController.js",
+        "backend/src/modules/recruiter/routes/hub/recruiterHubRoutes.js",
+        "backend/src/modules/recruiter/routes/recruiter.routes.js",
+        "backend/src/modules/recruiter/services/hub/comparisonService.js",
+        "backend/src/modules/recruiter/services/hub/matchService.js",
+        "backend/src/modules/recruiter/services/matching/matchingService.js",
+        "backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js",
+        "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+        "backend/src/tests/admin/adminRegressionClosure.integration.test.js",
+        "backend/src/modules/admin/config/organizationPolicies.js",
+        "backend/src/modules/admin/controllers/organizationGovernanceController.js",
+        "backend/src/modules/admin/services/organizationGovernanceService.js",
+        "backend/src/tests/admin/organizationGovernance.integration.test.js"
+      ],
+      "options": [
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "100"
+      ]
+    },
+    {
+      "files": [
+        "backend/src/modules/recruiter/controllers/hub/recruiterJobController.js",
+        "backend/src/modules/recruiter/services/hub/recruiterJobService.js",
+        "backend/src/tests/fixtures/disposableRequestMongo.js"
+      ],
+      "options": []
+    },
+    {
+      "files": [
+        "frontend/src/app/features/admin/pages/admin-console/admin-console.component.ts",
+        "frontend/src/app/features/admin/pages/admin-console/admin-console.component.spec.ts",
+        "frontend/src/app/features/admin/pages/admin-console/admin-console.service.ts",
+        "frontend/src/app/shared/models/organization-governance.model.ts",
+        "frontend/src/app/shared/services/organization-governance.service.ts"
+      ],
+      "options": ["--config", "frontend/.prettierrc"]
+    }
+  ],
+  "write": true,
+  "check": true,
+  "excludedUserWork": "frontend/src/app/core/layouts/main-layout/navbar/*",
+  "sourceFiles": 32,
+  "javascriptSyntaxPassed": 27,
+  "finalizedAfterCleanup": true
+}

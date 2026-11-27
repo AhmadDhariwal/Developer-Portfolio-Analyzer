@@ -625,6 +625,7 @@ export class AdminConsolePageComponent implements OnInit {
     this.runMutation(
       () =>
         this.consoleService.updatePreferences({
+          expectedVersion: this.preferences?.organization.governanceVersion ?? 0,
           name: this.prefForm.name.trim(),
           description: this.prefForm.description.trim(),
           dashboardConfig: {

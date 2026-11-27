@@ -1,0 +1,37 @@
+{
+  "executable": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "--require",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+    "--test",
+    "--test-concurrency=1",
+    "--test-reporter=tap",
+    "src/tests/admin/adminScopeAndAnalytics.integration.test.js",
+    "src/tests/admin/adminRegressionClosure.integration.test.js",
+    "src/tests/admin/organizationGovernance.integration.test.js",
+    "src/tests/core/tenantAudit.integration.test.js",
+    "src/tests/core/platformSettingsSession.integration.test.js",
+    "src/tests/recruiter/recruiterHttp.integration.test.js",
+    "src/tests/recruiter/teamSharedJobs.integration.test.js",
+    "src/tests/recruiter/teamEvaluations.integration.test.js",
+    "src/tests/recruiter/applicationWorkflow.integration.test.js",
+    "src/tests/recruiter/applicationShortlists.integration.test.js",
+    "src/tests/recruiter/applicationIntegrity.integration.test.js",
+    "src/tests/recruiter/applicationConcurrency.integration.test.js",
+    "src/tests/jobs/jobApplications.integration.test.js",
+    "src/tests/core/applicationEvaluationRequestLogging.test.js"
+  ],
+  "started": "2026-11-27T12:33:45.859Z",
+  "finished": "2026-11-27T12:39:02.404Z",
+  "exitCode": 0,
+  "summary": {
+    "tests": 120,
+    "suites": 0,
+    "pass": 120,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 314034.0913
+  }
+}

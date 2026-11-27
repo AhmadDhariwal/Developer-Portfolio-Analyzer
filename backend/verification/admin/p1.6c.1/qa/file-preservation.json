@@ -1,0 +1,13 @@
+{
+  "checkedFiles": 1828,
+  "changedExistingFiles": [],
+  "applicationSourceChanged": false,
+  "existingTestSourceChanged": false,
+  "historicalReportsRestored": false,
+  "navbarFilesPreserved": [
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.html",
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.scss",
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.spec.ts",
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.ts"
+  ]
+}

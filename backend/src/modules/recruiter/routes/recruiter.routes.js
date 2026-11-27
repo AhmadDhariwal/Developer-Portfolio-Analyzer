@@ -18,6 +18,14 @@ const {
   aiRankCandidates
 } = require('../controllers/matching');
 
+router.get(
+  '/capabilities',
+  protect,
+  requireRecruiterTenant,
+  requireOrganizationContext(['recruiter']),
+  require('../../admin/controllers/organizationGovernanceController').getCapabilities
+);
+
 router.use(
   protect,
   requireRecruiterTenant,

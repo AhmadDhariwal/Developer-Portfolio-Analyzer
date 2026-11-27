@@ -25,7 +25,10 @@ import {
   AppNotification,
   NotificationResponse,
 } from '../../../../shared/services/notification.service';
-import { TenantContextService } from '../../../../shared/services/tenant-context.service';
+import {
+  TenantContextService,
+  TenantContextState,
+} from '../../../../shared/services/tenant-context.service';
 import { ApiService } from '../../../../shared/services/api.service';
 import { ProfileService } from '../../../../shared/services/profile.service';
 import { ThemeService } from '../../../../shared/services/theme.service';
@@ -81,9 +84,12 @@ export class Navbar implements OnInit {
     myRole: 'admin' | 'manager' | 'member' | 'recruiter';
   }> = [];
   teams: Array<{ _id: string; name: string }> = [];
+  recruiterTeams: Array<{ _id: string; name: string }> = [];
+  recruiterOrganizationName = '';
   selectedOrganizationId = '';
   selectedTeamId = '';
   selectedRole: 'admin' | 'manager' | 'member' | 'recruiter' | '' = '';
+  private loadedTenantUserId = '';
 
   private cachedRepos: any[] = [];
   private cachedSkills: SearchSuggestion[] = [];
@@ -212,6 +218,9 @@ export class Navbar implements OnInit {
   }
 
   get searchPlaceholder(): string {
+    if (this.isSuperAdmin) {
+      return 'Search platform workspace...';
+    }
     if (this.isAdmin) {
       return 'Search admin workspace...';
     }
@@ -222,26 +231,91 @@ export class Navbar implements OnInit {
   }
 
   get profileLabel(): string {
+    if (this.isSuperAdmin) return 'Platform Settings';
     return this.isAdmin ? 'Org Console' : 'Profile';
   }
 
   get notificationsActionLabel(): string {
-    return this.isAdmin ? 'View Activity Logs' : 'View All Activities';
+    return this.isSuperAdmin || this.isAdmin ? 'View Activity Logs' : 'View All Activities';
   }
 
   get profileRoute(): string {
+    if (this.isSuperAdmin) return '/app/settings';
     if (this.isAdmin) return '/app/admin/console';
     return this.isRecruiter ? '/app/recruiter/profile' : '/app/profile';
   }
 
   get dashboardRoute(): string {
+    if (this.isSuperAdmin) return '/super-admin/dashboard';
     if (this.isAdmin) return '/app/admin/dashboard';
     return this.isRecruiter ? '/app/recruiter/dashboard' : '/app/dashboard';
   }
 
   get notificationsRoute(): string {
+    if (this.isSuperAdmin) return '/app/settings/activity-logs';
     if (this.isAdmin) return '/app/admin/activity-logs';
     return this.isRecruiter ? '/app/recruiter/notifications' : '/app/notifications';
+  }
+
+  get activeOrgName(): string {
+    const selected = this.organizations.find((org) => org._id === this.selectedOrganizationId);
+    return (
+      selected?.name ||
+      this.organizations[0]?.name ||
+      this.recruiterOrganizationName ||
+      this.tenantContext.snapshot.organizationName ||
+      ''
+    );
+  }
+
+  get showWorkspaceScopeBar(): boolean {
+    if (this.isSuperAdmin) return true;
+    if (this.isAdmin || this.isRecruiter) {
+      return this.organizations.length > 0 || Boolean(this.activeOrgName);
+    }
+    return this.organizations.length > 0;
+  }
+
+  get showOrgSelect(): boolean {
+    return !this.isSuperAdmin && !this.isAdmin && this.organizations.length > 1;
+  }
+
+  get showOrgPill(): boolean {
+    return !this.isSuperAdmin && !this.showOrgSelect && Boolean(this.activeOrgName);
+  }
+
+  get showRecruiterTeamPill(): boolean {
+    return this.isRecruiter && !this.isAdmin && !this.isSuperAdmin && Boolean(this.activeOrgName);
+  }
+
+  get showTeamSelect(): boolean {
+    return (
+      !this.isSuperAdmin &&
+      !this.isAdmin &&
+      !this.isRecruiter &&
+      this.organizations.length > 0 &&
+      this.teams.length > 0
+    );
+  }
+
+  get recruiterTeamLabel(): string {
+    if (this.recruiterTeams.length === 0) return 'Org-wide';
+    if (this.recruiterTeams.length === 1) return this.recruiterTeams[0].name;
+    return `${this.recruiterTeams[0].name} +${this.recruiterTeams.length - 1}`;
+  }
+
+  get recruiterTeamTitle(): string {
+    if (this.recruiterTeams.length === 0) {
+      return 'Organization-wide recruiter scope (no specific team assignment)';
+    }
+    return `Assigned teams: ${this.recruiterTeams.map((team) => team.name).join(', ')}`;
+  }
+
+  get roleBadgeLabel(): string {
+    if (this.isSuperAdmin) return 'Super Admin';
+    if (this.isAdmin) return 'Admin';
+    if (this.isRecruiter) return 'Recruiter';
+    return this.selectedRole || '';
   }
 
   private get searchablePages(): SearchSuggestion[] {
@@ -317,6 +391,7 @@ export class Navbar implements OnInit {
     this.authService.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       this.scheduleUi(() => {
         this.syncUserState(user);
+        this.syncWorkspaceContext(user);
         if (user && this.authService.isLoggedIn()) {
           const token = this.authService.getToken();
           if (token)
@@ -371,19 +446,62 @@ export class Navbar implements OnInit {
           String(user._id || user.email || 'current-user'),
           token,
         );
-      this.loadOrganizations();
+      this.syncWorkspaceContext(user);
     }
 
     this.tenantContext.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ctx) => {
       this.scheduleUi(() => {
         this.selectedOrganizationId = ctx.organizationId;
         this.selectedTeamId = ctx.teamId;
-        this.selectedRole = ctx.myRole;
-        if (ctx.organizationId) {
+        this.selectedRole = this.resolveEffectiveRole(ctx.myRole);
+        if (ctx.organizationId && !this.isAdmin && !this.isRecruiter && !this.isSuperAdmin) {
           this.loadTeams(ctx.organizationId);
         }
       });
     });
+  }
+
+  private resolveEffectiveRole(orgRole?: string): TenantContextState['myRole'] {
+    if (this.isSuperAdmin) return '';
+    if (this.isAdmin) return 'admin';
+    if (this.isRecruiter) return 'recruiter';
+    return (orgRole || '') as TenantContextState['myRole'];
+  }
+
+  private syncWorkspaceContext(user: any): void {
+    if (!user || !this.authService.isLoggedIn()) {
+      this.loadedTenantUserId = '';
+      this.organizations = [];
+      this.teams = [];
+      this.recruiterTeams = [];
+      this.recruiterOrganizationName = '';
+      this.selectedOrganizationId = '';
+      this.selectedTeamId = '';
+      this.selectedRole = '';
+      return;
+    }
+
+    const uid = String(user._id || user.id || user.email || 'session');
+    if (this.loadedTenantUserId === uid) {
+      return;
+    }
+    this.loadedTenantUserId = uid;
+    this.organizations = [];
+    this.teams = [];
+    this.recruiterTeams = [];
+    this.recruiterOrganizationName = '';
+
+    if (this.isSuperAdmin) {
+      this.selectedOrganizationId = '';
+      this.selectedTeamId = '';
+      this.selectedRole = '';
+      return;
+    }
+
+    this.loadOrganizations();
+    if (this.isRecruiter && !this.isAdmin) {
+      this.loadRecruiterTeams();
+    }
   }
 
   private scheduleUi(update: () => void): void {
@@ -393,7 +511,38 @@ export class Navbar implements OnInit {
     });
   }
 
+  loadRecruiterTeams(): void {
+    this.apiService
+      .getRecruiterHubProfile()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.scheduleUi(() => {
+            const profile = res?.profile;
+            this.recruiterOrganizationName = String(profile?.organization?.name || '').trim();
+            this.recruiterTeams = Array.isArray(profile?.teams)
+              ? profile.teams
+                  .map((team: any) => ({
+                    _id: String(team?._id || ''),
+                    name: String(team?.name || '').trim(),
+                  }))
+                  .filter((team: { _id: string; name: string }) => Boolean(team.name))
+              : [];
+          });
+        },
+        error: () => {
+          this.scheduleUi(() => {
+            this.recruiterTeams = [];
+          });
+        },
+      });
+  }
+
   loadOrganizations(): void {
+    if (this.isSuperAdmin) {
+      return;
+    }
+
     this.apiService
       .getOrganizations()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -403,12 +552,13 @@ export class Navbar implements OnInit {
             this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
             if (!this.selectedOrganizationId && this.organizations.length > 0) {
               const first = this.organizations[0];
+              const effectiveRole = this.resolveEffectiveRole(first.myRole);
               this.selectedOrganizationId = first._id;
-              this.selectedRole = first.myRole;
+              this.selectedRole = effectiveRole;
               this.tenantContext.setOrganization({
                 id: first._id,
                 name: first.name,
-                myRole: first.myRole,
+                myRole: effectiveRole,
               });
             }
 
@@ -417,7 +567,7 @@ export class Navbar implements OnInit {
               !this.organizations.some((org) => org._id === this.selectedOrganizationId)
             ) {
               this.selectedOrganizationId = '';
-              this.selectedRole = '';
+              this.selectedRole = this.resolveEffectiveRole('');
               this.selectedTeamId = '';
               this.teams = [];
               this.tenantContext.clearAll();
@@ -427,15 +577,16 @@ export class Navbar implements OnInit {
               (org) => org._id === this.selectedOrganizationId,
             );
             if (selectedOrg) {
-              this.selectedRole = selectedOrg.myRole;
+              const effectiveRole = this.resolveEffectiveRole(selectedOrg.myRole);
+              this.selectedRole = effectiveRole;
               this.tenantContext.syncOrganization({
                 id: selectedOrg._id,
                 name: selectedOrg.name,
-                myRole: selectedOrg.myRole,
+                myRole: effectiveRole,
               });
             }
 
-            if (this.selectedOrganizationId) {
+            if (this.selectedOrganizationId && !this.isAdmin && !this.isRecruiter) {
               this.loadTeams(this.selectedOrganizationId);
             }
           });

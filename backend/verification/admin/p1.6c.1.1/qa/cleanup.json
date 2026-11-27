@@ -1,0 +1,278 @@
+{
+  "fixtures": [
+    {
+      "event": "started",
+      "pid": 17044,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-Ln3TfX",
+      "uri": "mongodb://127.0.0.1:54454/integration_live_acceptance?replicaSet=independent-p16c11-revocation",
+      "stop": {
+        "event": "stopped",
+        "pid": 17044,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-Ln3TfX",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 210,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 23668,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-KdXvmc",
+      "uri": "mongodb://127.0.0.1:54453/integration_live_acceptance?replicaSet=invitation-authority-revocation",
+      "stop": {
+        "event": "stopped",
+        "pid": 23668,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-KdXvmc",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 223,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 29316,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-0FGah3",
+      "uri": "mongodb://127.0.0.1:54461/integration_live_acceptance?replicaSet=p16c1-independent-qa",
+      "stop": {
+        "event": "stopped",
+        "pid": 29316,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-0FGah3",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 258,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 18400,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-2OX6n5",
+      "uri": "mongodb://127.0.0.1:54718/integration_live_acceptance?replicaSet=qa-revoked-inviter-repro",
+      "stop": {
+        "event": "stopped",
+        "pid": 18400,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-2OX6n5",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 210,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 28984,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-MpFRoo",
+      "uri": "mongodb://127.0.0.1:54721/integration_live_acceptance?replicaSet=admin-regression-closure",
+      "stop": {
+        "event": "stopped",
+        "pid": 28984,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-MpFRoo",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 223,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 23016,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-3prtlE",
+      "uri": "mongodb://127.0.0.1:54831/integration_live_acceptance?replicaSet=admin-scope-analytics",
+      "stop": {
+        "event": "stopped",
+        "pid": 23016,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-3prtlE",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 210,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 34204,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-pf9ydE",
+      "uri": "mongodb://127.0.0.1:50274/integration_live_acceptance?replicaSet=organization-governance",
+      "stop": {
+        "event": "stopped",
+        "pid": 34204,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-pf9ydE",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 258,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 16776,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-quNneW",
+      "uri": "mongodb://127.0.0.1:60256/integration_live_acceptance?replicaSet=settings-session",
+      "stop": {
+        "event": "stopped",
+        "pid": 16776,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-quNneW",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 56,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 11640,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-7mTKkM",
+      "uri": "mongodb://127.0.0.1:63470/integration_live_acceptance?replicaSet=independent-p16c11-revocation",
+      "stop": {
+        "event": "stopped",
+        "pid": 11640,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-7mTKkM",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 210,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 8396,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-V8V9zr",
+      "uri": "mongodb://127.0.0.1:63485/integration_live_acceptance?replicaSet=tenant-audit",
+      "stop": {
+        "event": "stopped",
+        "pid": 8396,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-V8V9zr",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 121,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 14328,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-eUX0oL",
+      "uri": "mongodb://127.0.0.1:63577/integration_live_acceptance?replicaSet=direct-applications",
+      "stop": {
+        "event": "stopped",
+        "pid": 14328,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-eUX0oL",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 311,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 43192,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-runtime\\devinsight-real-integrations-f5qitE",
+      "uri": "mongodb://127.0.0.1:60671/integration_live_acceptance?replicaSet=p15a-applications",
+      "stop": {
+        "event": "stopped",
+        "pid": 43192,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-runtime\\devinsight-real-integrations-f5qitE",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 338,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 24488,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-runtime\\devinsight-real-integrations-5qw6E2",
+      "uri": "mongodb://127.0.0.1:57371/integration_live_acceptance?replicaSet=p15a-applications",
+      "stop": {
+        "event": "stopped",
+        "pid": 24488,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.5a-runtime\\devinsight-real-integrations-5qw6E2",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 338,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 29968,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-0NbJuz",
+      "uri": "mongodb://127.0.0.1:62721/integration_live_acceptance?replicaSet=application-shortlists",
+      "stop": {
+        "event": "stopped",
+        "pid": 29968,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-0NbJuz",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 235,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 30596,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-jqJ003",
+      "uri": "mongodb://127.0.0.1:62867/integration_live_acceptance?replicaSet=application-workflow",
+      "stop": {
+        "event": "stopped",
+        "pid": 30596,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-jqJ003",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 235,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 39748,
+      "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-kvOB8t",
+      "uri": "mongodb://127.0.0.1:54958/integration_live_acceptance?replicaSet=recruiter-http",
+      "stop": {
+        "event": "stopped",
+        "pid": 39748,
+        "directory": "C:\\Users\\AHMAD~1.HAS\\AppData\\Local\\Temp\\devinsight-real-integrations-kvOB8t",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 244,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 4324,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-jLKEru",
+      "uri": "mongodb://127.0.0.1:49689/integration_live_acceptance?replicaSet=team-evaluations",
+      "stop": {
+        "event": "stopped",
+        "pid": 4324,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-jLKEru",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 235,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    },
+    {
+      "event": "started",
+      "pid": 29528,
+      "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-5nVqMW",
+      "uri": "mongodb://127.0.0.1:60324/integration_live_acceptance?replicaSet=team-jobs",
+      "stop": {
+        "event": "stopped",
+        "pid": 29528,
+        "directory": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-5nVqMW",
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 235,
+        "productionDataUsed": false
+      },
+      "directoryAbsent": true
+    }
+  ],
+  "allRecordedFixturesStoppedAndRemoved": true,
+  "preexistingDisposableDirectoriesExcludedAndUntouched": true,
+  "deletedPreexistingFiles": [],
+  "notes": "Startup failures use the original fixture's awaited stop-on-error path. Raw failed attempts remain retained as environment diagnostics."
+}

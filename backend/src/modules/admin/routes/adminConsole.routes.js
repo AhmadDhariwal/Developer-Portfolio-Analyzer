@@ -31,19 +31,25 @@ const {
 router.use(protect, requireAdminAccountRole, requireOrganizationContext(['admin']));
 router.param('id', validateObjectIdParam);
 router.param('recruiterId', validateObjectIdParam);
+const governance = require('../controllers/organizationGovernanceController');
+router.get('/governance', governance.getGovernance);
+router.patch('/governance', governance.updateGovernance);
+router.get('/members', governance.getDirectory);
+router.get('/invitations', governance.getInvitations);
+router.get('/capabilities', governance.getCapabilities);
 
-router.get('/overview',     getConsoleOverview);
-router.get('/analytics',    getConsoleAnalytics);
-router.get('/activity',     getConsoleActivity);
-router.get('/performance',  getConsolePerformance);
-router.get('/teams',        getConsoleTeams);
-router.post('/teams',       createConsoleTeam);
-router.patch('/teams/:id',  updateConsoleTeam);
+router.get('/overview', getConsoleOverview);
+router.get('/analytics', getConsoleAnalytics);
+router.get('/activity', getConsoleActivity);
+router.get('/performance', getConsolePerformance);
+router.get('/teams', getConsoleTeams);
+router.post('/teams', createConsoleTeam);
+router.patch('/teams/:id', updateConsoleTeam);
 router.patch('/teams/:id/active', toggleConsoleTeamActive);
 router.delete('/teams/:id', deleteConsoleTeam);
 router.post('/teams/:id/recruiters', assignRecruiterToConsoleTeam);
 router.delete('/teams/:id/recruiters/:recruiterId', removeRecruiterFromConsoleTeam);
-router.get('/preferences',  getConsolePreferences);
+router.get('/preferences', getConsolePreferences);
 router.patch('/preferences', updateConsolePreferences);
 
 module.exports = router;

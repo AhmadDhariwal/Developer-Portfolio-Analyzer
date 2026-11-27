@@ -1,0 +1,181 @@
+{
+  "sourcePreservation": {
+    "checked": 1828,
+    "changed": []
+  },
+  "sourceFormatting": [
+    {
+      "files": 24,
+      "exitCode": 0
+    },
+    {
+      "files": 3,
+      "exitCode": 0
+    },
+    {
+      "files": 5,
+      "exitCode": 0
+    }
+  ],
+  "javascriptSyntax": [
+    {
+      "file": "backend/src/core/middleware/auditLogMiddleware.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/core/middleware/platformSettingsMiddleware.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/controllers/adminConsoleController.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/controllers/recruiterController.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/controllers/tenantcontroller.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/models/organization.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/routes/adminConsole.routes.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/services/invitationAcceptanceService.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/services/teamCapacityService.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/controllers/hub/comparisonController.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/controllers/matching/jobController.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/controllers/matching/matchController.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/routes/hub/recruiterHubRoutes.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/routes/recruiter.routes.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/services/hub/comparisonService.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/services/hub/matchService.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/services/matching/matchingService.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/tests/admin/adminRegressionClosure.integration.test.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/config/organizationPolicies.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/controllers/organizationGovernanceController.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/admin/services/organizationGovernanceService.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/tests/admin/organizationGovernance.integration.test.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/controllers/hub/recruiterJobController.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/modules/recruiter/services/hub/recruiterJobService.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/src/tests/fixtures/disposableRequestMongo.js",
+      "exitCode": 0
+    }
+  ],
+  "gitWhitespaceExitCode": 0,
+  "stagedWhitespaceExitCode": 0,
+  "typecheckExitCode": 0,
+  "productionBuildExitCode": 0,
+  "fullAngular": {
+    "files": 144,
+    "passed": 848,
+    "failed": 0
+  },
+  "existingBackend": {
+    "passed": 110,
+    "failed": 0,
+    "skipped": 0
+  },
+  "frontendMethodProbes": {
+    "passed": 3,
+    "failed": 0
+  },
+  "sourceBranch": "admin/ui",
+  "head": "229c7cfbefefed4c7c8ba2db63b454e1265e7e67",
+  "prTarget": "not applicable",
+  "qaArtifactFormatting": {
+    "write": true,
+    "check": true,
+    "files": 22
+  },
+  "qaSyntax": [
+    {
+      "file": "backend\\verification\\admin\\p1.6c.1\\qa\\acceptance.test.cjs",
+      "exitCode": 0
+    },
+    {
+      "file": "backend\\verification\\admin\\p1.6c.1\\qa\\frontend-preferences.test.cjs",
+      "exitCode": 0
+    },
+    {
+      "file": "backend\\verification\\admin\\p1.6c.1\\qa\\isolate-evidence.cjs",
+      "exitCode": 0
+    },
+    {
+      "file": "backend\\verification\\admin\\p1.6c.1\\qa\\revoked-inviter-repro.test.cjs",
+      "exitCode": 0
+    },
+    {
+      "file": "backend\\verification\\admin\\p1.6c.1\\qa\\vitest.config.mjs",
+      "exitCode": 0
+    }
+  ],
+  "finalExistingFilesUnchanged": 1828,
+  "finalGitWhitespaceExitCode": 0,
+  "finalStagedFiles": []
+}

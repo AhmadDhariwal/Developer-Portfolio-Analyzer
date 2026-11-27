@@ -7,12 +7,15 @@ const compare = async (req, res) => {
     const comparison = await compareCandidates({
       recruiterId: scope.recruiterId,
       organizationId: scope.organizationId,
+      sessionRevision: scope.sessionRevision,
       payload: req.body || {}
     });
     return res.status(200).json({ comparison });
   } catch (error) {
     console.error('Recruiter hub comparison error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to compare candidates.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to compare candidates.' });
   }
 };
 
