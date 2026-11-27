@@ -1,0 +1,134 @@
+{
+  "status": "running",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "externalDelivery": false,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/",
+      "status": 400
+    }
+  ],
+  "policyChecks": [],
+  "profiles": [],
+  "consoleErrors": [],
+  "runtimeErrors": [],
+  "unexpectedHttp": [],
+  "expectedHttp": [],
+  "checks": {
+    "maxConcurrentStreams": 2,
+    "metadataPersistence": true
+  },
+  "auditCommits": [],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 361,
+    "productionDataUsed": false
+  }
+}

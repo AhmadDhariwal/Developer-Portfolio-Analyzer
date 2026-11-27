@@ -2,6 +2,7 @@ const Job = require("../../models/Job");
 const { deleteJobWithPipeline } = require("../matching/jobLifecycleService");
 const { requireObjectId } = require("../../utils/recruiterValidation");
 const accessPolicy = require("../../utils/hub/recruiterJobAccess");
+const { assertPolicy } = require("../../../admin/config/organizationPolicies");
 
 const EMPLOYMENT_TYPES = new Set([
   "full-time",
@@ -104,7 +105,12 @@ const listRecruiterJobWorkspace = async (scope) =>
       organizationId: ctx.organizationId,
       $or: [
         { recruiterId: ctx.recruiterId },
-        { teamShared: true, teamId: { $in: [...ctx.grants.keys()] } },
+        {
+          teamShared: true,
+          teamId: {
+            $in: ctx.policies.teamSharedJobs ? [...ctx.grants.keys()] : [],
+          },
+        },
       ],
     })
       .sort({ updatedAt: -1 })
@@ -218,6 +224,13 @@ const createRecruiterJob = async ({ payload = {}, ...scope }) => {
   const jobPayload = toJobPayload(payload);
   validateJobPayload(jobPayload);
   return accessPolicy.withAccess(scope, async (ctx) => {
+    assertPolicy(ctx.organization, "recruiterJobCreation");
+    if (jobPayload.published)
+      assertPolicy(ctx.organization, "recruiterJobPublication");
+    if (payload.teamShared === true)
+      assertPolicy(ctx.organization, "teamSharedJobs");
+    if (payload.evaluationShared === true)
+      assertPolicy(ctx.organization, "sharedPublicEvaluations");
     const teamId = payload.teamId
       ? requireObjectId(payload.teamId, "teamId")
       : null;
@@ -252,6 +265,17 @@ const updateRecruiterJob = async ({ jobId, payload = {}, ...scope }) => {
     const job = await readJob(ctx, jobId);
     if (!job) return null;
     const permissions = accessPolicy.requirePermission(job, ctx, "edit");
+    if (
+      (payload.published === true && job.published !== true) ||
+      (job.published === true &&
+        payload.status === "open" &&
+        job.status !== "open")
+    )
+      assertPolicy(ctx.organization, "recruiterJobPublication");
+    if (payload.teamShared === true)
+      assertPolicy(ctx.organization, "teamSharedJobs");
+    if (payload.evaluationShared === true)
+      assertPolicy(ctx.organization, "sharedPublicEvaluations");
     const changesSharing =
       payload.teamShared !== undefined ||
       payload.teamId !== undefined ||

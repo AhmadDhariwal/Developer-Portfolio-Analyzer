@@ -1,0 +1,24 @@
+{
+  "executable": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "--require",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+    "--test",
+    "--test-concurrency=1",
+    "--test-reporter=tap",
+    "verification/admin/p1.6c.1.1/qa/acceptance.test.cjs"
+  ],
+  "started": "2026-11-27T12:32:48.887Z",
+  "finished": "2026-11-27T12:34:00.090Z",
+  "exitCode": 0,
+  "summary": {
+    "tests": 38,
+    "suites": 0,
+    "pass": 38,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 67912.0976
+  }
+}

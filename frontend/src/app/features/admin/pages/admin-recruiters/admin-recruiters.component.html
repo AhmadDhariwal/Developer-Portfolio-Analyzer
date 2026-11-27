@@ -1,3 +1,8 @@
+<app-organization-policy-notice
+  policy="invitationCreation"
+  title="Invitation permissions"
+  detail="Revocation, expiry and separately authorized direct provisioning remain available."
+/>
 <section class="admin-page">
   <header class="page-header page-header--dense">
     <div class="page-progress" *ngIf="loading" role="progressbar" aria-label="Loading recruiters">
@@ -132,7 +137,12 @@
       </div>
 
       <div class="console-card__actions">
-        <button type="button" class="btn-primary" (click)="inviteRecruiter()" [disabled]="loading">
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="inviteRecruiter()"
+          [disabled]="loading || !policies.allowed('invitationCreation')"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="14"
@@ -372,7 +382,12 @@
           <span>{{ invitationExpired[inv._id] ? 'Needs resend' : 'Awaiting acceptance' }}</span>
         </div>
         <div class="action-group">
-          <button type="button" class="btn-action btn-action--icon" (click)="resendInvitation(inv)">
+          <button
+            type="button"
+            class="btn-action btn-action--icon"
+            (click)="resendInvitation(inv)"
+            [disabled]="!policies.allowed('invitationCreation')"
+          >
             Resend
           </button>
           <button

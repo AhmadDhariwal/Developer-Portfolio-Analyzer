@@ -1,0 +1,750 @@
+{
+  "assertions": [
+    {
+      "policy": "recruiterJobCreation",
+      "checks": [
+        {
+          "route": "/api/recruiter-hub/jobs",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/jobs",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter/job",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter/job",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/admin/jobs",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b0978978ae164e07c7d7dc8",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/jobs",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "route": "/api/recruiter-hub/jobs",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "route": "/api/recruiter-hub/jobs",
+          "method": "POST",
+          "status": 201
+        }
+      ],
+      "otherOrganizationUnaffected": true,
+      "reenabled": true
+    },
+    {
+      "policy": "recruiterJobPublication",
+      "checks": [
+        {
+          "route": "/api/recruiter-hub/jobs",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b0978998ae164e07c7d7f29",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b0978998ae164e07c7d7f29",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter/job/6b0978998ae164e07c7d7f29",
+          "method": "PUT",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b0978998ae164e07c7d7f29",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b0978998ae164e07c7d7f29/archive",
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b0978998ae164e07c7d7f64",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b0978998ae164e07c7d7f29",
+          "method": "PATCH",
+          "status": 200
+        }
+      ],
+      "otherOrganizationUnaffected": true,
+      "reenabled": true
+    },
+    {
+      "policy": "teamSharedJobs",
+      "checks": [
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "PATCH",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "PATCH",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "PATCH",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b09789b8ae164e07c7d8084",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d80bd",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789b8ae164e07c7d8082",
+          "method": "GET",
+          "status": 200
+        }
+      ],
+      "otherOrganizationUnaffected": true,
+      "reenabled": true
+    },
+    {
+      "policy": "sharedPublicEvaluations",
+      "checks": [
+        {
+          "route": "/api/recruiter-hub/matches?jobId=6b09789d8ae164e07c7d8210",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b09789d8ae164e07c7d8212",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/shortlists?jobId=6b09789d8ae164e07c7d8210",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/shortlists/6b09789d8ae164e07c7d8214",
+          "method": "PATCH",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b09789d8ae164e07c7d8212/status",
+          "method": "PATCH",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/matches/generate",
+          "method": "POST",
+          "status": 404
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789d8ae164e07c7d8210",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/jobs/6b09789d8ae164e07c7d8210",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b09789e8ae164e07c7d824d",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b09789d8ae164e07c7d8212",
+          "method": "GET",
+          "status": 200
+        }
+      ],
+      "otherOrganizationUnaffected": true,
+      "reenabled": true
+    },
+    {
+      "policy": "teamManagerEvaluationManagement",
+      "checks": [
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a18ae164e07c7d83a1",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a18ae164e07c7d83a1/status",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/shortlists/6b0978a18ae164e07c7d83a3",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/shortlists/6b0978a18ae164e07c7d83a3",
+          "method": "DELETE",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/matches/generate",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a18ae164e07c7d83a1",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a18ae164e07c7d83a1/status",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/shortlists/6b0978a18ae164e07c7d83a3",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/shortlists/6b0978a18ae164e07c7d83a3",
+          "method": "DELETE",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/matches/generate",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a18ae164e07c7d83a1",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a18ae164e07c7d83a1/status",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/shortlists/6b0978a18ae164e07c7d83a3",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/shortlists/6b0978a18ae164e07c7d83a3",
+          "method": "DELETE",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/matches/generate",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a18ae164e07c7d83a1/status",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a38ae164e07c7d83dc/status",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a18ae164e07c7d83a1/status",
+          "method": "PATCH",
+          "status": 200
+        }
+      ],
+      "otherOrganizationUnaffected": true,
+      "reenabled": true
+    },
+    {
+      "policy": "candidateMatching",
+      "checks": [
+        {
+          "route": "/api/recruiter-hub/matches/generate",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter/match",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter/ai-rank",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter/ai-rank",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/comparison",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/recruiter-hub/comparison",
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/candidates",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/candidates/6b0978a68ae164e07c7d8626/analyze",
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/6b0978a68ae164e07c7d8644",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "route": "/api/admin/ai-rank",
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/generate",
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "route": "/api/recruiter-hub/matches/generate",
+          "method": "POST",
+          "status": 200
+        }
+      ],
+      "otherOrganizationUnaffected": true,
+      "reenabled": true
+    },
+    {
+      "policy": "invitationCreation",
+      "checks": [
+        {
+          "route": "/api/admin/invite-recruiter",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/admin/recruiter",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/tenant/organizations/6b0978a78ae164e07c7d87c2/invitations",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/admin/invitations/6b0978a88ae164e07c7d8842/resend",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/tenant/invitations/6b0978a88ae164e07c7d8842/accept",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/tenant/invitations/accept/1fcf0b5a87adcd01dac6d2b12ff4f9fe794f82d4783265c5",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/tenant/invitations/accept/20de2c29a2cec65e02027b8f2e4923b1d172e2bb7ee9c7e8/onboard",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/auth/accept-invite",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/admin/invitations/6b0978a88ae164e07c7d8842/expire",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "route": "/api/admin/invitations/6b0978a88ae164e07c7d8881/revoke",
+          "method": "PATCH",
+          "status": 404
+        },
+        {
+          "route": "/api/tenant/organizations/6b0978a78ae164e07c7d87c2/invitations/6b0978a88ae164e07c7d8881/revoke",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "route": "/api/admin/recruiters/direct",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "route": "/api/admin/invite-recruiter",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "route": "/api/admin/invite-recruiter",
+          "method": "POST",
+          "status": 201
+        }
+      ],
+      "otherOrganizationUnaffected": true,
+      "reenabled": true
+    },
+    {
+      "policy": "managerTeamAdministration",
+      "checks": [
+        {
+          "route": "/api/tenant/organizations/6b0978a98ae164e07c7d890f/teams",
+          "method": "POST",
+          "status": 403
+        },
+        {
+          "route": "/api/tenant/memberships/6b0978a98ae164e07c7d8936/role",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/tenant/memberships/6b0978a98ae164e07c7d8936/role",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/tenant/memberships/6b0978a98ae164e07c7d8936/role",
+          "method": "PATCH",
+          "status": 403
+        },
+        {
+          "route": "/api/admin-console/teams",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "route": "/api/tenant/organizations/6b0978a98ae164e07c7d894a/teams",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "route": "/api/tenant/organizations/6b0978a98ae164e07c7d890f/teams",
+          "method": "POST",
+          "status": 201
+        }
+      ],
+      "otherOrganizationUnaffected": true,
+      "reenabled": true
+    }
+  ],
+  "races": [
+    {
+      "operation": "creation",
+      "first": "policy",
+      "attempts": 4,
+      "policyStatus": 200,
+      "protectedStatus": 403,
+      "milliseconds": 144.92829999999958,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "creation",
+      "first": "operation",
+      "attempts": 4,
+      "policyStatus": 200,
+      "protectedStatus": 201,
+      "milliseconds": 133.70760000000155,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "publication",
+      "first": "policy",
+      "attempts": 4,
+      "policyStatus": 200,
+      "protectedStatus": 403,
+      "milliseconds": 160.53429999999935,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "publication",
+      "first": "operation",
+      "attempts": 3,
+      "policyStatus": 200,
+      "protectedStatus": 200,
+      "milliseconds": 132.42720000000554,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "evaluation",
+      "first": "policy",
+      "attempts": 4,
+      "policyStatus": 200,
+      "protectedStatus": 403,
+      "milliseconds": 196.76320000000123,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "evaluation",
+      "first": "operation",
+      "attempts": 7,
+      "policyStatus": 200,
+      "protectedStatus": 200,
+      "milliseconds": 161.66829999999754,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "acceptance",
+      "first": "policy",
+      "attempts": 3,
+      "policyStatus": 200,
+      "protectedStatus": 403,
+      "milliseconds": 96.9291000000012,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "acceptance",
+      "first": "operation",
+      "attempts": 6,
+      "policyStatus": 200,
+      "protectedStatus": 200,
+      "milliseconds": 163.4398000000001,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "matching",
+      "first": "policy",
+      "attempts": 4,
+      "policyStatus": 200,
+      "protectedStatus": 403,
+      "milliseconds": 125.38640000000305,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "matching",
+      "first": "operation",
+      "attempts": 7,
+      "policyStatus": 200,
+      "protectedStatus": 200,
+      "milliseconds": 213.15409999999974,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "team-creation",
+      "first": "policy",
+      "attempts": 3,
+      "policyStatus": 200,
+      "protectedStatus": 403,
+      "milliseconds": 121.21190000000206,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "team-creation",
+      "first": "operation",
+      "attempts": 4,
+      "policyStatus": 200,
+      "protectedStatus": 201,
+      "milliseconds": 131.9326000000001,
+      "finalStateVerified": true
+    },
+    {
+      "operation": "platform-versus-creation",
+      "first": "platform",
+      "protectedStatus": 403,
+      "initializedPlatformDocument": true
+    },
+    {
+      "operation": "platform-versus-creation",
+      "first": "operation",
+      "protectedStatus": 201,
+      "initializedPlatformDocument": true
+    }
+  ],
+  "directories": [
+    {
+      "members": 10,
+      "membersBytes": 3354,
+      "invitations": 4,
+      "invitationsBytes": 1302,
+      "milliseconds": 49.02590000000055,
+      "paginated": false
+    },
+    {
+      "members": 210,
+      "membersBytes": 60135,
+      "milliseconds": 146.67399999999907,
+      "paginated": false
+    }
+  ],
+  "contention": {
+    "operations": 8,
+    "elapsedMilliseconds": 1185.274400000002,
+    "p95Milliseconds": 1177.6944999999978,
+    "maxMilliseconds": 1177.6944999999978,
+    "unboundedRetryObserved": false
+  },
+  "restart": {
+    "separateNodeProcessVerified": true,
+    "disconnectedAndReconnected": true,
+    "persistedVersion": 1,
+    "falseValuesRetained": true
+  },
+  "responseContracts": [
+    {
+      "case": "admin",
+      "preferencesGet": 200,
+      "capabilitiesGet": 200
+    },
+    {
+      "case": "delegate",
+      "preferencesGet": 200,
+      "capabilitiesGet": 200
+    },
+    {
+      "case": "affiliated",
+      "preferencesGet": 200,
+      "capabilitiesGet": 200
+    },
+    {
+      "case": "disabled",
+      "preferencesGet": 200,
+      "capabilitiesGet": 403
+    },
+    {
+      "case": "orgManager",
+      "preferencesGet": 403,
+      "capabilitiesGet": 403
+    },
+    {
+      "case": "ownerRecruiter",
+      "preferencesGet": 403,
+      "capabilitiesGet": 403
+    },
+    {
+      "case": "manager",
+      "preferencesGet": 403,
+      "capabilitiesGet": 403
+    },
+    {
+      "case": "teamAdmin",
+      "preferencesGet": 403,
+      "capabilitiesGet": 403
+    },
+    {
+      "case": "member",
+      "preferencesGet": 403,
+      "capabilitiesGet": 403
+    },
+    {
+      "case": "developer",
+      "preferencesGet": 403,
+      "capabilitiesGet": 403
+    },
+    {
+      "case": "platform",
+      "preferencesGet": 403,
+      "capabilitiesGet": 403
+    },
+    {
+      "case": "matching-disabled-job-flags",
+      "jobAccess": {
+        "isOwner": false,
+        "view": true,
+        "edit": true,
+        "publish": true,
+        "archive": true,
+        "delete": false,
+        "manageSharing": false,
+        "privateEvidence": false,
+        "matching": false,
+        "evaluationView": true,
+        "evaluationManage": true
+      }
+    }
+  ],
+  "restartDiagnostic": {
+    "status": 0,
+    "stdout": "{\"version\":1,\"policies\":{\"recruiterJobCreation\":true,\"recruiterJobPublication\":true,\"teamSharedJobs\":false,\"sharedPublicEvaluations\":true,\"teamManagerEvaluationManagement\":true,\"candidateMatching\":false,\"invitationCreation\":true,\"managerTeamAdministration\":true}}\n",
+    "stderr": ""
+  },
+  "revokedInviter": {
+    "creationStatus": 201,
+    "disabledMembership": true,
+    "createAfterRevocation": 403,
+    "resendAfterRevocation": 403,
+    "expectedAcceptanceStatus": 403,
+    "actualAcceptanceStatus": 403,
+    "invitationStatusAfter": "pending",
+    "recipientRoleAfter": "developer"
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 258,
+    "productionDataUsed": false
+  },
+  "unexpectedAuditErrors": []
+}

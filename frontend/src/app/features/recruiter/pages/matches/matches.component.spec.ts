@@ -1,3 +1,5 @@
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
+import { policyStateFixture } from '../../../../shared/testing/organization-policy-state.fixture';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -62,6 +64,7 @@ describe('MatchesComponent', () => {
     await TestBed.configureTestingModule({
       imports: [RecruiterModule],
       providers: [
+        { provide: OrganizationPolicyState, useFactory: policyStateFixture },
         provideRouter([]),
         { provide: RecruiterJobService, useValue: jobServiceMock },
         { provide: CandidateService, useValue: candidateServiceMock },
@@ -127,6 +130,6 @@ describe('MatchesComponent', () => {
     component.matches = [{ _id: 'stale' }];
     component.loadMatches();
     expect(component.matches).toEqual([]);
-    expect(component.error).toBe('Sharing withdrawn');
+    expect(component.error).toContain('This resource is unavailable');
   });
 });

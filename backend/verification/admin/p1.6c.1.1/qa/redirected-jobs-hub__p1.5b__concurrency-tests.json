@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "productionDataUsed": false,
+  "checks": [
+    "Three rounds of six competing status intents: one 200, five 409, one history event/notification/receipt per round.",
+    "In-flight owner transfer forces a fresh snapshot and zero disclosure to either mismatched owner.",
+    "Session revision revoked after HTTP authentication but before the first fence returns 403; inactive membership returns 403; restored live policy restores exact totals.",
+    {
+      "persistentContention": {
+        "elapsedMs": 3474.702699999998,
+        "attempts": 64,
+        "http": 503,
+        "commit": "none"
+      }
+    },
+    "UnknownTransactionCommitResult retries commit once, with one lifecycle event and one notification/receipt.",
+    "Real commit followed by injected lost acknowledgement: explicit unconfirmed response, one committed transition/notification/receipt, zero callback replay."
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 338,
+    "productionDataUsed": false
+  }
+}

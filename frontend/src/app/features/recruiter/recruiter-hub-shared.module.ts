@@ -15,9 +15,11 @@ import { ActivityTimelineComponent } from './components/activity-timeline/activi
 import { EmptyStateComponent } from './components/empty-state/empty-state.component';
 import { LoaderComponent } from './components/loader/loader.component';
 import { RecruiterBackButtonComponent } from './components/recruiter-back-button/recruiter-back-button.component';
+import { OrganizationPolicyNoticeComponent } from '../../shared/components/organization-policy-notice/organization-policy-notice.component';
 
 @NgModule({
   imports: [
+    OrganizationPolicyNoticeComponent,
     CommonModule,
     UiErrorStateComponent,
     ScoreMeterComponent,
@@ -36,6 +38,7 @@ import { RecruiterBackButtonComponent } from './components/recruiter-back-button
     RecruiterBackButtonComponent,
   ],
   exports: [
+    OrganizationPolicyNoticeComponent,
     UiErrorStateComponent,
     ScoreMeterComponent,
     UiBadgeComponent,

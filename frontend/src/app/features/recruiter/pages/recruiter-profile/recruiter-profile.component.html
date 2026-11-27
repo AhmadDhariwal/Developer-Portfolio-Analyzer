@@ -1,3 +1,11 @@
+<app-organization-policy-notice
+  *ngIf="
+    policies.value()?.capabilities?.managerTeamAdministration?.reason === 'organization_policy'
+  "
+  policy="managerTeamAdministration"
+  title="Organization manager team administration"
+  detail="Supported direct organization-manager team creation and role assignment are restricted. Independent team-scoped grants and Admin recovery are unchanged."
+/>
 <section class="hub-page">
   <div class="banner banner--info" *ngIf="isOnboarding">
     <strong>Onboarding step:</strong> Complete your recruiter personal details and sourcing
@@ -47,7 +55,11 @@
     <div class="completion-card__head">
       <div>
         <span class="completion-eyebrow">Profile Completion</span>
-        <strong>{{ completedStepsCount }} of {{ profileCompletionItems.length }} sections complete ({{ completionPercent }}%)</strong>
+        <strong
+          >{{ completedStepsCount }} of {{ profileCompletionItems.length }} sections complete ({{
+            completionPercent
+          }}%)</strong
+        >
       </div>
       <div class="completion-pills">
         <span
@@ -74,7 +86,12 @@
   <div class="banner banner--error" *ngIf="error && profile">{{ error }}</div>
   <div class="banner banner--success" *ngIf="notice">{{ notice }}</div>
 
-  <app-recruiter-loader *ngIf="loading" label="Loading recruiter profile..." variant="cards" [count]="3" />
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading recruiter profile..."
+    variant="cards"
+    [count]="3"
+  />
 
   <form
     class="details-form"
@@ -157,7 +174,11 @@
             <span>GitHub</span>
             <span class="field__meta">Optional</span>
           </label>
-          <input id="profile-github" formControlName="githubUsername" placeholder="github username" />
+          <input
+            id="profile-github"
+            formControlName="githubUsername"
+            placeholder="github username"
+          />
         </div>
 
         <div class="field">
@@ -165,7 +186,11 @@
             <span>LinkedIn</span>
             <span class="field__meta">Optional</span>
           </label>
-          <input id="profile-linkedin" formControlName="linkedin" placeholder="linkedin.com/in/..." />
+          <input
+            id="profile-linkedin"
+            formControlName="linkedin"
+            placeholder="linkedin.com/in/..."
+          />
         </div>
 
         <div class="field field--wide">
@@ -188,7 +213,11 @@
             <span>Bio</span>
             <span class="field__meta">Optional</span>
           </label>
-          <textarea id="profile-bio" formControlName="bio" placeholder="Short recruiter bio"></textarea>
+          <textarea
+            id="profile-bio"
+            formControlName="bio"
+            placeholder="Short recruiter bio"
+          ></textarea>
           <small class="field__error" *ngIf="showControlError('bio')">
             {{ controlError('bio', 'Enter a shorter bio.') }}
           </small>
@@ -362,7 +391,9 @@
           <input id="profile-activity-digest" formControlName="activityDigest" type="checkbox" />
           <span class="checkbox-copy">
             <strong>Send recruiter activity digest</strong>
-            <small>Receive summaries of candidate evaluations and shortlist pipeline changes.</small>
+            <small
+              >Receive summaries of candidate evaluations and shortlist pipeline changes.</small
+            >
           </span>
         </label>
       </div>
@@ -394,7 +425,9 @@
 
         <article class="org-card">
           <span class="org-card__label">Team Access</span>
-          <strong>{{ connectedTeams.length ? connectedTeams.join(', ') : 'Organization-wide' }}</strong>
+          <strong>{{
+            connectedTeams.length ? connectedTeams.join(', ') : 'Organization-wide'
+          }}</strong>
           <small>Active recruiter memberships visible to admin and access checks.</small>
         </article>
       </div>

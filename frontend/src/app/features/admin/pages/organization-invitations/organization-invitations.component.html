@@ -1,0 +1,216 @@
+<app-organization-shell
+  title="Invitations"
+  description="Manage the full invitation lifecycle without exposing directory tokens."
+  [loading]="loading()"
+  [error]="error() || store.error()"
+  (refresh)="load()"
+>
+  @if (message()) {
+    <div class="message" role="status">
+      {{ message() }}
+      @if (deliveryLink()) {
+        <label
+          >Secure link from this delivery action<input
+            readonly
+            [value]="deliveryLink()"
+            aria-label="Secure invitation link"
+        /></label>
+      }
+    </div>
+  }
+  @if (store.committed() && !error()) {
+    @if (!invitationAllowed()) {
+      <section class="message warning">
+        <h2>Invitations restricted by organization policy</h2>
+        <p>
+          Creation, resend and pending acceptance are disabled. Pending invitations are retained;
+          authorized revocation and expiry remain available. Re-enabling still requires current
+          inviter authority, eligible recipients, unexpired pending status and capacity. Previously
+          authorized emails cannot necessarily be recalled.
+        </p>
+        <a routerLink="/app/admin/organization/policies">Review invitation policy</a>
+      </section>
+    }
+    <form class="card stack" (ngSubmit)="create()">
+      <h2>Invite a Recruiter</h2>
+      <div class="form-grid">
+        <label
+          >Name<input
+            name="name"
+            [(ngModel)]="form.name"
+            required
+            maxlength="80"
+            [disabled]="!invitationAllowed() || busy() || loading()" /></label
+        ><label
+          >Email<input
+            type="email"
+            name="email"
+            [(ngModel)]="form.email"
+            required
+            maxlength="254"
+            [disabled]="!invitationAllowed() || busy() || loading()" /></label
+        ><label
+          >Team assignment<select
+            name="team"
+            [(ngModel)]="form.teamId"
+            [disabled]="!invitationAllowed() || busy() || loading()"
+          >
+            <option value="">Organization only</option>
+            @for (team of teams(); track team._id) {
+              <option [value]="team._id">{{ team.name }}</option>
+            }
+          </select></label
+        >
+      </div>
+      <p>
+        Pending invitations do not reserve Recruiter seats. Direct Admin provisioning uses its
+        separate authority contract.
+      </p>
+      <div class="actions">
+        <button
+          type="submit"
+          class="primary"
+          [disabled]="!invitationAllowed() || busy() || loading() || !form.name || !form.email"
+        >
+          {{ busy() ? 'Working…' : 'Create invitation' }}</button
+        ><a routerLink="/app/admin/recruiters">Manage Recruiters and direct provisioning</a>
+      </div>
+    </form>
+    <section class="card">
+      <div class="toolbar">
+        <label
+          >Search<input
+            type="search"
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event); page.set(1)"
+            placeholder="Recipient or inviter" /></label
+        ><label
+          >Status<select [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
+            <option value="">All invitations</option>
+            @for (status of ['pending', 'accepted', 'expired', 'revoked']; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select></label
+        ><label
+          >Intended role<select [ngModel]="role()" (ngModelChange)="role.set($event); page.set(1)">
+            <option value="">All roles</option>
+            @for (role of ['admin', 'manager', 'member', 'recruiter']; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select></label
+        ><label
+          >Team<select [ngModel]="team()" (ngModelChange)="team.set($event); page.set(1)">
+            <option value="">All teams</option>
+            @for (team of teams(); track team._id) {
+              <option [value]="team._id">{{ team.name }}</option>
+            }
+          </select></label
+        >
+      </div>
+      <p>
+        {{ filtered().length }} filtered / {{ rows().length }} loaded invitations. Client-side
+        filtering and 20-row pagination.
+      </p>
+      <div class="table-wrap">
+        <table class="directory-table">
+          <thead>
+            <tr>
+              <th scope="col">Recipient</th>
+              <th scope="col">Scope & attribution</th>
+              <th scope="col">Lifecycle</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of visible(); track row._id) {
+              <tr>
+                <td data-label="Recipient">
+                  <strong>{{ row.name || row.email }}</strong
+                  ><small>{{ row.email }}</small
+                  ><span class="badge">{{ row.role }}</span>
+                </td>
+                <td data-label="Scope and attribution">
+                  {{ teamName(row.teamId)
+                  }}<small
+                    >Inviter:
+                    {{ names()[row.invitedBy] || 'Authorized identity unavailable' }}</small
+                  ><small>Created {{ row.createdAt | date: 'medium' }}</small>
+                  @if (row.acceptedBy) {
+                    <small
+                      >Accepted by
+                      {{ names()[row.acceptedBy] || 'Account identity unavailable' }}</small
+                    >
+                  }
+                </td>
+                <td data-label="Lifecycle">
+                  <span class="badge">{{ row.status }}</span
+                  ><small>Expires {{ row.expiresAt | date: 'medium' }}</small>
+                </td>
+                <td data-label="Actions">
+                  @if (row.status === 'pending') {
+                    <div class="actions">
+                      @if (row.role === 'recruiter') {
+                        <button
+                          type="button"
+                          (click)="resend(row)"
+                          [disabled]="busy() || loading() || !invitationAllowed()"
+                        >
+                          Resend</button
+                        ><button
+                          type="button"
+                          (click)="pendingAction.set({ row: row, action: 'expire' })"
+                          [disabled]="busy() || loading()"
+                        >
+                          Expire
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        (click)="pendingAction.set({ row: row, action: 'revoke' })"
+                        [disabled]="busy() || loading()"
+                      >
+                        Revoke
+                      </button>
+                    </div>
+                  } @else {
+                    <span class="muted">Historical record</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4">No invitations match these filters.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button type="button" [disabled]="page() <= 1" (click)="page.set(page() - 1)">
+          Previous</button
+        ><span aria-live="polite">Page {{ page() }} of {{ pages() }}</span
+        ><button type="button" [disabled]="page() >= pages()" (click)="page.set(page() + 1)">
+          Next
+        </button>
+      </div>
+      <p class="muted">
+        Effective expiry is returned by the server. Reading this history does not change a stored
+        pending invitation.
+      </p>
+    </section>
+  }
+  <app-confirm-dialog
+    [open]="!!pendingAction()"
+    title="Confirm invitation lifecycle change"
+    [message]="
+      'Apply ' +
+      pendingAction()?.action +
+      ' to the pending invitation for ' +
+      pendingAction()?.row?.email +
+      '? The retained invitation belongs to this organization.'
+    "
+    confirmText="Confirm change"
+    (confirmed)="confirmAction()"
+    (cancelled)="pendingAction.set(null)"
+  />
+</app-organization-shell>

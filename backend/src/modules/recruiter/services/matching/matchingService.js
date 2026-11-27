@@ -1,3 +1,9 @@
+const governance = require('../../../admin/services/organizationGovernanceService');
+const {
+  assertPolicy,
+  assertMatchingPolicy
+} = require('../../../admin/config/organizationPolicies');
+const jobAccess = require('../../utils/hub/recruiterJobAccess');
 const mongoose = require('mongoose');
 const User = require('../../../auth/models/user');
 const Analysis = require('../../../skill-gap/models/analysis');
@@ -629,63 +635,108 @@ const assertOrganizationScope = (organizationId) => {
   return requireObjectId(safeOrganizationId, 'organizationId');
 };
 
-const createJob = async ({ recruiterId, organizationId, payload }) => {
+const createJob = async ({ recruiterId, organizationId, sessionRevision, payload }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
 
-  const job = await Job.create({
-    organizationId: safeOrganizationId,
-    recruiterId,
-    title: String(payload.title || '').trim(),
-    role: String(payload.role || payload.title || '').trim(),
-    description: String(payload.description || '').trim(),
-    stack: String(payload.stack || 'Full Stack').trim(),
-    requiredSkills: normalizeSkills(payload.requiredSkills || []),
-    preferredSkills: normalizeSkills(payload.preferredSkills || []),
-    minExperienceYears: Number(payload.minExperienceYears || 0),
-    location: String(payload.location || '').trim(),
-    employmentType: payload.employmentType || 'full-time',
-    status: payload.status || 'open'
-  });
+  const create = async ({ actor, organization, session }) => {
+    if (!['admin', 'recruiter'].includes(actor.role))
+      throw governance.fail(403, 'Job creation is unavailable.');
+    if (actor.role === 'recruiter') {
+      const platform = await governance.platformInSession(session);
+      if (platform.recruiter?.enableRecruiterAccess === false)
+        throw governance.restrictionError('recruiterAccess', 'platform_policy');
+      assertPolicy(organization, 'recruiterJobCreation');
+    }
+    const [job] = await Job.create(
+      [
+        {
+          organizationId: safeOrganizationId,
+          recruiterId,
+          title: String(payload.title || '').trim(),
+          role: String(payload.role || payload.title || '').trim(),
+          description: String(payload.description || '').trim(),
+          stack: String(payload.stack || 'Full Stack').trim(),
+          requiredSkills: normalizeSkills(payload.requiredSkills || []),
+          preferredSkills: normalizeSkills(payload.preferredSkills || []),
+          minExperienceYears: Number(payload.minExperienceYears || 0),
+          location: String(payload.location || '').trim(),
+          employmentType: payload.employmentType || 'full-time',
+          status: payload.status || 'open'
+        }
+      ],
+      { session }
+    );
 
-  return job;
+    return job;
+  };
+  const actor = await User.findById(recruiterId).select('role').lean();
+  if (actor?.role === 'recruiter')
+    return jobAccess.withAccess(
+      { recruiterId, organizationId: safeOrganizationId, sessionRevision },
+      create
+    );
+  return governance.withGovernance(
+    { actorId: recruiterId, organizationId: safeOrganizationId, sessionRevision },
+    async (ctx) => {
+      if (ctx.actor.role !== 'admin')
+        throw governance.fail(403, 'Admin job creation is unavailable.');
+      return create(ctx);
+    },
+    false
+  );
 };
 
-const updateJob = async ({ organizationId, recruiterId, jobId, payload }) => {
+const updateJob = async ({ organizationId, recruiterId, sessionRevision, jobId, payload }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
 
   const filter = { _id: requireObjectId(jobId, 'jobId'), organizationId: safeOrganizationId };
   if (recruiterId) filter.recruiterId = requireObjectId(recruiterId, 'recruiterId');
-  const job = await Job.findOne(filter);
-  if (!job) return null;
+  const mutate = async (session, organization) => {
+    const job = await Job.findOne(filter).session(session);
+    if (
+      job &&
+      recruiterId &&
+      job.published === true &&
+      payload.status === 'open' &&
+      job.status !== 'open'
+    )
+      assertPolicy(organization, 'recruiterJobPublication');
+    if (!job) return null;
 
-  const patch = {
-    title: payload.title,
-    role: payload.role,
-    description: payload.description,
-    stack: payload.stack,
-    requiredSkills: Array.isArray(payload.requiredSkills)
-      ? normalizeSkills(payload.requiredSkills)
-      : undefined,
-    preferredSkills: Array.isArray(payload.preferredSkills)
-      ? normalizeSkills(payload.preferredSkills)
-      : undefined,
-    minExperienceYears: payload.minExperienceYears,
-    location: payload.location,
-    employmentType: payload.employmentType,
-    status: payload.status,
-    archivedAt: Object.prototype.hasOwnProperty.call(payload || {}, 'archivedAt')
-      ? payload.archivedAt
-      : undefined
+    const patch = {
+      title: payload.title,
+      role: payload.role,
+      description: payload.description,
+      stack: payload.stack,
+      requiredSkills: Array.isArray(payload.requiredSkills)
+        ? normalizeSkills(payload.requiredSkills)
+        : undefined,
+      preferredSkills: Array.isArray(payload.preferredSkills)
+        ? normalizeSkills(payload.preferredSkills)
+        : undefined,
+      minExperienceYears: payload.minExperienceYears,
+      location: payload.location,
+      employmentType: payload.employmentType,
+      status: payload.status,
+      archivedAt: Object.prototype.hasOwnProperty.call(payload || {}, 'archivedAt')
+        ? payload.archivedAt
+        : undefined
+    };
+
+    Object.entries(patch).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        job[key] = value;
+      }
+    });
+
+    await job.save({ session });
+    return job;
   };
-
-  Object.entries(patch).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      job[key] = value;
-    }
-  });
-
-  await job.save();
-  return job;
+  if (!recruiterId) return mutate(null, null);
+  return jobAccess.withAccess(
+    { recruiterId, organizationId: safeOrganizationId, sessionRevision },
+    (ctx) => mutate(ctx.session, ctx.organization)
+  );
 };
 
 const closeJob = async ({ organizationId, jobId }) => {
@@ -702,18 +753,26 @@ const closeJob = async ({ organizationId, jobId }) => {
   return job;
 };
 
-const deleteJob = async ({ organizationId, recruiterId, jobId }) => {
+const deleteJob = async ({ organizationId, recruiterId, sessionRevision, jobId }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
   const filter = { _id: requireObjectId(jobId, 'jobId'), organizationId: safeOrganizationId };
   if (recruiterId) filter.recruiterId = requireObjectId(recruiterId, 'recruiterId');
-  return deleteJobWithPipeline(filter);
+  if (!recruiterId) return deleteJobWithPipeline(filter);
+  return jobAccess.withAccess(
+    { recruiterId, organizationId: safeOrganizationId, sessionRevision },
+    (ctx) => deleteJobWithPipeline(filter, ctx.session)
+  );
 };
 
-const listJobs = async ({ organizationId, recruiterId = '' }) => {
+const listJobs = async ({ organizationId, recruiterId = '', sessionRevision }) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
   const query = { organizationId: safeOrganizationId };
   if (recruiterId) query.recruiterId = requireObjectId(recruiterId, 'recruiterId');
-  return Job.find(query).sort({ updatedAt: -1 }).lean();
+  if (!recruiterId) return Job.find(query).sort({ updatedAt: -1 }).lean();
+  return jobAccess.withAccess(
+    { recruiterId, organizationId: safeOrganizationId, sessionRevision },
+    (ctx) => Job.find(query).sort({ updatedAt: -1 }).session(ctx.session).lean()
+  );
 };
 
 const listOrganizationJobs = async ({ organizationId, limit = 100 }) => {
@@ -792,44 +851,95 @@ const listOrganizationJobsPage = async ({
   };
 };
 
-const matchCandidatesToJob = async ({ organizationId, recruiterId, jobId, candidateIds = [] }) => {
+const matchCandidatesToJob = async ({
+  organizationId,
+  recruiterId,
+  sessionRevision,
+  jobId,
+  candidateIds = []
+}) => {
   const safeOrganizationId = assertOrganizationScope(organizationId);
-  const selected = new Set(validateCandidateIds(candidateIds));
-  const job = await Job.findOne({
-    _id: requireObjectId(jobId, 'jobId'),
-    organizationId: safeOrganizationId,
-    recruiterId: requireObjectId(recruiterId, 'recruiterId')
-  }).lean();
-  if (!job) {
-    const error = new Error('Job not found.');
-    error.code = 404;
-    throw error;
-  }
+  return jobAccess.withAccess(
+    { recruiterId, organizationId: safeOrganizationId, sessionRevision },
+    async (ctx) => {
+      assertMatchingPolicy(ctx);
+      const selected = new Set(validateCandidateIds(candidateIds));
+      const job = await Job.findOne({
+        _id: requireObjectId(jobId, 'jobId'),
+        organizationId: safeOrganizationId,
+        recruiterId: requireObjectId(recruiterId, 'recruiterId')
+      })
+        .session(ctx.session)
+        .lean();
+      if (!job) {
+        const error = new Error('Job not found.');
+        error.code = 404;
+        throw error;
+      }
 
-  const visibleCandidates = await listCandidates({
-    organizationId: safeOrganizationId,
-    stack: job.stack,
-    minScore: 0,
-    limit: 500
-  });
+      const visibleCandidates = await listCandidates({
+        organizationId: safeOrganizationId,
+        stack: job.stack,
+        minScore: 0,
+        limit: 500,
+        session: ctx.session
+      });
 
-  let candidates = visibleCandidates;
-  if (selected.size > 0) {
-    candidates = visibleCandidates.filter((candidate) => {
-      const candidateId = String(candidate.id || '').trim();
-      const userId = String(candidate.userId || '').trim();
-      return selected.has(candidateId) || selected.has(userId);
-    });
-  }
+      let candidates = visibleCandidates;
+      if (selected.size > 0) {
+        candidates = visibleCandidates.filter((candidate) => {
+          const candidateId = String(candidate.id || '').trim();
+          const userId = String(candidate.userId || '').trim();
+          return selected.has(candidateId) || selected.has(userId);
+        });
+      }
 
-  const ranked = rankCandidates({ job, candidates });
-  return {
-    job,
-    ...ranked
-  };
+      const ranked = rankCandidates({ job, candidates });
+      return {
+        job,
+        ...ranked
+      };
+    }
+  );
 };
 
+const rankRecruiterCandidates = async ({
+  recruiterId,
+  organizationId,
+  sessionRevision,
+  payload = {}
+}) =>
+  jobAccess.withAccess({ recruiterId, organizationId, sessionRevision }, async (ctx) => {
+    assertMatchingPolicy(ctx);
+    let job = payload.job || null;
+    if (!job && payload.jobId)
+      job = await Job.findOne({
+        _id: requireObjectId(payload.jobId, 'jobId'),
+        recruiterId,
+        organizationId
+      })
+        .session(ctx.session)
+        .lean();
+    if (!job) throw governance.fail(400, 'A valid jobId or job object is required.');
+    let candidates = Array.isArray(payload.candidates) ? payload.candidates : [];
+    if (!candidates.length) {
+      const selected = new Set(validateCandidateIds(payload.candidateIds || []));
+      candidates = await listCandidates({
+        organizationId,
+        stack: selected.size ? undefined : job.stack,
+        limit: 300,
+        session: ctx.session
+      });
+      if (selected.size)
+        candidates = candidates.filter(
+          (row) => selected.has(String(row.id)) || selected.has(String(row.userId))
+        );
+    }
+    return { job, ...rankCandidates({ job, candidates }) };
+  });
+
 module.exports = {
+  rankRecruiterCandidates,
   candidateFromSources,
   mergeCandidates,
   sanitizePublicCandidate,

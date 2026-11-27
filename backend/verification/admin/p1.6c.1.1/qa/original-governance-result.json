@@ -1,0 +1,15 @@
+{
+  "executable": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "--require",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+    "--test",
+    "--test-concurrency=1",
+    "--test-reporter=tap",
+    "verification/admin/p1.6c.1.1/qa/acceptance.test.cjs"
+  ],
+  "started": "2026-11-27T12:27:19.402Z",
+  "finished": "2026-11-27T12:27:29.264Z",
+  "exitCode": 1,
+  "summary": {}
+}

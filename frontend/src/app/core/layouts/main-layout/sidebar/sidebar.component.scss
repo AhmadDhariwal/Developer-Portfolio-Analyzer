@@ -14,7 +14,7 @@
   transition:
     width var(--transition-base),
     transform var(--transition-base);
-  overflow: visible;
+  overflow: hidden;
 
   &.closed {
     width: var(--sidebar-collapsed-width);
@@ -42,6 +42,9 @@
     padding: 14px 16px;
     min-height: 64px;
     border-bottom: 1px solid var(--sidebar-border, rgba(255, 255, 255, 0.08));
+    transition:
+      padding var(--transition-base),
+      gap var(--transition-base);
   }
 
   .logo-icon {
@@ -62,10 +65,18 @@
   }
 
   .logo-copy {
+    flex: 1 1 auto;
     min-width: 0;
+    max-width: 180px;
     display: flex;
     flex-direction: column;
     gap: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    transition:
+      opacity 0.15s ease,
+      max-width var(--transition-base);
   }
 
   .logo-text {
@@ -107,9 +118,10 @@
 
   .sidebar-nav {
     flex: 1;
+    min-height: 0;
     padding: 12px 10px;
     overflow-y: auto;
-    overflow-x: visible;
+    overflow-x: hidden;
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -133,6 +145,7 @@
 
   .nav-group {
     margin-top: 2px;
+    transition: margin var(--transition-base);
   }
 
   .nav-group--active > .nav-group-header .nav-group-link {
@@ -141,8 +154,18 @@
 
   .nav-group-header {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     gap: 4px;
+    min-width: 0;
+    max-height: 44px;
+    opacity: 1;
+    visibility: visible;
+    overflow: hidden;
+    transition:
+      max-height var(--transition-base),
+      opacity 0.15s ease,
+      margin var(--transition-base),
+      visibility 0s linear 0s;
   }
 
   .nav-link {
@@ -162,7 +185,9 @@
     border: 1px solid transparent;
     transition:
       background 0.15s ease,
-      color 0.15s ease;
+      color 0.15s ease,
+      padding var(--transition-base),
+      gap var(--transition-base);
     white-space: nowrap;
     cursor: pointer;
 
@@ -184,9 +209,15 @@
     }
 
     .nav-label {
+      flex: 1 1 auto;
       min-width: 0;
+      max-width: 180px;
       overflow: hidden;
       text-overflow: ellipsis;
+      opacity: 1;
+      transition:
+        opacity 0.15s ease,
+        max-width var(--transition-base);
     }
 
     &:hover {
@@ -214,7 +245,11 @@
   }
 
   .nav-group-link {
-    flex: 1;
+    flex: 1 1 0%;
+    width: auto;
+    min-width: 0;
+    padding: 8px 10px;
+    gap: 8px;
   }
 
   .nav-group-link--button {
@@ -224,8 +259,10 @@
   }
 
   .group-toggle {
-    width: 32px;
-    min-width: 32px;
+    flex: 0 0 28px;
+    width: 28px;
+    min-width: 28px;
+    height: 32px;
     border-radius: 6px;
     border: 1px solid transparent;
     background: transparent;
@@ -266,8 +303,11 @@
     opacity: 1;
     overflow: hidden;
     transition:
-      max-height 0.2s ease,
-      opacity 0.15s ease;
+      max-height var(--transition-base),
+      opacity 0.15s ease,
+      margin var(--transition-base),
+      padding var(--transition-base),
+      border-color var(--transition-base);
   }
 
   .nav-submenu.collapsed {
@@ -280,7 +320,7 @@
   }
 
   .nav-sublink {
-    min-height: 34px;
+    min-height: 36px;
     font-size: 0.8125rem;
     padding: 6px 10px;
     border-radius: 6px;
@@ -401,6 +441,9 @@
     border-radius: 8px;
     background: #1f2937;
     border: 1px solid rgba(255, 255, 255, 0.06);
+    transition:
+      padding var(--transition-base),
+      gap var(--transition-base);
   }
 
   .sidebar-user-avatar {
@@ -426,10 +469,18 @@
   }
 
   .sidebar-user-meta {
+    flex: 1 1 auto;
     min-width: 0;
+    max-width: 180px;
     display: flex;
     flex-direction: column;
     gap: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    transition:
+      opacity 0.15s ease,
+      max-width var(--transition-base);
   }
 
   .sidebar-user-name {
@@ -463,10 +514,14 @@
     color: #94a3b8;
     font-weight: 500;
     font-size: 0.84rem;
+    white-space: nowrap;
     cursor: pointer;
     transition:
       background 0.15s ease,
-      color 0.15s ease;
+      color 0.15s ease,
+      border-color 0.15s ease,
+      padding var(--transition-base),
+      gap var(--transition-base);
 
     .nav-icon {
       width: 18px;
@@ -482,6 +537,19 @@
       }
     }
 
+    .nav-label {
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: 180px;
+      overflow: hidden;
+      text-align: left;
+      text-overflow: ellipsis;
+      opacity: 1;
+      transition:
+        opacity 0.15s ease,
+        max-width var(--transition-base);
+    }
+
     &:hover {
       background: rgba(239, 68, 68, 0.12);
       border-color: rgba(239, 68, 68, 0.2);
@@ -494,23 +562,31 @@
     .nav-label,
     .sidebar-user-meta,
     .logout-btn .nav-label {
+      flex: 0 0 0;
       opacity: 0;
       visibility: hidden;
       width: 0;
+      max-width: 0;
       overflow: hidden;
+      pointer-events: none;
     }
 
     .sidebar-logo {
-      justify-content: center;
-      padding-left: 10px;
-      padding-right: 10px;
+      gap: 0;
+      padding-left: 20px;
+      padding-right: 20px;
     }
 
-    .nav-link,
+    .nav-link {
+      gap: 0;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
     .logout-btn {
-      justify-content: center;
-      padding-left: 0;
-      padding-right: 0;
+      gap: 0;
+      padding-left: 17px;
+      padding-right: 17px;
     }
 
     .nav-group {
@@ -518,33 +594,43 @@
     }
 
     .nav-group-header {
-      display: none;
+      max-height: 0;
+      opacity: 0;
+      visibility: hidden;
+      margin: 0;
+      padding: 0;
+      pointer-events: none;
+      transition:
+        max-height var(--transition-base),
+        opacity 0.15s ease,
+        margin var(--transition-base),
+        visibility 0s linear 0.2s;
     }
 
     .nav-submenu {
       display: flex;
       flex-direction: column;
-      max-height: none !important;
+      max-height: 640px;
       opacity: 1;
-      margin: 0 0 8px;
+      margin: 0 0 6px;
       padding: 0;
-      gap: 4px;
-      overflow: visible;
+      border-left-color: transparent;
+      gap: 2px;
+      overflow: hidden;
       align-items: stretch;
     }
 
     .sidebar-user-card {
-      justify-content: center;
-      padding-left: 0;
-      padding-right: 0;
+      gap: 0;
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
     .nav-sublink {
-      justify-content: center;
-      padding-left: 0;
-      padding-right: 0;
-      min-height: 40px;
-      border-radius: var(--dev-nav-radius, 10px);
+      padding-left: 16px;
+      padding-right: 16px;
+      min-height: 36px;
+      border-radius: 6px;
 
       .nav-icon {
         width: 20px;
@@ -612,7 +698,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sidebar {
+  .sidebar,
+  .sidebar * {
     transition: none;
   }
 }

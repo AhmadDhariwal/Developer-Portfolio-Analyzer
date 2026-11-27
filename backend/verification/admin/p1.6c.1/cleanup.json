@@ -1,0 +1,40 @@
+{
+  "deletedFiles": [
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\build-output-path.txt",
+      "reason": "Redundant task build-path receipt; sandbox output has expired and build log retained",
+      "sha256": "ec02aff3a3fb86ae6a7a9d851aef358dfaf05ca8fce87133ab104912bed6f924"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-typecheck.log",
+      "reason": "Empty task log; successful typecheck recorded in static-checks.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "movedEvidence": [
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\governance-tests.tap",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\focused-regressions-sandbox.tap"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\final-backend-tests.tap",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\sandbox-retry-failure.tap"
+    }
+  ],
+  "buildOutput": {
+    "path": "C:\\Users\\ahmad.hassan\\AppData\\Local\\Packages\\openai.codex_2p2nqsd0c76g0\\AC\\#!sandbox.{eef1754c-ed44-40ac-b53d-aecd3ad6daa1}\\Temp\\dpa-p16c1-build-91d779baef074fad919a4c7d1531c96c",
+    "presentAfterSandboxExit": false,
+    "retainedEvidence": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-build.log",
+    "finalBuild": {
+      "path": "C:\\Users\\ahmad.hassan\\AppData\\Local\\Packages\\openai.codex_2p2nqsd0c76g0\\AC\\#!sandbox.{b959a691-8845-4e9b-aea1-e42b17c1e68c}\\Temp\\dpa-p16c1-final-build-aa96f01f0735459699fa3c5adb818ceb",
+      "presentAfterSandboxExit": false,
+      "retainedEvidence": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-build-final.log"
+    }
+  },
+  "preservedUserWork": [
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.html",
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.scss",
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.ts",
+    "frontend/src/app/core/layouts/main-layout/navbar/navbar.component.spec.ts"
+  ]
+}

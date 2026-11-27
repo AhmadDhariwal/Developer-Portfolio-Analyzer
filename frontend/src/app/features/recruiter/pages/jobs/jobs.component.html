@@ -1,4 +1,25 @@
 <section class="hub-page">
+  <app-organization-policy-notice
+    policy="recruiterJobCreation"
+    title="New job creation"
+    detail="Existing authorized job management remains available."
+  />
+  <app-organization-policy-notice
+    policy="recruiterJobPublication"
+    title="Publication"
+    detail="Existing published jobs remain published; authorized closing, archiving and unpublishing remain available."
+  />
+  <app-organization-policy-notice
+    policy="teamSharedJobs"
+    title="Team job sharing"
+    detail="Effective non-owner grants are withdrawn when disabled. Stored sharing intent is retained."
+  />
+  <app-organization-policy-notice
+    policy="sharedPublicEvaluations"
+    title="Shared public evaluations"
+    detail="Private application evidence remains owner-only."
+  />
+
   <header class="page-header">
     <div class="page-header__copy">
       <span class="page-header__eyebrow">Recruiter Hub · Requisitions</span>
@@ -12,6 +33,7 @@
         type="button"
         class="btn-primary"
         data-testid="toggle-job-editor"
+        [disabled]="!editorOpen && !policies.allowed('recruiterJobCreation')"
         (click)="toggleEditor()"
       >
         {{ editorOpen ? 'Close Form' : '+ New Job' }}
@@ -121,6 +143,16 @@
   </div>
 
   <form class="job-editor" *ngIf="editorOpen" [formGroup]="jobForm" (ngSubmit)="saveJob()">
+    <div class="banner" *ngIf="editingNeedsReview" role="alert">
+      The job or its permissions changed. Your local draft is preserved. Compare it with the
+      refreshed job list before continuing.<button
+        type="button"
+        class="btn-secondary"
+        (click)="reviewCurrentJob()"
+      >
+        Use refreshed permissions
+      </button>
+    </div>
     <div class="job-editor__head">
       <div>
         <h2>{{ editingJobId ? 'Edit Requisition' : 'Create New Job' }}</h2>
@@ -147,6 +179,7 @@
         <input
           type="checkbox"
           formControlName="teamShared"
+          [attr.disabled]="!policies.allowed('teamSharedJobs') ? '' : null"
           (change)="jobForm.controls.evaluationShared.setValue(false)"
         />
         <span>Share job details with this team</span>
@@ -156,7 +189,11 @@
         and submitted evidence stay private. Evaluation sharing requires separate permission below.
       </p>
       <label class="sharing-choice" *ngIf="jobForm.controls.teamShared.value">
-        <input type="checkbox" formControlName="evaluationShared" />
+        <input
+          type="checkbox"
+          formControlName="evaluationShared"
+          [attr.disabled]="!policies.allowed('sharedPublicEvaluations') ? '' : null"
+        />
         <span>Share public-candidate matches and shortlist notes with this team</span>
       </label>
       <p class="sharing-hint" *ngIf="jobForm.controls.teamShared.value">

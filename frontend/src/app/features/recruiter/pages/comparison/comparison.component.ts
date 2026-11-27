@@ -1,3 +1,6 @@
+import { DestroyRef as PolicyDestroyRef } from '@angular/core';
+import { takeUntilDestroyed as takeUntilPolicyDestroyed } from '@angular/core/rxjs-interop';
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
@@ -17,6 +20,8 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   standalone: false,
 })
 export class ComparisonComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
+  private readonly policyDestroy = inject(PolicyDestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
   loading = false;
   candidatesLoading = true;
@@ -39,6 +44,24 @@ export class ComparisonComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.policies.resourcesChanged$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        if (this.selectedJobId) this.comparison = [];
+        this.loadReferenceData(false);
+        this.cdr.markForCheck();
+      });
+    this.policies.contextChanges$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        this.comparison = [];
+        this.candidates = [];
+        this.jobs = [];
+        this.selectedJobId = '';
+        this.selectedIds.clear();
+        this.loadReferenceData(false);
+        this.cdr.markForCheck();
+      });
     this.route.queryParamMap.subscribe((params) => {
       const idsParam = params.get('ids') || '';
       const jobIdParam = params.get('jobId') || '';
@@ -145,7 +168,12 @@ export class ComparisonComponent implements OnInit {
   loadReferenceData(shouldCompare = false): void {
     this.candidatesLoading = true;
     this.candidatesError = '';
-    const runInitialCompare = shouldCompare && this.selectedIds.size >= 2;
+    const runInitialCompare =
+      shouldCompare &&
+      this.selectedIds.size >= 2 &&
+      (!this.selectedJobId || this.policies.allowed('candidateMatching'));
+    if (shouldCompare && this.selectedJobId && !this.policies.allowed('candidateMatching'))
+      this.error = this.policies.explanation('candidateMatching');
     if (runInitialCompare) {
       this.loading = true;
       this.error = '';
@@ -223,6 +251,10 @@ export class ComparisonComponent implements OnInit {
   }
 
   loadComparison(): void {
+    if (this.selectedJobId && !this.policies.allowed('candidateMatching')) {
+      this.error = this.policies.explanation('candidateMatching');
+      return;
+    }
     if (this.selectedIds.size < 2) {
       this.error = 'Select 2-3 candidates to run a comparison.';
       return;
@@ -236,6 +268,7 @@ export class ComparisonComponent implements OnInit {
         jobId: this.selectedJobId || undefined,
       })
       .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: (response: any) => {
           this.comparison = response?.candidates || response?.comparison || [];

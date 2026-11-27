@@ -1,3 +1,5 @@
+import { OrganizationPolicyState } from '../../../shared/services/organization-policy-state.service';
+import { policyStateFixture } from '../../../shared/testing/organization-policy-state.fixture';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -40,6 +42,7 @@ describe('Recruiter Hub page components', () => {
     await TestBed.configureTestingModule({
       imports: [RecruiterModule],
       providers: [
+        { provide: OrganizationPolicyState, useFactory: policyStateFixture },
         provideRouter([]),
         {
           provide: JobApplicationsService,
@@ -539,7 +542,7 @@ describe('Recruiter Hub page components', () => {
     );
     component.loadShortlists();
     expect(component.shortlists).toEqual([]);
-    expect(fixture.componentInstance.error).toBe('Revoked');
+    expect(fixture.componentInstance.error).toContain('current account, membership');
   });
 
   it('supports ComparisonComponent multi-candidate selection, Analytics, ActivityLogs, and Profile save', async () => {

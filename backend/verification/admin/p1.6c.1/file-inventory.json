@@ -1,0 +1,208 @@
+{
+  "sourceBranch": "admin/ui",
+  "prTarget": "not applicable",
+  "sourceFiles": [
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\middleware\\auditLogMiddleware.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\core\\middleware\\platformSettingsMiddleware.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\config\\organizationPolicies.js",
+      "change": "new"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\controllers\\adminConsoleController.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\controllers\\organizationGovernanceController.js",
+      "change": "new"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\controllers\\recruiterController.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\controllers\\tenantcontroller.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\models\\organization.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\routes\\adminConsole.routes.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\services\\invitationAcceptanceService.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\services\\organizationGovernanceService.js",
+      "change": "new"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\admin\\services\\teamCapacityService.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\controllers\\hub\\comparisonController.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\controllers\\hub\\recruiterJobController.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\controllers\\matching\\jobController.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\controllers\\matching\\matchController.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\routes\\hub\\recruiterHubRoutes.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\routes\\recruiter.routes.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\comparisonService.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\matchService.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\recruiterJobService.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\matching\\matchingService.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\utils\\hub\\recruiterEvaluationAccess.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\utils\\hub\\recruiterJobAccess.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\admin\\adminRegressionClosure.integration.test.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\admin\\organizationGovernance.integration.test.js",
+      "change": "new"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\disposableRequestMongo.js",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-console\\admin-console.component.spec.ts",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-console\\admin-console.component.ts",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\admin\\pages\\admin-console\\admin-console.service.ts",
+      "change": "modified"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\models\\organization-governance.model.ts",
+      "change": "new"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\organization-governance.service.ts",
+      "change": "new"
+    }
+  ],
+  "verificationFiles": [
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\GOVERNANCE-ARCHITECTURE.md",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\IMPLEMENTATION-REPORT.md",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\application-concurrency-evidence.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\application-regressions.tap",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\application-workflow-evidence.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\cleanup.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\environment-notes.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\file-inventory.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\focused-regressions-sandbox.tap",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\formatting.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-admin-final.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-build-final.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-build.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-developer-retry.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-tests.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\governance-final.tap",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\governance-post-cleanup.tap",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\historical-evidence-preservation.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\interrupted-fixture-cleanup.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\raw-audit-inspection.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\sandbox-retry-failure.tap",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\static-checks.json"
+  ],
+  "movedSourceFiles": [],
+  "deletedSourceFiles": [],
+  "renamedTaskEvidence": [
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\governance-tests.tap",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\focused-regressions-sandbox.tap"
+    },
+    {
+      "from": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\final-backend-tests.tap",
+      "to": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\sandbox-retry-failure.tap"
+    }
+  ],
+  "deletedTaskTemporaryFiles": [
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\build-output-path.txt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1\\frontend-typecheck.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\_mdb_catalog.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\collection-3893b00e-6e91-4f9d-8d24-65042380f7c6.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\collection-44e7cb69-4e7b-46d4-ad78-c9e1134fc353.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\collection-59cd770a-d596-466d-8232-40260ecd21e9.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\collection-bdd1fa31-6f65-4841-872a-d23ecfe73cd5.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\collection-ef940053-79c6-428e-91a2-01d0e2054491.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\index-5fe6d4e3-9234-4fa1-8ccc-c12b204eb949.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\index-66e5d100-5d6f-46a9-b551-ae836eee900d.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\index-aba24361-0d70-4924-8891-ec8ecc63a1db.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\index-b64f81e2-04a4-4ff8-be54-94add963b9f1.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\index-d60ba026-e663-4e20-8834-d61c5c2f920e.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\mongod.lock",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\sizeStorer.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\storage.bson",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\WiredTiger",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\WiredTiger.lock",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\WiredTiger.turtle",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\WiredTiger.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\WiredTigerHS.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\diagnostic.data\\metrics.2026-11-27T10-14-19Z-00000",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\diagnostic.data\\metrics.interim",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\journal\\WiredTigerLog.0000000001",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\journal\\WiredTigerPreplog.0000000001",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\_tmp\\spilldb\\WiredTiger",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\_tmp\\spilldb\\WiredTiger.lock",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\_tmp\\spilldb\\WiredTiger.turtle",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\_tmp\\spilldb\\WiredTiger.wt",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\devinsight-real-integrations-Or0C1i\\_tmp\\spilldb\\WiredTigerHS.wt"
+  ],
+  "preservedConcurrentUserFiles": [
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\core\\layouts\\main-layout\\navbar\\navbar.component.html",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\core\\layouts\\main-layout\\navbar\\navbar.component.scss",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\core\\layouts\\main-layout\\navbar\\navbar.component.ts",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\core\\layouts\\main-layout\\navbar\\navbar.component.spec.ts"
+  ]
+}

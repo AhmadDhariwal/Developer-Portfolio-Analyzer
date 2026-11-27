@@ -1,4 +1,9 @@
 <section class="hub-page">
+  <app-organization-policy-notice
+    policy="candidateMatching"
+    title="Matching permissions"
+    detail="Discovery and authorized historical review remain available."
+  />
   <header class="page-header">
     <div class="page-header__copy">
       <span class="page-header__eyebrow">
@@ -192,8 +197,16 @@
               (click)="openRoute('/app/recruiter/matches')"
             >
               <div>
-                <strong>Run AI matches</strong>
-                <span>Generate ranked fits and convert top matches into shortlists.</span>
+                <strong>{{
+                  policies.allowed('candidateMatching')
+                    ? 'Match candidates'
+                    : 'Review historical matches'
+                }}</strong>
+                <span>{{
+                  policies.allowed('candidateMatching')
+                    ? 'Generate deterministic ranked fits and manage authorized evaluations.'
+                    : 'Review existing evaluations under their current permissions.'
+                }}</span>
               </div>
               <span class="quick-action__arrow" aria-hidden="true">&rarr;</span>
             </button>

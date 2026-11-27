@@ -58,7 +58,7 @@ export const routes: Routes = [
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
   { path: 'app/recruiter-dashboard', redirectTo: 'app/recruiter', pathMatch: 'full' },
   { path: 'app/admin-console', redirectTo: 'app/admin-console/overview', pathMatch: 'full' },
-  { path: 'app/admin-console/overview', redirectTo: 'app/admin/dashboard', pathMatch: 'full' },
+  { path: 'app/admin-console/overview', redirectTo: 'app/admin/organization', pathMatch: 'full' },
   { path: 'app/super-admin', redirectTo: 'app/super-admin/dashboard', pathMatch: 'full' },
   { path: 'app/super-admin/dashboard', redirectTo: 'super-admin/dashboard', pathMatch: 'full' },
 

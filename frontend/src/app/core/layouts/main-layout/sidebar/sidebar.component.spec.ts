@@ -50,15 +50,38 @@ describe('Sidebar', () => {
     expect(routes.filter((route) => !auth.canAccessUrl(route, user))).toEqual([]);
     expect(routes).toEqual([
       '/app/admin/dashboard',
+      '/app/admin/organization',
+      '/app/admin/organization/settings',
+      '/app/admin/organization/policies',
+      '/app/admin/organization/members',
+      '/app/admin/organization/invitations',
+      '/app/admin/organization/usage',
       '/app/admin/recruiters',
       '/app/admin/teams',
-      '/app/admin/developers',
       '/app/admin/jobs',
-      '/app/admin/console',
-      '/app/admin/console/performance-statistics',
+      '/app/admin/developers',
+      '/app/admin/performance',
       '/app/admin/activity-logs',
     ]);
     expect(auth.canAccessUrl('/app/profile', user)).toBe(false);
     expect(auth.canAccessUrl('/app/integrations', user)).toBe(false);
+  });
+
+  it('opens all Admin sidebar groups by default with distinct item icons', () => {
+    expect(component.visibleNavGroups.map((group) => group.label)).toEqual([
+      'Workspace',
+      'Organization Management',
+      'Recruitment Management',
+      'Insights & Governance',
+    ]);
+
+    for (const group of component.visibleNavGroups) {
+      expect(component.isGroupOpen(group.label)).toBe(true);
+    }
+
+    const itemIcons = fixture.nativeElement.querySelectorAll('.nav-sublink .nav-icon svg');
+    expect(itemIcons.length).toBe(13);
+    const serialized = Array.from(itemIcons as NodeListOf<SVGElement>).map((svg) => svg.innerHTML);
+    expect(new Set(serialized).size).toBe(13);
   });
 });

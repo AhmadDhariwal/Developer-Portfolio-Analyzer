@@ -1,0 +1,97 @@
+<app-organization-shell
+  title="Policies & permissions"
+  description="Review operational rules before committing changes. Policies narrow existing authority; they do not create new roles or grants."
+  [loading]="store.loading() || store.saving()"
+  [error]="store.error()"
+  (refresh)="load(conflict())"
+>
+  @if (message()) {
+    <div class="message" role="status">{{ message() }}</div>
+  }
+  @if (store.committed(); as committed) {
+    <section class="message">
+      <strong>Platform and resource authority still apply.</strong>
+      <p>
+        An enabled organization policy cannot override a platform restriction, resource ownership,
+        membership status or candidate consent. Private application evidence remains owner-only.
+      </p>
+    </section>
+    @if (conflict()) {
+      <section class="message warning">
+        <h2>Review concurrent policy changes</h2>
+        <p>
+          Current server version: {{ committed.version }}. Compare the server values shown below
+          with your staged controls, then choose review and save explicitly.
+        </p>
+        <button type="button" (click)="conflict.set(false)" [disabled]="store.loading()">
+          I reviewed the server changes
+        </button>
+      </section>
+    }
+    <div class="content-grid">
+      @for (group of groups; track group) {
+        <section class="card">
+          <h2>{{ group }}</h2>
+          @for (policy of catalog; track policy.id) {
+            @if (policy.group === group) {
+              <article class="policy">
+                <label class="check-row"
+                  ><input
+                    type="checkbox"
+                    [checked]="draft()[policy.id]"
+                    [disabled]="store.saving()"
+                    (change)="toggle(policy.id, $event)"
+                  />{{ policy.title }}</label
+                >
+                <span class="badge"
+                  >Server: {{ committed.policies[policy.id] ? 'Enabled' : 'Disabled' }} · Staged:
+                  {{ draft()[policy.id] ? 'Enabled' : 'Disabled' }}</span
+                >
+                <p>{{ policy.behavior }}</p>
+                <dl>
+                  <div>
+                    <dt>Affected roles</dt>
+                    <dd>{{ policy.roles }}</dd>
+                  </div>
+                  <div>
+                    <dt>Prerequisites</dt>
+                    <dd>{{ policy.dependencies }}</dd>
+                  </div>
+                </dl>
+                <details>
+                  <summary>Existing resources and transition effects</summary>
+                  <p>{{ policy.existing }}</p>
+                  <p>{{ policy.warning }}</p>
+                </details>
+              </article>
+            }
+          }
+        </section>
+      }
+    </div>
+    <div class="card actions">
+      <button
+        type="button"
+        class="primary"
+        [disabled]="!dirty || conflict() || store.saving() || store.loading()"
+        (click)="confirming.set(true)"
+      >
+        {{ store.saving() ? 'Saving…' : 'Review and save policies' }}</button
+      ><button type="button" [disabled]="!dirty || store.saving()" (click)="reset()">
+        Cancel changes</button
+      ><a
+        routerLink="/app/admin/activity-logs"
+        [queryParams]="{ action: 'ORGANIZATION_CONFIGURATION_UPDATED' }"
+        >View governance activity</a
+      >
+    </div>
+  }
+  <app-confirm-dialog
+    [open]="confirming()"
+    title="Commit organization policy changes"
+    [message]="confirmation"
+    confirmText="Save policies"
+    (confirmed)="save()"
+    (cancelled)="confirming.set(false)"
+  />
+</app-organization-shell>

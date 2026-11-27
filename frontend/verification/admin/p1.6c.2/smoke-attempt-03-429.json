@@ -1,0 +1,2835 @@
+{
+  "status": "failed",
+  "apiMocks": false,
+  "productionDataUsed": false,
+  "externalDelivery": false,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/recruiter-hub/jobs",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs/6b098ae0f2b7b0ec4446202b",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/recruiter-hub/jobs/6b098ae0f2b7b0ec4446202b",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs/6b098ae0f2b7b0ec4446202b",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/matches",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs/6b098ae0f2b7b0ec4446202b",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/recruiter-hub/shortlists/6b098ae0f2b7b0ec44462031",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/shortlists",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/recruiter-hub/matches/generate",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/matches",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/candidates",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/candidates",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tenant/invitations/6b098ae0f2b7b0ec44462033/accept",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tenant/organizations/6b098ae0f2b7b0ec44461e5f/teams",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs/6b098ae0f2b7b0ec4446202b",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/accept-invite",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/shortlists/applications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs/6b098ae0f2b7b0ec4446202d/applications/a1518bd987a699b770ae992a0afb265d5c550235efb8b3ad39d2b65e536780ab/resume",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs/6b098ae0f2b7b0ec4446202d/applications/a1518bd987a699b770ae992a0afb265d5c550235efb8b3ad39d2b65e536780ab/resume",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/api/jobs/internal/applications/a1518bd987a699b770ae992a0afb265d5c550235efb8b3ad39d2b65e536780ab/withdraw",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/invite-recruiter",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/overview",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/activity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/overview",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/activity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/overview",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/activity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/overview",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/activity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/overview",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/activity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/overview",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/activity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/overview",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/activity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/members",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/governance",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/capabilities",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/candidates",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/recruiter-hub/candidates",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin-console/teams",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/audit-logs",
+      "status": 200
+    }
+  ],
+  "policyChecks": [
+    {
+      "id": "recruiterJobCreation",
+      "uiOff": true,
+      "directDeniedStatus": 403,
+      "uiOn": true,
+      "persistedVersion": 3,
+      "organizationBUnchanged": true
+    },
+    {
+      "id": "recruiterJobPublication",
+      "uiOff": true,
+      "directDeniedStatus": 403,
+      "uiOn": true,
+      "persistedVersion": 5,
+      "organizationBUnchanged": true
+    },
+    {
+      "id": "teamSharedJobs",
+      "uiOff": true,
+      "directDeniedStatus": 404,
+      "uiOn": true,
+      "persistedVersion": 7,
+      "organizationBUnchanged": true
+    },
+    {
+      "id": "sharedPublicEvaluations",
+      "uiOff": true,
+      "directDeniedStatus": 404,
+      "uiOn": true,
+      "persistedVersion": 9,
+      "organizationBUnchanged": true
+    },
+    {
+      "id": "teamManagerEvaluationManagement",
+      "uiOff": true,
+      "directDeniedStatus": 403,
+      "uiOn": true,
+      "persistedVersion": 11,
+      "organizationBUnchanged": true
+    },
+    {
+      "id": "candidateMatching",
+      "uiOff": true,
+      "directDeniedStatus": 403,
+      "uiOn": true,
+      "persistedVersion": 13,
+      "organizationBUnchanged": true
+    },
+    {
+      "id": "invitationCreation",
+      "uiOff": true,
+      "directDeniedStatus": 403,
+      "uiOn": true,
+      "persistedVersion": 15,
+      "organizationBUnchanged": true
+    },
+    {
+      "id": "managerTeamAdministration",
+      "uiOff": true,
+      "directDeniedStatus": 403,
+      "uiOn": true,
+      "persistedVersion": 17,
+      "organizationBUnchanged": true
+    }
+  ],
+  "profiles": [
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-light-organization.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/settings",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-light-organization-settings.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/policies",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-light-organization-policies.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/members",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-light-organization-members.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/invitations",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-light-organization-invitations.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/usage",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-light-organization-usage.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-dark-organization.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/settings",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-dark-organization-settings.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/policies",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-dark-organization-policies.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/members",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-dark-organization-members.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/invitations",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-dark-organization-invitations.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/usage",
+      "overflow": false,
+      "screenshot": "screenshots/1440-900-dark-organization-usage.png"
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "scheme": "light",
+      "route": "organization",
+      "overflow": false,
+      "screenshot": "screenshots/1024-768-system-organization.png"
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "scheme": "light",
+      "route": "organization/settings",
+      "overflow": false,
+      "screenshot": "screenshots/1024-768-system-organization-settings.png"
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "scheme": "light",
+      "route": "organization/policies",
+      "overflow": false,
+      "screenshot": "screenshots/1024-768-system-organization-policies.png"
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "scheme": "light",
+      "route": "organization/members",
+      "overflow": false,
+      "screenshot": "screenshots/1024-768-system-organization-members.png"
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "scheme": "light",
+      "route": "organization/invitations",
+      "overflow": false,
+      "screenshot": "screenshots/1024-768-system-organization-invitations.png"
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "scheme": "light",
+      "route": "organization/usage",
+      "overflow": false,
+      "screenshot": "screenshots/1024-768-system-organization-usage.png"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization",
+      "overflow": false,
+      "screenshot": "screenshots/768-1024-light-organization.png"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/settings",
+      "overflow": false,
+      "screenshot": "screenshots/768-1024-light-organization-settings.png"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/policies",
+      "overflow": false,
+      "screenshot": "screenshots/768-1024-light-organization-policies.png"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/members",
+      "overflow": false,
+      "screenshot": "screenshots/768-1024-light-organization-members.png"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/invitations",
+      "overflow": false,
+      "screenshot": "screenshots/768-1024-light-organization-invitations.png"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/usage",
+      "overflow": false,
+      "screenshot": "screenshots/768-1024-light-organization-usage.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-light-organization.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/settings",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-light-organization-settings.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/policies",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-light-organization-policies.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/members",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-light-organization-members.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/invitations",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-light-organization-invitations.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/usage",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-light-organization-usage.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-dark-organization.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/settings",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-dark-organization-settings.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/policies",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-dark-organization-policies.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/members",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-dark-organization-members.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/invitations",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-dark-organization-invitations.png"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "scheme": "dark",
+      "route": "organization/usage",
+      "overflow": false,
+      "screenshot": "screenshots/390-844-dark-organization-usage.png"
+    },
+    {
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization",
+      "overflow": false,
+      "screenshot": "screenshots/320-640-light-organization.png"
+    },
+    {
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/settings",
+      "overflow": false,
+      "screenshot": "screenshots/320-640-light-organization-settings.png"
+    },
+    {
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/policies",
+      "overflow": false,
+      "screenshot": "screenshots/320-640-light-organization-policies.png"
+    },
+    {
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/members",
+      "overflow": false,
+      "screenshot": "screenshots/320-640-light-organization-members.png"
+    },
+    {
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/invitations",
+      "overflow": false,
+      "screenshot": "screenshots/320-640-light-organization-invitations.png"
+    },
+    {
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "scheme": "light",
+      "route": "organization/usage",
+      "overflow": false,
+      "screenshot": "screenshots/320-640-light-organization-usage.png"
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)",
+    "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+  ],
+  "runtimeErrors": [],
+  "unexpectedHttp": [
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    },
+    {
+      "path": "/api/notifications/stream",
+      "status": 429
+    }
+  ],
+  "expectedHttp": [
+    {
+      "path": "/api/admin-console/governance",
+      "status": 409
+    },
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ],
+  "checks": {
+    "maxConcurrentStreams": 2,
+    "metadataPersistence": true,
+    "revokedInviterNotRestored": true,
+    "staleForm": {
+      "status": 409,
+      "preservedDraft": true,
+      "explicitReviewAndNewSave": true
+    },
+    "privateApplicationPreserved": true,
+    "deliveryFailureHonest": true,
+    "capabilityRequestsDuringSpaNavigation": 0
+  },
+  "auditCommits": [
+    {
+      "previousVersion": 20,
+      "version": 21,
+      "policyFields": [
+        "candidateMatching",
+        "teamSharedJobs",
+        "sharedPublicEvaluations"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 19,
+      "version": 20,
+      "policyFields": [
+        "candidateMatching",
+        "teamSharedJobs",
+        "sharedPublicEvaluations"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 18,
+      "version": 19,
+      "policyFields": [],
+      "metadataFields": [
+        "name",
+        "description",
+        "industry",
+        "website",
+        "timezone",
+        "branding"
+      ],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 17,
+      "version": 18,
+      "policyFields": [],
+      "metadataFields": [
+        "name",
+        "description",
+        "industry",
+        "website",
+        "timezone",
+        "branding"
+      ],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 16,
+      "version": 17,
+      "policyFields": [
+        "managerTeamAdministration"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 15,
+      "version": 16,
+      "policyFields": [
+        "managerTeamAdministration"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 14,
+      "version": 15,
+      "policyFields": [
+        "invitationCreation"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 13,
+      "version": 14,
+      "policyFields": [
+        "invitationCreation"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 12,
+      "version": 13,
+      "policyFields": [
+        "candidateMatching"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 11,
+      "version": 12,
+      "policyFields": [
+        "candidateMatching"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 10,
+      "version": 11,
+      "policyFields": [
+        "teamManagerEvaluationManagement"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 9,
+      "version": 10,
+      "policyFields": [
+        "teamManagerEvaluationManagement"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 8,
+      "version": 9,
+      "policyFields": [
+        "sharedPublicEvaluations"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 7,
+      "version": 8,
+      "policyFields": [
+        "sharedPublicEvaluations"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 6,
+      "version": 7,
+      "policyFields": [
+        "teamSharedJobs"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 5,
+      "version": 6,
+      "policyFields": [
+        "teamSharedJobs"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 4,
+      "version": 5,
+      "policyFields": [
+        "recruiterJobPublication"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 3,
+      "version": 4,
+      "policyFields": [
+        "recruiterJobPublication"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 2,
+      "version": 3,
+      "policyFields": [
+        "recruiterJobCreation"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 1,
+      "version": 2,
+      "policyFields": [
+        "recruiterJobCreation"
+      ],
+      "metadataFields": [],
+      "dashboardChanged": false
+    },
+    {
+      "previousVersion": 0,
+      "version": 1,
+      "policyFields": [],
+      "metadataFields": [
+        "name",
+        "description",
+        "industry",
+        "website",
+        "timezone",
+        "branding"
+      ],
+      "dashboardChanged": false
+    }
+  ],
+  "failure": "[\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\",\"Failed to load resource: the server responded with a status of 429 (Too Many Requests)\"]\n\n12 !== 0\n",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 361,
+    "productionDataUsed": false
+  }
+}

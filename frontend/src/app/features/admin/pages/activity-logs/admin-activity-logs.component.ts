@@ -1,19 +1,22 @@
-import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ApiService } from '../../../../shared/services/api.service';
-import { AuthService } from '../../../../shared/services/auth.service';
-import { TenantContextService } from '../../../../shared/services/tenant-context.service';
-import { AdminConsoleService, ConsoleTeam } from '../admin-console/admin-console.service';
+import { finalize } from 'rxjs/operators';
+
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import {
   SearchableSelectComponent,
   SearchableSelectOption,
 } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { ApiService } from '../../../../shared/services/api.service';
+import { AuthService } from '../../../../shared/services/auth.service';
+import { TenantContextService } from '../../../../shared/services/tenant-context.service';
 import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
+import { organizationAuditSummary } from '../../utils/organization-audit';
+import { AdminConsoleService, ConsoleTeam } from '../admin-console/admin-console.service';
 
 interface AuditActor {
   _id: string;
@@ -81,6 +84,8 @@ const SENSITIVE_KEY_PATTERNS = [
   styleUrls: ['./admin-activity-logs.component.scss'],
 })
 export class AdminActivityLogsComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute, { optional: true });
+  readonly governanceSummary = organizationAuditSummary;
   logs: AuditLogItem[] = [];
   filteredLogs: AuditLogItem[] = [];
   selectedLog: AuditLogItem | null = null;
@@ -138,6 +143,8 @@ export class AdminActivityLogsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (this.route?.snapshot?.queryParamMap?.get('action') === 'ORGANIZATION_CONFIGURATION_UPDATED')
+      this.action = 'ORGANIZATION_CONFIGURATION_UPDATED';
     const currentUser = this.authService.getCurrentUser();
     this.currentUserId = String(currentUser?._id || '');
     const role = String(currentUser?.role || '').toLowerCase();

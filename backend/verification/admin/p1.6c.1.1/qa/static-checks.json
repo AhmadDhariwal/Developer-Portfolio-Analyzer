@@ -1,0 +1,352 @@
+{
+  "checks": [
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\node_modules\\prettier\\bin\\prettier.cjs",
+        "--check",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\acceptance.test.cjs",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\independent-revocation.test.cjs",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\revoked-inviter-repro.test.cjs",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\verify.cjs"
+      ],
+      "exitCode": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\node_modules\\prettier\\bin\\prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "100",
+        "backend/src/modules/admin/controllers/recruiterController.js",
+        "backend/src/modules/admin/controllers/tenantcontroller.js",
+        "backend/src/modules/admin/services/invitationAcceptanceService.js",
+        "backend/src/modules/admin/services/organizationGovernanceService.js",
+        "backend/src/tests/admin/invitationAuthorityRevocation.integration.test.js"
+      ],
+      "exitCode": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["--check", "backend/src/core/middleware/auditLogMiddleware.js"],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/core/middleware/platformSettingsMiddleware.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/config/organizationPolicies.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/controllers/adminConsoleController.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/controllers/organizationGovernanceController.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/controllers/recruiterController.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/controllers/tenantcontroller.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["--check", "backend/src/modules/admin/models/organization.js"],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/routes/adminConsole.routes.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/services/invitationAcceptanceService.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/services/organizationGovernanceService.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/admin/services/teamCapacityService.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/controllers/hub/comparisonController.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/controllers/hub/recruiterJobController.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/controllers/matching/jobController.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/controllers/matching/matchController.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/routes/hub/recruiterHubRoutes.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/routes/recruiter.routes.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/services/hub/comparisonService.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/services/hub/matchService.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/services/hub/recruiterJobService.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/services/matching/matchingService.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/utils/hub/recruiterEvaluationAccess.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/modules/recruiter/utils/hub/recruiterJobAccess.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/tests/admin/adminRegressionClosure.integration.test.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/tests/admin/invitationAuthorityRevocation.integration.test.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/tests/admin/organizationGovernance.integration.test.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "backend/src/tests/fixtures/disposableRequestMongo.js"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\acceptance.test.cjs"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\independent-revocation.test.cjs"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\revoked-inviter-repro.test.cjs"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--check",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\verify.cjs"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "git",
+      "args": ["diff", "--check"],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "executable": "git",
+      "args": ["diff", "--cached", "--check"],
+      "exitCode": 0,
+      "output": ""
+    }
+  ],
+  "sourceJavaScriptFiles": 28,
+  "qaScripts": 5,
+  "originalHarnesses": [
+    {
+      "file": "acceptance.test.cjs",
+      "byteIdenticalToOriginal": true
+    },
+    {
+      "file": "revoked-inviter-repro.test.cjs",
+      "byteIdenticalToOriginal": true
+    }
+  ]
+}

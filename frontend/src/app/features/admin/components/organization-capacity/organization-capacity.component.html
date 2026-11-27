@@ -1,0 +1,22 @@
+<section class="card">
+  <h2>{{ title }}</h2>
+
+  <strong class="stat-value">{{ capacity.used }} / {{ capacity.limit }}</strong>
+
+  <span class="badge">{{ capacity.label }}</span>
+
+  <progress max="100" [value]="capacity.bar" [attr.aria-label]="title + ' utilization'"></progress>
+
+  <p>
+    {{ capacity.remaining }} remaining ·
+    {{
+      capacity.percentage === null
+        ? 'Percentage unavailable for a zero limit'
+        : capacity.percentage + '% utilized'
+    }}
+  </p>
+
+  <small>
+    Limit managed at platform level. Existing resources are retained when capacity is exceeded.
+  </small>
+</section>

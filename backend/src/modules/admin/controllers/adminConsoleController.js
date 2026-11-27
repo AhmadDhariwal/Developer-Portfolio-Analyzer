@@ -22,14 +22,16 @@ const {
   withOrganizationCapacityFence
 } = require('../services/teamCapacityService');
 const teamAnalyticsService = require('../services/teamAnalyticsService');
-const { getOrganizationSettingsSync } = require('../../super-admin/services/platformSettingsService');
+const {
+  getOrganizationSettingsSync
+} = require('../../super-admin/services/platformSettingsService');
 
 const {
   normalizeDashboardConfig,
   hydrateTeams,
   normalizeRecruiterIds,
   upsertRecruiterTeamMemberships,
-  getConsolePerformanceData,
+  getConsolePerformanceData
 } = require('../services/adminConsoleService');
 
 const validate = (req, res) => {
@@ -65,7 +67,11 @@ const getConsoleOverview = async (req, res) => {
       Team.countDocuments({ organizationId: orgId }),
       Team.countDocuments({ organizationId: orgId, isActive: { $ne: false } }),
       Job.countDocuments({ organizationId: orgId }),
-      Invitation.countDocuments({ organizationId: orgId, status: 'pending', expiresAt: { $gt: new Date() } }),
+      Invitation.countDocuments({
+        organizationId: orgId,
+        status: 'pending',
+        expiresAt: { $gt: new Date() }
+      }),
       Membership.find(activeMembershipsQuery).select('userId role').lean(),
       User.find(organizationUsersQuery).select('_id role isActive').lean()
     ]);
@@ -78,7 +84,9 @@ const getConsoleOverview = async (req, res) => {
       if (user?._id) internalMemberIds.add(String(user._id));
     });
 
-    const adminCount = organizationUsers.filter((user) => String(user.role || '') === 'admin').length;
+    const adminCount = organizationUsers.filter(
+      (user) => String(user.role || '') === 'admin'
+    ).length;
     const recruiterUserIds = new Set(
       organizationUsers
         .filter((user) => String(user.role || '') === 'recruiter')
@@ -129,38 +137,48 @@ const getConsoleAnalytics = async (req, res) => {
     const recruiterIds = recruiters.map((r) => r._id);
 
     const now = new Date();
-    const [jobSummary, teams, memberships, recentInvitations, invitationFunnel] = await Promise.all([
-      Job.aggregate([
-        { $match: { organizationId: new mongoose.Types.ObjectId(orgId) } },
-        {
-          $facet: {
-            byRecruiter: [{ $group: { _id: '$recruiterId', count: { $sum: 1 } } }],
-            byStatus: [{ $group: { _id: '$status', count: { $sum: 1 } } }]
+    const [jobSummary, teams, memberships, recentInvitations, invitationFunnel] = await Promise.all(
+      [
+        Job.aggregate([
+          { $match: { organizationId: new mongoose.Types.ObjectId(orgId) } },
+          {
+            $facet: {
+              byRecruiter: [{ $group: { _id: '$recruiterId', count: { $sum: 1 } } }],
+              byStatus: [{ $group: { _id: '$status', count: { $sum: 1 } } }]
+            }
           }
-        }
-      ]),
-      Team.find({ organizationId: orgId }).select('_id name createdAt').lean(),
-      Membership.find({ organizationId: orgId, status: 'active' }).select('userId teamId role').lean(),
-      Invitation.find({ organizationId: orgId })
-        .sort({ createdAt: -1, _id: -1 })
-        .limit(20)
-        .select('name email role status createdAt expiresAt')
-        .lean(),
-      Promise.all([
-        Invitation.countDocuments({ organizationId: orgId, status: 'pending', expiresAt: { $gt: now } }),
-        Invitation.countDocuments({
-          organizationId: orgId,
-          $or: [{ status: 'expired' }, { status: 'pending', expiresAt: { $lte: now } }]
-        }),
-        Invitation.countDocuments({ organizationId: orgId, status: 'accepted' }),
-        Invitation.countDocuments({ organizationId: orgId, status: 'revoked' })
-      ])
-    ]);
+        ]),
+        Team.find({ organizationId: orgId }).select('_id name createdAt').lean(),
+        Membership.find({ organizationId: orgId, status: 'active' })
+          .select('userId teamId role')
+          .lean(),
+        Invitation.find({ organizationId: orgId })
+          .sort({ createdAt: -1, _id: -1 })
+          .limit(20)
+          .select('name email role status createdAt expiresAt')
+          .lean(),
+        Promise.all([
+          Invitation.countDocuments({
+            organizationId: orgId,
+            status: 'pending',
+            expiresAt: { $gt: now }
+          }),
+          Invitation.countDocuments({
+            organizationId: orgId,
+            $or: [{ status: 'expired' }, { status: 'pending', expiresAt: { $lte: now } }]
+          }),
+          Invitation.countDocuments({ organizationId: orgId, status: 'accepted' }),
+          Invitation.countDocuments({ organizationId: orgId, status: 'revoked' })
+        ])
+      ]
+    );
 
     // Jobs per recruiter
     const summary = jobSummary[0] || { byRecruiter: [], byStatus: [] };
     const jobsByRecruiter = new Map(
-      summary.byRecruiter.filter((entry) => entry._id).map((entry) => [String(entry._id), entry.count])
+      summary.byRecruiter
+        .filter((entry) => entry._id)
+        .map((entry) => [String(entry._id), entry.count])
     );
 
     // Members per team
@@ -196,7 +214,8 @@ const getConsoleAnalytics = async (req, res) => {
       closed: jobsByStatus.get('closed') || 0
     };
 
-    const [pendingInvitations, expiredInvitations, acceptedInvitations, revokedInvitations] = invitationFunnel;
+    const [pendingInvitations, expiredInvitations, acceptedInvitations, revokedInvitations] =
+      invitationFunnel;
 
     return res.json({
       recruiterPerformance,
@@ -257,12 +276,20 @@ const getConsoleTeams = async (req, res) => {
     if (req.query.page) {
       const page = Math.max(1, Number.parseInt(String(req.query.page || '1'), 10));
       const limit = Math.max(1, Math.min(50, Number.parseInt(String(req.query.limit || '10'), 10)));
-      
-      const search = String(req.query.search || '').trim().toLowerCase();
-      const status = String(req.query.status || 'all').trim().toLowerCase();
+
+      const search = String(req.query.search || '')
+        .trim()
+        .toLowerCase();
+      const status = String(req.query.status || 'all')
+        .trim()
+        .toLowerCase();
       const recruiterId = String(req.query.recruiterId || '').trim();
-      const sortBy = String(req.query.sortBy || 'score').trim().toLowerCase();
-      const sortOrder = String(req.query.sortOrder || 'desc').trim().toLowerCase();
+      const sortBy = String(req.query.sortBy || 'score')
+        .trim()
+        .toLowerCase();
+      const sortOrder = String(req.query.sortOrder || 'desc')
+        .trim()
+        .toLowerCase();
 
       const { teamMetrics } = await teamAnalyticsService.computeOrgTeamsMetrics(orgId);
 
@@ -272,8 +299,7 @@ const getConsoleTeams = async (req, res) => {
       if (search) {
         filteredTeams = filteredTeams.filter(
           (t) =>
-            t.name.toLowerCase().includes(search) ||
-            t.description.toLowerCase().includes(search)
+            t.name.toLowerCase().includes(search) || t.description.toLowerCase().includes(search)
         );
       }
 
@@ -331,9 +357,7 @@ const getConsoleTeams = async (req, res) => {
       });
     }
 
-    const teams = await Team.find({ organizationId: orgId })
-      .sort({ createdAt: -1 })
-      .lean();
+    const teams = await Team.find({ organizationId: orgId }).sort({ createdAt: -1 }).lean();
 
     const enrichedTeams = await hydrateTeams(orgId, teams);
 
@@ -374,7 +398,9 @@ const createConsoleTeam = async (req, res) => {
       organizationId: orgId,
       limit: teamLimit,
       create: async (session) => {
-        const duplicate = await Team.findOne({ organizationId: orgId, slug }).session(session).lean();
+        const duplicate = await Team.findOne({ organizationId: orgId, slug })
+          .session(session)
+          .lean();
         if (duplicate) {
           const error = new Error('Team slug already exists in this organization.');
           error.status = 409;
@@ -419,7 +445,9 @@ const createConsoleTeam = async (req, res) => {
       return res.status(error.status).json({ message: error.message });
     }
     console.error('Admin console create team error:', error.message);
-    return res.status(error.status || 500).json({ message: error.message || 'Failed to create team.' });
+    return res
+      .status(error.status || 500)
+      .json({ message: error.message || 'Failed to create team.' });
   }
 };
 
@@ -456,7 +484,11 @@ const updateConsoleTeam = async (req, res) => {
     }
 
     if (updates.slug && updates.slug !== team.slug) {
-      const duplicate = await Team.findOne({ organizationId: orgId, slug: updates.slug, _id: { $ne: team._id } }).lean();
+      const duplicate = await Team.findOne({
+        organizationId: orgId,
+        slug: updates.slug,
+        _id: { $ne: team._id }
+      }).lean();
       if (duplicate) {
         return res.status(409).json({ message: 'Team slug already exists in this organization.' });
       }
@@ -504,7 +536,8 @@ const deleteConsoleTeam = async (req, res) => {
       mutate: async (session, organizationId) => {
         const teamId = req.params.id;
         const result = await Team.deleteOne({ _id: teamId, organizationId }, { session });
-        if (!result.deletedCount) throw Object.assign(new Error('Team not found.'), { status: 404 });
+        if (!result.deletedCount)
+          throw Object.assign(new Error('Team not found.'), { status: 404 });
         await Membership.deleteMany({ organizationId, teamId }, { session });
         await Invitation.updateMany(
           { organizationId, teamId, status: 'pending' },
@@ -515,7 +548,9 @@ const deleteConsoleTeam = async (req, res) => {
     });
     return res.json({ message: 'Team deleted successfully.' });
   } catch (error) {
-    return res.status(error.status || 500).json({ message: error.status ? error.message : 'Failed to delete team.' });
+    return res
+      .status(error.status || 500)
+      .json({ message: error.status ? error.message : 'Failed to delete team.' });
   }
 };
 
@@ -529,7 +564,9 @@ const assignRecruiterToConsoleTeam = async (req, res) => {
     const team = await withOrganizationCapacityFence({
       organizationId: req.organizationId,
       mutate: async (session, organizationId) => {
-        const team = await Team.findOne({ _id: req.params.id, organizationId, isActive: true }).session(session).lean();
+        const team = await Team.findOne({ _id: req.params.id, organizationId, isActive: true })
+          .session(session)
+          .lean();
         if (!team) throw Object.assign(new Error('Team not found.'), { status: 404 });
         await upsertRecruiterTeamMemberships({
           organizationId,
@@ -577,7 +614,7 @@ const getConsolePreferences = async (req, res) => {
   try {
     const orgId = req.organizationId;
     const organization = await Organization.findById(orgId)
-      .select('name slug description createdAt ownerId dashboardConfig')
+      .select('name slug description createdAt ownerId dashboardConfig governance.version')
       .lean();
 
     if (!organization) {
@@ -587,6 +624,7 @@ const getConsolePreferences = async (req, res) => {
     return res.json({
       organization: {
         ...organization,
+        governanceVersion: Number(organization.governance?.version || 0),
         dashboardConfig: normalizeDashboardConfig(organization.dashboardConfig)
       }
     });
@@ -599,70 +637,30 @@ const getConsolePreferences = async (req, res) => {
 // ── PATCH /api/admin-console/preferences ─────────────────────────────────
 const updateConsolePreferences = async (req, res) => {
   try {
-    const orgId = req.organizationId;
-    const name = String(req.body?.name || '').trim();
-    const description = String(req.body?.description || '').trim();
-    const config = req.body?.dashboardConfig;
-    if (config !== undefined && (!config || typeof config !== 'object' || Array.isArray(config))) {
-      return res.status(400).json({ message: 'dashboardConfig is invalid.' });
-    }
-    if (config?.defaultTeamId && !isObjectId(config.defaultTeamId)) {
-      return res.status(400).json({ message: 'defaultTeamId is invalid.' });
-    }
-    if (config?.preferredDateRangeDays !== undefined && ![7, 14, 30, 60, 90].includes(config.preferredDateRangeDays)) {
-      return res.status(400).json({ message: 'preferredDateRangeDays is invalid.' });
-    }
-    const requestedConfig = normalizeDashboardConfig(config || {});
-
-    if (!name) {
-      return res.status(400).json({ message: 'Organization name is required.' });
-    }
-
-    let defaultTeamId = null;
-    if (requestedConfig.defaultTeamId) {
-      const team = await Team.findOne({
-        _id: requestedConfig.defaultTeamId,
-        organizationId: orgId
-      })
-        .select('_id')
-        .lean();
-
-      if (!team) {
-        return res.status(400).json({ message: 'Default dashboard team is not part of this organization.' });
-      }
-
-      defaultTeamId = team._id;
-    }
-
-    const organization = await Organization.findByIdAndUpdate(
-      orgId,
-      {
-        $set: {
-          name,
-          description,
-          dashboardConfig: {
-            ...requestedConfig,
-            defaultTeamId
-          }
-        }
-      },
-      { new: true }
-    ).select('name slug description createdAt ownerId dashboardConfig').lean();
-
-    if (!organization) {
-      return res.status(404).json({ message: 'Organization not found.' });
-    }
-
+    const governance = require('../services/organizationGovernanceService');
+    const { scope } = require('./organizationGovernanceController');
+    const organization = await governance.updateGovernance(scope(req), req.body, {
+      preferences: true
+    });
+    req.organizationGovernanceAuditRecorded = true;
     return res.json({
       organization: {
-        ...organization,
+        _id: organization._id,
+        name: organization.name,
+        slug: organization.slug,
+        description: organization.description,
+        createdAt: organization.createdAt,
+        ownerId: organization.ownerId,
+        governanceVersion: Number(organization.governance?.version || 0),
         dashboardConfig: normalizeDashboardConfig(organization.dashboardConfig)
       },
       message: 'Organization preferences updated.'
     });
   } catch (error) {
-    console.error('Admin console update preferences error:', error.message);
-    return res.status(500).json({ message: 'Failed to update organization preferences.' });
+    const status = error.statusCode || error.status || 500;
+    return res.status(status).json({
+      message: status < 500 ? error.message : 'Failed to update organization preferences.'
+    });
   }
 };
 
@@ -673,13 +671,18 @@ const getConsolePerformance = async (req, res) => {
   try {
     const orgId = req.organizationId || null;
     if (!orgId) {
-      return res.status(403).json({ message: 'Organization context is required for this resource.' });
+      return res
+        .status(403)
+        .json({ message: 'Organization context is required for this resource.' });
     }
 
     const { days, teamId, recruiterId, stack, jobStatus } = req.query;
     if (
       (days !== undefined &&
-        (typeof days !== 'string' || !/^\d+$/.test(days) || Number(days) < 7 || Number(days) > 90)) ||
+        (typeof days !== 'string' ||
+          !/^\d+$/.test(days) ||
+          Number(days) < 7 ||
+          Number(days) > 90)) ||
       [teamId, recruiterId].some((id) => id !== undefined && id !== '' && !isObjectId(id)) ||
       (stack !== undefined && (typeof stack !== 'string' || stack.length > 100)) ||
       (jobStatus !== undefined && !['', 'open', 'draft', 'closed'].includes(jobStatus))

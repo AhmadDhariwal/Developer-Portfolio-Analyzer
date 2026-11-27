@@ -142,7 +142,10 @@
                 [routerLink]="item.route"
                 routerLinkActive="active"
                 ariaCurrentWhenActive="page"
-                [routerLinkActiveOptions]="{ exact: item.route === '/app/admin/console' }"
+                [routerLinkActiveOptions]="{
+                  exact:
+                    item.route === '/app/admin/console' || item.route === '/app/admin/organization',
+                }"
                 class="nav-link nav-sublink"
                 [attr.aria-label]="item.label"
                 [attr.title]="!isOpen && !isMobile ? item.label : null"

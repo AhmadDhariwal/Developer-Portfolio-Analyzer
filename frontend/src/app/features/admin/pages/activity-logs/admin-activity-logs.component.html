@@ -516,6 +516,36 @@
       </div>
 
       <div class="detail-payload">
+        <section
+          *ngIf="governanceSummary(log) as governance"
+          aria-label="Governance configuration change"
+        >
+          <h3>Organization configuration updated</h3>
+          <p>
+            Version {{ governance.previousVersion ?? 'unavailable' }} →
+            {{ governance.version ?? 'unavailable' }}
+          </p>
+          <p *ngFor="let policy of governance.policies">
+            <strong>{{ policy.title }}</strong
+            >:
+            {{
+              policy.previous === true
+                ? 'Enabled'
+                : policy.previous === false
+                  ? 'Disabled'
+                  : 'Unavailable'
+            }}
+            → {{ policy.value ? 'Enabled' : 'Disabled' }}
+          </p>
+          <p *ngIf="governance.metadataFields.length">
+            Changed metadata fields: {{ governance.metadataFields.join(', ') }}. Values remain
+            redacted.
+          </p>
+          <p *ngIf="governance.dashboardChanged">
+            Dashboard configuration changed. The audit contract redacts its values and does not
+            expose individual changed dashboard field names.
+          </p>
+        </section>
         <div class="detail-payload__section">
           <div class="detail-payload__label">Before</div>
           <pre class="detail-payload__pre">{{ toJson(log.before) }}</pre>

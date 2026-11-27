@@ -1,0 +1,525 @@
+{
+  "verdict": "PASS",
+  "date": "2026-11-27",
+  "timezone": "Asia/Karachi",
+  "branch": "admin/ui",
+  "head": "229c7cfbefefed4c7c8ba2db63b454e1265e7e67",
+  "prTarget": "not applicable",
+  "testedWorkingTree": true,
+  "indexDiffSha256": "1d5bc183ea508aa2acf0c05d77a60927040be12416c62a15bc26f9edf3eaeabd",
+  "workingDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "f1": {
+    "closed": true,
+    "originalSubtests": 37,
+    "routes": {
+      "id": "/api/tenant/invitations/:invitationId/accept",
+      "token": "/api/tenant/invitations/accept/:token",
+      "auth": "/api/auth/accept-invite",
+      "onboard": "/api/tenant/invitations/accept/:token/onboard"
+    },
+    "denials": [
+      {
+        "phase": "before-toggle",
+        "kind": "id",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "before-toggle",
+        "kind": "token",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "before-toggle",
+        "kind": "auth",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "before-toggle",
+        "kind": "onboard",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "policy-disabled",
+        "kind": "id",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "policy-disabled",
+        "kind": "token",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "policy-disabled",
+        "kind": "auth",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "policy-disabled",
+        "kind": "onboard",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "policy-reenabled",
+        "kind": "id",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "policy-reenabled",
+        "kind": "token",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "policy-reenabled",
+        "kind": "auth",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "policy-reenabled",
+        "kind": "onboard",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "revocation-first-race",
+        "kind": "id",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "acceptance-first-followup",
+        "kind": "id",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "revocation-first-race",
+        "kind": "token",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "acceptance-first-followup",
+        "kind": "token",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "revocation-first-race",
+        "kind": "auth",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "acceptance-first-followup",
+        "kind": "auth",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "revocation-first-race",
+        "kind": "onboard",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      },
+      {
+        "phase": "acceptance-first-followup",
+        "kind": "onboard",
+        "status": 403,
+        "invitationStatus": "pending",
+        "accountCreated": false,
+        "roleGranted": false,
+        "membershipCreated": false,
+        "jwtMinted": false,
+        "jwtReturned": false,
+        "cookieReturned": false
+      }
+    ],
+    "compatibility": [
+      {
+        "label": "active-direct-admin",
+        "status": 200,
+        "role": "recruiter",
+        "membershipCount": 1,
+        "invitationStatus": "accepted",
+        "serverJwtMints": 0
+      },
+      {
+        "label": "admin-owner",
+        "status": 200,
+        "role": "recruiter",
+        "membershipCount": 1,
+        "invitationStatus": "accepted",
+        "serverJwtMints": 0
+      },
+      {
+        "label": "super-admin-owner",
+        "status": 200,
+        "role": "recruiter",
+        "membershipCount": 1,
+        "invitationStatus": "accepted",
+        "serverJwtMints": 1
+      },
+      {
+        "label": "legacy-affiliated-admin",
+        "status": 200,
+        "role": "recruiter",
+        "membershipCount": 1,
+        "invitationStatus": "accepted",
+        "serverJwtMints": 0
+      },
+      {
+        "label": "legacy-member-onboarding",
+        "status": 200,
+        "role": "developer",
+        "membershipCount": 1,
+        "invitationStatus": "accepted",
+        "serverJwtMints": 1
+      }
+    ],
+    "races": [
+      {
+        "kind": "id",
+        "ordering": "revocation-first",
+        "status": 403,
+        "realWriteConflicts": 1,
+        "finalStateVerified": true
+      },
+      {
+        "kind": "id",
+        "ordering": "acceptance-first",
+        "status": 200,
+        "competingUpdateObserved": true,
+        "revocationPendingAtRelease": true,
+        "subsequentStatus": 403,
+        "finalStateVerified": true
+      },
+      {
+        "kind": "token",
+        "ordering": "revocation-first",
+        "status": 403,
+        "realWriteConflicts": 1,
+        "finalStateVerified": true
+      },
+      {
+        "kind": "token",
+        "ordering": "acceptance-first",
+        "status": 200,
+        "competingUpdateObserved": true,
+        "revocationPendingAtRelease": true,
+        "subsequentStatus": 403,
+        "finalStateVerified": true
+      },
+      {
+        "kind": "auth",
+        "ordering": "revocation-first",
+        "status": 403,
+        "realWriteConflicts": 1,
+        "finalStateVerified": true
+      },
+      {
+        "kind": "auth",
+        "ordering": "acceptance-first",
+        "status": 200,
+        "competingUpdateObserved": true,
+        "revocationPendingAtRelease": true,
+        "subsequentStatus": 403,
+        "finalStateVerified": true
+      },
+      {
+        "kind": "onboard",
+        "ordering": "revocation-first",
+        "status": 403,
+        "realWriteConflicts": 1,
+        "finalStateVerified": true
+      },
+      {
+        "kind": "onboard",
+        "ordering": "acceptance-first",
+        "status": 200,
+        "competingUpdateObserved": true,
+        "revocationPendingAtRelease": true,
+        "subsequentStatus": 403,
+        "finalStateVerified": true
+      }
+    ],
+    "network": "loopback only",
+    "policyVersionAfterToggle": 2,
+    "cleanup": {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 210,
+      "productionDataUsed": false
+    }
+  },
+  "tests": [
+    {
+      "label": "governance-unsandboxed",
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--require",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "verification/admin/p1.6c.1.1/qa/acceptance.test.cjs"
+      ],
+      "started": "2026-11-27T12:32:48.887Z",
+      "finished": "2026-11-27T12:34:00.090Z",
+      "exitCode": 0,
+      "summary": {
+        "tests": 38,
+        "suites": 0,
+        "pass": 38,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 67912.0976
+      }
+    },
+    {
+      "label": "independent-final",
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--require",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "verification/admin/p1.6c.1.1/qa/independent-revocation.test.cjs"
+      ],
+      "started": "2026-11-27T12:35:04.556Z",
+      "finished": "2026-11-27T12:35:30.913Z",
+      "exitCode": 0,
+      "summary": {
+        "tests": 11,
+        "suites": 0,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 24163.0326
+      }
+    },
+    {
+      "label": "implementation-unsandboxed",
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--require",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "src/tests/admin/invitationAuthorityRevocation.integration.test.js"
+      ],
+      "started": "2026-11-27T12:32:48.046Z",
+      "finished": "2026-11-27T12:33:15.746Z",
+      "exitCode": 0,
+      "summary": {
+        "tests": 5,
+        "suites": 0,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 24615.9325
+      }
+    },
+    {
+      "label": "original-f1-reproduction",
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--require",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "verification/admin/p1.6c.1.1/qa/revoked-inviter-repro.test.cjs"
+      ],
+      "started": "2026-11-27T12:33:45.257Z",
+      "finished": "2026-11-27T12:34:03.861Z",
+      "exitCode": 0,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 16330.3934
+      }
+    },
+    {
+      "label": "security-regressions",
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "--require",
+        "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\admin\\p1.6c.1.1\\qa\\isolate-evidence.cjs",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "src/tests/admin/adminScopeAndAnalytics.integration.test.js",
+        "src/tests/admin/adminRegressionClosure.integration.test.js",
+        "src/tests/admin/organizationGovernance.integration.test.js",
+        "src/tests/core/tenantAudit.integration.test.js",
+        "src/tests/core/platformSettingsSession.integration.test.js",
+        "src/tests/recruiter/recruiterHttp.integration.test.js",
+        "src/tests/recruiter/teamSharedJobs.integration.test.js",
+        "src/tests/recruiter/teamEvaluations.integration.test.js",
+        "src/tests/recruiter/applicationWorkflow.integration.test.js",
+        "src/tests/recruiter/applicationShortlists.integration.test.js",
+        "src/tests/recruiter/applicationIntegrity.integration.test.js",
+        "src/tests/recruiter/applicationConcurrency.integration.test.js",
+        "src/tests/jobs/jobApplications.integration.test.js",
+        "src/tests/core/applicationEvaluationRequestLogging.test.js"
+      ],
+      "started": "2026-11-27T12:33:45.859Z",
+      "finished": "2026-11-27T12:39:02.404Z",
+      "exitCode": 0,
+      "summary": {
+        "tests": 120,
+        "suites": 0,
+        "pass": 120,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 314034.0913
+      }
+    }
+  ],
+  "sourceHashes": {
+    "backend/src/modules/admin/controllers/recruiterController.js": "64932e9720a6206d9e4847fdc98ef6efddf025c2e6ba0231c04dcc418b36a19a",
+    "backend/src/modules/admin/controllers/tenantcontroller.js": "aa3ad4dee387ad97662671684b85350b33d48f3a67679957003c89b1a6fa5924",
+    "backend/src/modules/admin/services/invitationAcceptanceService.js": "9f0889d17652e17232483311fd675d698db7d0f3c38309c26ae4b75c22718fa7",
+    "backend/src/modules/admin/services/organizationGovernanceService.js": "4e39977667fba667d9b85ca8245d0fdfcd349ffe55a2031cf5a77cd048f24b88",
+    "backend/src/tests/admin/invitationAuthorityRevocation.integration.test.js": "1d356e08f4173fba0ac321885fb19eb4c863c4a874f8ab78d24284f5cbbd7b0a"
+  }
+}

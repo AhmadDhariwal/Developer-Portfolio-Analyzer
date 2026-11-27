@@ -3,7 +3,9 @@ const Organization = require('../models/organization');
 const Team = require('../models/team');
 
 const createTeamLimitError = (limit) =>
-  Object.assign(new Error(`Maximum team limit (${limit}) reached for this organization.`), { status: 400 });
+  Object.assign(new Error(`Maximum team limit (${limit}) reached for this organization.`), {
+    status: 400
+  });
 
 const createRecruiterLimitError = (limit) =>
   Object.assign(new Error(`Recruiter limit (${limit}) reached for this organization.`), {
@@ -26,7 +28,9 @@ const bumpOrganizationCapacityFence = async (organizationId, session) => {
 
   if (!organization || organization.isSuspended === true) {
     const status = organization ? 403 : 404;
-    const message = organization ? 'Organization access is unavailable.' : 'Organization not found.';
+    const message = organization
+      ? 'Organization access is unavailable.'
+      : 'Organization not found.';
     throw Object.assign(new Error(message), { status, statusCode: status });
   }
 
@@ -42,10 +46,14 @@ const bumpOrganizationCapacityFence = async (organizationId, session) => {
   );
 
   if (!organizationWrite.matchedCount) {
-    const currentOrganization = await Organization.exists({ _id: organizationObjectId }).session(session);
+    const currentOrganization = await Organization.exists({ _id: organizationObjectId }).session(
+      session
+    );
     const status = currentOrganization ? 403 : 404;
     const error = Object.assign(
-      new Error(currentOrganization ? 'Organization access is unavailable.' : 'Organization not found.'),
+      new Error(
+        currentOrganization ? 'Organization access is unavailable.' : 'Organization not found.'
+      ),
       { status, statusCode: status }
     );
     throw error;
@@ -66,8 +74,13 @@ const withOrganizationTeamCapacity = async ({ organizationId, limit, create }) =
   return withOrganizationCapacityFence({
     organizationId,
     mutate: async (session, organizationObjectId) => {
-      const teamCount = await Team.countDocuments({ organizationId: organizationObjectId }).session(session);
-      if (teamCount >= teamLimit) throw createTeamLimitError(teamLimit);
+      const { platformInSession } = require('./organizationGovernanceService');
+      const settings = await platformInSession(session);
+      const effectiveLimit = Number(settings.organization?.maxTeamsPerOrganization ?? teamLimit);
+      const teamCount = await Team.countDocuments({ organizationId: organizationObjectId }).session(
+        session
+      );
+      if (teamCount >= effectiveLimit) throw createTeamLimitError(effectiveLimit);
 
       return create(session);
     }

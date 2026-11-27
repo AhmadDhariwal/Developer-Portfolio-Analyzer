@@ -1,0 +1,59 @@
+<app-organization-shell
+  title="Resource usage"
+  description="Accurate organization utilization against platform-managed limits."
+  [loading]="store.loading()"
+  [error]="store.error()"
+  (refresh)="load()"
+>
+  @if (store.committed(); as committed) {
+    <div class="content-grid">
+      <app-organization-capacity
+        title="Active Recruiter seats"
+        [used]="committed.resources.usage.activeRecruiters"
+        [limit]="committed.resources.limits.activeRecruiters"
+      />
+
+      <app-organization-capacity
+        title="Total teams"
+        [used]="committed.resources.usage.teams"
+        [limit]="committed.resources.limits.teams"
+      />
+    </div>
+
+    <section class="card">
+      <h2>How usage is counted</h2>
+      <dl>
+        <div>
+          <dt>Recruiter seats</dt>
+          <dd>
+            {{ committed.resources.usage.activeRecruiters }} active Recruiter accounts. Pending
+            invitations do not reserve seats.
+          </dd>
+        </div>
+
+        <div>
+          <dt>Teams</dt>
+          <dd>
+            {{ committed.resources.usage.teams }} total teams, including
+            {{ committed.resources.usage.activeTeams }} active teams. Inactive teams still count
+            toward total team capacity.
+          </dd>
+        </div>
+
+        <div>
+          <dt>Read-only platform limits</dt>
+          <dd>
+            Organization administrators cannot change these limits. Over-capacity resources are
+            retained; additional capacity-consuming actions remain subject to server checks.
+          </dd>
+        </div>
+      </dl>
+
+      <div class="actions">
+        <a class="button" routerLink="/app/admin/recruiters">Manage Recruiters</a>
+
+        <a class="button" routerLink="/app/admin/teams">Manage teams</a>
+      </div>
+    </section>
+  }
+</app-organization-shell>

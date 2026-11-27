@@ -1,3 +1,4 @@
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
@@ -12,6 +13,7 @@ import { TenantContextService } from '../../../../shared/services/tenant-context
   styleUrl: './recruiter-dashboard.component.scss',
 })
 export class RecruiterDashboardComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly authService = inject(AuthService, { optional: true });
   loading = true;

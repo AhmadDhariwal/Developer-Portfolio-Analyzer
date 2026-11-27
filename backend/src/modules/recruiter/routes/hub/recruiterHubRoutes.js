@@ -17,6 +17,14 @@ const activityRoutes = require('./activityRoutes');
 
 const router = express.Router();
 
+router.get(
+  '/capabilities',
+  protect,
+  requireRecruiterTenant,
+  requireOrganizationContext(['recruiter']),
+  require('../../../admin/controllers/organizationGovernanceController').getCapabilities
+);
+
 router.use(
   protect,
   requireRecruiterTenant,

@@ -1,3 +1,6 @@
+import { DestroyRef as PolicyDestroyRef } from '@angular/core';
+import { takeUntilDestroyed as takeUntilPolicyDestroyed } from '@angular/core/rxjs-interop';
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,6 +21,8 @@ type ConfirmState = {
   styleUrl: './jobs.component.scss',
 })
 export class JobsComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
+  private readonly policyDestroy = inject(PolicyDestroyRef);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -25,6 +30,7 @@ export class JobsComponent implements OnInit {
   teams: { _id: string; name: string }[] = [];
   editingAccess: Record<string, boolean> | null = null;
   editingVersion: number | undefined;
+  editingNeedsReview = false;
   loading = true;
   saving = false;
   editorOpen = false;
@@ -67,6 +73,24 @@ export class JobsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.policies.resourcesChanged$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        if (this.editingJobId) this.editingNeedsReview = true;
+        this.jobs = [];
+        this.loadJobs();
+        this.cdr.markForCheck();
+      });
+    this.policies.contextChanges$
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe(() => {
+        this.jobs = [];
+        this.teams = [];
+        this.resetForm();
+        this.editorOpen = false;
+        this.loadJobs();
+        this.cdr.markForCheck();
+      });
     this.loadJobs();
   }
 
@@ -84,6 +108,8 @@ export class JobsComponent implements OnInit {
   get isSubmitDisabled(): boolean {
     return (
       this.saving ||
+      this.editingNeedsReview ||
+      (!this.editingJobId && !this.policies.allowed('recruiterJobCreation')) ||
       this.jobForm.invalid ||
       (!!this.editingJobId && this.editingAccess?.['edit'] !== true)
     );
@@ -103,15 +129,23 @@ export class JobsComponent implements OnInit {
 
   get filteredJobs(): any[] {
     const query = this.searchTerm.trim().toLowerCase();
-    return this.jobs.filter((job) => {
-      const status = String(job?.status || 'open').toLowerCase();
-      if (this.statusFilter !== 'all' && status !== this.statusFilter) return false;
-      if (!query) return true;
-      const hay = [job?.title, job?.role, job?.stack, job?.location, ...(job?.requiredSkills || [])]
-        .join(' ')
-        .toLowerCase();
-      return hay.includes(query);
-    });
+    return this.jobs
+      .filter((job) => job.access?.isOwner === true || this.policies.allowed('teamSharedJobs'))
+      .filter((job) => {
+        const status = String(job?.status || 'open').toLowerCase();
+        if (this.statusFilter !== 'all' && status !== this.statusFilter) return false;
+        if (!query) return true;
+        const hay = [
+          job?.title,
+          job?.role,
+          job?.stack,
+          job?.location,
+          ...(job?.requiredSkills || []),
+        ]
+          .join(' ')
+          .toLowerCase();
+        return hay.includes(query);
+      });
   }
 
   statusRatio(count: number): number {
@@ -120,6 +154,8 @@ export class JobsComponent implements OnInit {
   }
 
   toggleEditor(): void {
+    if (!this.editorOpen && !this.editingJobId && !this.policies.allowed('recruiterJobCreation'))
+      return;
     if (this.editorOpen && this.editingJobId) {
       this.resetForm();
     }
@@ -136,6 +172,7 @@ export class JobsComponent implements OnInit {
     this.jobService
       .listJobs(true)
       .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
       .subscribe({
         next: (response) => {
           this.jobs = this.sortJobs(response?.jobs || []);
@@ -151,7 +188,19 @@ export class JobsComponent implements OnInit {
   }
 
   saveJob(): void {
+    if (this.editingNeedsReview) return;
     if (this.saving || (this.editingJobId && !this.editingAccess?.['edit'])) return;
+    if (!this.editingJobId && !this.policies.allowed('recruiterJobCreation')) return;
+    if (
+      this.editingJobId &&
+      this.jobForm.controls.status.value === 'open' &&
+      this.jobs.find((job) => job._id === this.editingJobId)?.published &&
+      this.jobs.find((job) => job._id === this.editingJobId)?.status !== 'open' &&
+      !this.policies.allowed('recruiterJobPublication')
+    ) {
+      this.error = this.policies.explanation('recruiterJobPublication');
+      return;
+    }
     this.clearMessages();
     this.fieldErrors = {};
 
@@ -177,6 +226,7 @@ export class JobsComponent implements OnInit {
     if (!job?.access?.edit) return;
     this.editingAccess = job.access;
     this.editingVersion = job.version;
+    this.editingNeedsReview = false;
     this.clearMessages();
     this.fieldErrors = {};
     this.editingJobId = String(job?._id || '');
@@ -215,6 +265,7 @@ export class JobsComponent implements OnInit {
         this.jobService
           .archiveJob(job._id)
           .pipe(finalize(() => this.cdr.markForCheck()))
+          .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
           .subscribe({
             next: (response) => {
               this.notice = `${job?.title || 'Job'} archived.`;
@@ -239,6 +290,7 @@ export class JobsComponent implements OnInit {
         this.jobService
           .deleteJob(job._id)
           .pipe(finalize(() => this.cdr.markForCheck()))
+          .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
           .subscribe({
             next: () => {
               this.notice = `${job?.title || 'Job'} deleted.`;
@@ -262,6 +314,7 @@ export class JobsComponent implements OnInit {
   }
 
   resetForm(): void {
+    this.editingNeedsReview = false;
     this.editingAccess = null;
     this.editingVersion = undefined;
     this.editingJobId = '';
@@ -313,6 +366,7 @@ export class JobsComponent implements OnInit {
   }
 
   private persistJob(): void {
+    if (!this.editingJobId && !this.policies.allowed('recruiterJobCreation')) return;
     this.saving = true;
     const payload: Record<string, unknown> = {
       ...this.jobForm.getRawValue(),
@@ -328,38 +382,70 @@ export class JobsComponent implements OnInit {
         delete payload['evaluationShared'];
       }
     }
+    if (this.editingJobId) {
+      const original = this.jobs.find((job) => job._id === this.editingJobId);
+      if (
+        payload['teamShared'] === original?.teamShared ||
+        !this.policies.allowed('teamSharedJobs')
+      )
+        delete payload['teamShared'];
+      if (
+        payload['evaluationShared'] === original?.evaluationShared ||
+        !this.policies.allowed('sharedPublicEvaluations')
+      )
+        delete payload['evaluationShared'];
+    } else {
+      if (!this.policies.allowed('teamSharedJobs')) payload['teamShared'] = false;
+      if (!this.policies.allowed('sharedPublicEvaluations')) payload['evaluationShared'] = false;
+    }
     const request$ = this.editingJobId
       ? this.jobService.updateJob(this.editingJobId, payload)
       : this.jobService.createJob(payload);
 
-    request$.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
-      next: (response) => {
-        const savedJob = response?.job;
-        const isEditing = Boolean(this.editingJobId);
-        this.notice = isEditing ? 'Job updated successfully.' : 'Job created successfully.';
-        if (savedJob) {
-          if (isEditing) {
-            this.replaceJob(savedJob);
-          } else {
-            this.jobs = this.sortJobs([savedJob, ...this.jobs]);
+    request$
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .pipe(takeUntilPolicyDestroyed(this.policyDestroy))
+      .subscribe({
+        next: (response) => {
+          const savedJob = response?.job;
+          const isEditing = Boolean(this.editingJobId);
+          this.notice = isEditing ? 'Job updated successfully.' : 'Job created successfully.';
+          if (savedJob) {
+            if (isEditing) {
+              this.replaceJob(savedJob);
+            } else {
+              this.jobs = this.sortJobs([savedJob, ...this.jobs]);
+            }
           }
-        }
-        this.resetForm();
-        this.editorOpen = false;
-        this.saving = false;
-      },
-      error: (err) => {
-        this.saving = false;
-        this.applyApiErrors(err, 'Unable to save this job.');
-        if ([403, 404, 409].includes(err?.status)) {
-          const message = this.error;
           this.resetForm();
           this.editorOpen = false;
-          this.loadJobs();
-          this.error = message;
-        }
-      },
-    });
+          this.saving = false;
+        },
+        error: (err) => {
+          this.saving = false;
+          this.applyApiErrors(err, 'Unable to save this job.');
+          if ([403, 404, 409].includes(err?.status)) {
+            this.editingNeedsReview = true;
+            const message = this.error;
+            this.loadJobs();
+            this.error = message;
+          }
+        },
+      });
+  }
+
+  reviewCurrentJob(): void {
+    const current = this.jobs.find((job) => job._id === this.editingJobId);
+    if (!current?.access?.edit) {
+      this.error =
+        'Current job management access is unavailable. Your local draft is preserved until you cancel it.';
+      return;
+    }
+    this.editingAccess = current.access;
+    this.editingVersion = current.version;
+    this.editingNeedsReview = false;
+    this.notice =
+      'Current resource permissions loaded. Review your preserved draft and save explicitly.';
   }
 
   private openConfirm(

@@ -1,4 +1,20 @@
 const mongoose = require('mongoose');
+const { POLICY_CATALOG } = require('../config/organizationPolicies');
+
+const policySchema = new mongoose.Schema(
+  Object.fromEntries(
+    Object.keys(POLICY_CATALOG).map((key) => [key, { type: Boolean, default: true }])
+  ),
+  { _id: false, versionKey: false, strict: 'throw' }
+);
+
+const governanceSchema = new mongoose.Schema(
+  {
+    version: { type: Number, default: 0, min: 0 },
+    policies: { type: policySchema, default: () => ({}) }
+  },
+  { _id: false, versionKey: false, strict: 'throw' }
+);
 
 const dashboardConfigSchema = new mongoose.Schema(
   {
@@ -61,6 +77,13 @@ const organizationSchema = new mongoose.Schema(
       maxlength: 500,
       default: ''
     },
+    industry: { type: String, trim: true, maxlength: 100, default: '' },
+    website: { type: String, trim: true, maxlength: 500, default: '' },
+    timezone: { type: String, trim: true, maxlength: 100, default: '' },
+    branding: {
+      logoUrl: { type: String, trim: true, maxlength: 500, default: '' }
+    },
+    governance: { type: governanceSchema, default: () => ({}) },
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

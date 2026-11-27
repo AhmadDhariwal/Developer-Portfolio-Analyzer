@@ -1,14 +1,15 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
-import { AdminStatCardComponent } from '../../components/admin-stat-card/admin-stat-card.component';
+import { Subscription, catchError, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
+
 import {
   AdminChartComponent,
   AdminChartPoint,
 } from '../../components/admin-chart/admin-chart.component';
-import { Subscription, catchError, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
+import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
+import { AdminStatCardComponent } from '../../components/admin-stat-card/admin-stat-card.component';
 import {
   AdminPerformanceService,
   PerformanceComparison,

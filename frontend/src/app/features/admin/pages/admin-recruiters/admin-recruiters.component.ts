@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -13,9 +20,11 @@ import {
 import { AdminConsoleService } from '../admin-console/admin-console.service';
 import { AdminLoaderComponent } from '../../components/admin-loader/admin-loader.component';
 import { AdminStatCardComponent } from '../../components/admin-stat-card/admin-stat-card.component';
-import { SharedMessageComponent } from '../../../../shared/components/message/message.component';
-import { SharedEmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { OrganizationPolicyNoticeComponent } from '../../../../shared/components/organization-policy-notice/organization-policy-notice.component';
+import { SharedEmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { SharedMessageComponent } from '../../../../shared/components/message/message.component';
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 
 @Component({
   selector: 'app-admin-recruiters-page',
@@ -28,12 +37,15 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
     SharedMessageComponent,
     SharedEmptyStateComponent,
     ConfirmDialogComponent,
+    OrganizationPolicyNoticeComponent,
   ],
   templateUrl: './admin-recruiters.component.html',
   styleUrls: ['./admin-recruiters.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminRecruitersPageComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
+  private readonly route = inject(ActivatedRoute);
   loading = false;
   directLoading = false;
   message = '';
@@ -94,6 +106,7 @@ export class AdminRecruitersPageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.selectedRecruiterId = this.route.snapshot.queryParamMap.get('member') || '';
     this.loadContext();
     this.loadAll();
   }
@@ -351,6 +364,7 @@ export class AdminRecruitersPageComponent implements OnInit {
   }
 
   inviteRecruiter(): void {
+    if (!this.policies.allowed('invitationCreation')) return;
     if (!this.form.name || !this.form.email) {
       this.messageType = 'warning';
       this.message = 'Name and email are required.';
@@ -555,6 +569,7 @@ export class AdminRecruitersPageComponent implements OnInit {
   }
 
   resendInvitation(inv: PendingInvitation): void {
+    if (!this.policies.allowed('invitationCreation')) return;
     this.loading = true;
     this.adminService.resendInvitation(inv._id).subscribe({
       next: (result) => {

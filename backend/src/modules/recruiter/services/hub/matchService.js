@@ -8,6 +8,7 @@ const {
 const { listCandidates } = require('../matching/matchingService');
 const { generateMatches } = require('../../utils/hub/matchCalculator');
 const access = require('../../utils/hub/recruiterEvaluationAccess');
+const { assertMatchingPolicy } = require('../../../admin/config/organizationPolicies');
 
 const MATCH_STATUSES = new Set(['generated', 'shortlisted', 'rejected']);
 
@@ -35,6 +36,7 @@ const generateRecruiterMatches = async ({ payload = {}, ...scope }) => {
   const requestedIds = validateCandidateIds(payload.candidateIds ?? [], 300);
   await Promise.all([RecruiterMatch.init(), RecruiterShortlist.init()]);
   return access.withAccess(scope, async (ctx) => {
+    assertMatchingPolicy(ctx);
     const jobs = await access.jobs(ctx, jobId);
     const job = jobs.get(jobId);
     access.authorize(job, ctx, true);

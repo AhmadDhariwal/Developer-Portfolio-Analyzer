@@ -1,0 +1,292 @@
+{
+  "verdict": "BLOCKED",
+  "date": "2026-11-27",
+  "timezone": "Asia/Karachi",
+  "branch": "admin/ui",
+  "head": "229c7cfbefefed4c7c8ba2db63b454e1265e7e67",
+  "prTarget": "not applicable",
+  "blockingFindings": [
+    {
+      "id": "F1",
+      "priority": 1,
+      "title": "Disabled direct Admin inviter remains authorized by pending Recruiter acceptance",
+      "source": "backend/src/modules/admin/services/invitationAcceptanceService.js",
+      "line": 63,
+      "expectedStatus": 403,
+      "observedRoutes": [
+        {
+          "route": "/api/tenant/invitations/:id/accept",
+          "expectedStatus": 403,
+          "actualStatus": 200,
+          "recipientRole": "recruiter"
+        },
+        {
+          "route": "/api/tenant/invitations/accept/:token",
+          "expectedStatus": 403,
+          "actualStatus": 200,
+          "recipientRole": "recruiter"
+        },
+        {
+          "route": "/api/auth/accept-invite",
+          "expectedStatus": 403,
+          "actualStatus": 200,
+          "recipientRole": "recruiter"
+        }
+      ],
+      "storedInvitationStatus": "accepted",
+      "storedRecipientRole": "recruiter",
+      "sourceFixApplied": false
+    }
+  ],
+  "tests": {
+    "existingBackend": {
+      "files": 14,
+      "passed": 110,
+      "failed": 0,
+      "skipped": 0
+    },
+    "independentAcceptance": {
+      "subtests": 37,
+      "passedSubtests": 36,
+      "failedSubtests": 1,
+      "nativeTap": {
+        "tests": 38,
+        "passed": 36,
+        "failed": 2,
+        "includesFailedParent": true
+      },
+      "failedFinding": "F1"
+    },
+    "minimalReproduction": {
+      "tests": 1,
+      "passed": 0,
+      "failed": 1,
+      "routeChecks": 3,
+      "sameFinding": "F1"
+    },
+    "fullAngular": {
+      "files": 144,
+      "tests": 848,
+      "passed": 848,
+      "failed": 0
+    },
+    "frontendActualMethodProbes": {
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    }
+  },
+  "policies": {
+    "recruiterJobCreation": {
+      "verdict": "PASS",
+      "disabledGatesPassed": true,
+      "reenabledActionChecked": true,
+      "otherOrganizationActionChecked": true
+    },
+    "recruiterJobPublication": {
+      "verdict": "PASS",
+      "disabledGatesPassed": true,
+      "reenabledActionChecked": true,
+      "otherOrganizationActionChecked": true
+    },
+    "teamSharedJobs": {
+      "verdict": "PASS",
+      "disabledGatesPassed": true,
+      "reenabledActionChecked": true,
+      "otherOrganizationActionChecked": true
+    },
+    "sharedPublicEvaluations": {
+      "verdict": "PASS",
+      "disabledGatesPassed": true,
+      "reenabledActionChecked": true,
+      "otherOrganizationActionChecked": true
+    },
+    "teamManagerEvaluationManagement": {
+      "verdict": "PASS",
+      "disabledGatesPassed": true,
+      "reenabledActionChecked": true,
+      "otherOrganizationActionChecked": true
+    },
+    "candidateMatching": {
+      "verdict": "PASS",
+      "disabledGatesPassed": true,
+      "reenabledActionChecked": true,
+      "otherOrganizationActionChecked": true
+    },
+    "invitationCreation": {
+      "verdict": "FAIL",
+      "disabledGatesPassed": true,
+      "reenabledActionChecked": true,
+      "otherOrganizationActionChecked": true,
+      "finding": "F1"
+    },
+    "managerTeamAdministration": {
+      "verdict": "PASS",
+      "disabledGatesPassed": true,
+      "reenabledActionChecked": true,
+      "otherOrganizationActionChecked": true
+    }
+  },
+  "races": {
+    "count": 14,
+    "allFinalStatesVerified": true,
+    "observations": [
+      {
+        "operation": "creation",
+        "first": "policy",
+        "attempts": 3,
+        "policyStatus": 200,
+        "protectedStatus": 403,
+        "milliseconds": 201.6576000000059,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "creation",
+        "first": "operation",
+        "attempts": 3,
+        "policyStatus": 200,
+        "protectedStatus": 201,
+        "milliseconds": 307.688799999989,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "publication",
+        "first": "policy",
+        "attempts": 3,
+        "policyStatus": 200,
+        "protectedStatus": 403,
+        "milliseconds": 226.25850000001083,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "publication",
+        "first": "operation",
+        "attempts": 3,
+        "policyStatus": 200,
+        "protectedStatus": 200,
+        "milliseconds": 592.3833000000013,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "evaluation",
+        "first": "policy",
+        "attempts": 3,
+        "policyStatus": 200,
+        "protectedStatus": 403,
+        "milliseconds": 270.31690000000526,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "evaluation",
+        "first": "operation",
+        "attempts": 4,
+        "policyStatus": 200,
+        "protectedStatus": 200,
+        "milliseconds": 707.6154000000097,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "acceptance",
+        "first": "policy",
+        "attempts": 3,
+        "policyStatus": 200,
+        "protectedStatus": 403,
+        "milliseconds": 106.4600999999966,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "acceptance",
+        "first": "operation",
+        "attempts": 6,
+        "policyStatus": 200,
+        "protectedStatus": 200,
+        "milliseconds": 140.5439999999944,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "matching",
+        "first": "policy",
+        "attempts": 3,
+        "policyStatus": 200,
+        "protectedStatus": 403,
+        "milliseconds": 143.0048999999999,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "matching",
+        "first": "operation",
+        "attempts": 5,
+        "policyStatus": 200,
+        "protectedStatus": 200,
+        "milliseconds": 547.4482000000135,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "team-creation",
+        "first": "policy",
+        "attempts": 4,
+        "policyStatus": 200,
+        "protectedStatus": 403,
+        "milliseconds": 220.51480000000447,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "team-creation",
+        "first": "operation",
+        "attempts": 5,
+        "policyStatus": 200,
+        "protectedStatus": 201,
+        "milliseconds": 242.93700000000536,
+        "finalStateVerified": true
+      },
+      {
+        "operation": "platform-versus-creation",
+        "first": "platform",
+        "protectedStatus": 403,
+        "initializedPlatformDocument": true
+      },
+      {
+        "operation": "platform-versus-creation",
+        "first": "operation",
+        "protectedStatus": 201,
+        "initializedPlatformDocument": true
+      }
+    ]
+  },
+  "persistence": {
+    "separateNodeProcessVerified": true,
+    "disconnectedAndReconnected": true,
+    "persistedVersion": 1,
+    "falseValuesRetained": true
+  },
+  "directories": [
+    {
+      "members": 10,
+      "membersBytes": 3354,
+      "invitations": 4,
+      "invitationsBytes": 1302,
+      "milliseconds": 125.19370000000345,
+      "paginated": false
+    },
+    {
+      "members": 210,
+      "membersBytes": 60135,
+      "milliseconds": 233.20160000000033,
+      "paginated": false
+    }
+  ],
+  "contention": {
+    "operations": 8,
+    "elapsedMilliseconds": 2183.6797999999835,
+    "p95Milliseconds": 2155.728699999978,
+    "maxMilliseconds": 2155.728699999978,
+    "unboundedRetryObserved": false
+  },
+  "auditErrors": [],
+  "sourcePreservation": {
+    "checked": 1828,
+    "changed": 0
+  },
+  "productionDataUsed": false,
+  "externalDeliveryUsed": false
+}

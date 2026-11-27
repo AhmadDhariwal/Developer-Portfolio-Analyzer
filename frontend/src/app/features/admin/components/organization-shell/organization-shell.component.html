@@ -1,0 +1,27 @@
+<section class="organization-page" [attr.aria-busy]="loading">
+  <header class="page-header">
+    <div>
+      <nav aria-label="Breadcrumb">
+        <a routerLink="/app/admin/dashboard">Workspace</a><span aria-hidden="true"> / </span
+        ><a routerLink="/app/admin/organization">Organization</a><span aria-hidden="true"> / </span
+        ><span aria-current="page">{{ title }}</span>
+      </nav>
+      <h1>{{ title }}</h1>
+      <p>{{ description }}</p>
+    </div>
+    <button type="button" class="secondary" [disabled]="loading" (click)="refresh.emit()">
+      {{ loading ? 'Refreshing…' : 'Refresh' }}
+    </button>
+  </header>
+  @if (loading) {
+    <div class="loading-state" role="status">
+      <span class="skeleton-line"></span>Loading organization information…
+    </div>
+  }
+  @if (error) {
+    <div class="message error" role="alert">
+      {{ error }} <button type="button" [disabled]="loading" (click)="refresh.emit()">Retry</button>
+    </div>
+  }
+  <ng-content />
+</section>

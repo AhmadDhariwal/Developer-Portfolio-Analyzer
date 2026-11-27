@@ -1,3 +1,4 @@
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -14,6 +15,7 @@ import { RecruiterProfile } from '../../models/recruiter.model';
   styleUrl: './recruiter-profile.component.scss',
 })
 export class RecruiterProfileComponent implements OnInit {
+  readonly policies = inject(OrganizationPolicyState);
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly cdr = inject(ChangeDetectorRef);

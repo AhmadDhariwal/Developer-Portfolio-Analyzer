@@ -13,7 +13,16 @@ async function jobs(ctx, jobId) {
     organizationId: ctx.organizationId,
     $or: [
       { recruiterId: ctx.recruiterId },
-      { teamShared: true, evaluationShared: true, teamId: { $in: [...ctx.grants.keys()] } }
+      {
+        teamShared: true,
+        evaluationShared: true,
+        teamId: {
+          $in:
+            ctx.policies.teamSharedJobs && ctx.policies.sharedPublicEvaluations
+              ? [...ctx.grants.keys()]
+              : []
+        }
+      }
     ]
   };
   if (jobId) filter._id = requireObjectId(jobId, 'jobId');

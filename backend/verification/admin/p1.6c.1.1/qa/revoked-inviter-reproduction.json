@@ -1,0 +1,40 @@
+{
+  "isolatedReplicaSet": true,
+  "sourceModified": false,
+  "inviterAccountRole": "admin",
+  "inviterAccountActive": true,
+  "inviterDirectMembershipStatus": "disabled",
+  "createdStatus": 201,
+  "createAfterRevocationStatus": 403,
+  "resendAfterRevocationStatus": 403,
+  "acceptanceExpectedStatus": 403,
+  "acceptanceActualStatus": 403,
+  "invitationStoredStatus": "pending",
+  "recipientStoredRole": "developer",
+  "acceptanceRoutes": [
+    {
+      "route": "/api/tenant/invitations/:id/accept",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "recipientRole": "developer"
+    },
+    {
+      "route": "/api/tenant/invitations/accept/:token",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "recipientRole": "developer"
+    },
+    {
+      "route": "/api/auth/accept-invite",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "recipientRole": null
+    }
+  ],
+  "governanceVersion": 2,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 210,
+    "productionDataUsed": false
+  }
+}

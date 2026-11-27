@@ -1,16 +1,93 @@
 const Invitation = require('../models/invitation');
 const Membership = require('../models/membership');
 const Team = require('../models/team');
-const Organization = require('../models/organization');
 const User = require('../../auth/models/user');
-const { canManageRole, resolveOrganizationRole } = require('./tenantService');
-const { bumpOrganizationCapacityFence, createRecruiterLimitError } = require('./teamCapacityService');
 const {
-  getOrganizationSettingsSync,
-  getRecruiterSettingsSync
+  actorInSession,
+  organizationPolicyInSession,
+  platformInSession
+} = require('./organizationGovernanceService');
+const { canManageRole } = require('./tenantService');
+const {
+  bumpOrganizationCapacityFence,
+  createRecruiterLimitError
+} = require('./teamCapacityService');
+const {
+  getOrganizationSettingsSync
 } = require('../../super-admin/services/platformSettingsService');
 
-const invitationError = (statusCode, message) => Object.assign(new Error(message), { statusCode });
+const invitationError = (statusCode, message) =>
+  Object.assign(new Error(message), { status: statusCode, statusCode });
+
+function assertRecruiterInviterAuthority({
+  inviter,
+  organization,
+  organizationRole,
+  owner,
+  membership,
+  platform
+}) {
+  if (platform?.recruiter?.enableRecruiterAccess === false) {
+    throw invitationError(403, 'Recruiter invitation is unavailable.');
+  }
+
+  const sameOrgOrUnbound =
+    !inviter?.organizationId || String(inviter.organizationId) === String(organization._id);
+  const directAdmin =
+    Boolean(membership) &&
+    membership.status === 'active' &&
+    membership.role === 'admin' &&
+    inviter?.role === 'admin' &&
+    sameOrgOrUnbound;
+  const legacyAffiliatedAdmin =
+    !membership &&
+    inviter?.role === 'admin' &&
+    String(inviter.organizationId) === String(organization._id);
+  // Exact organization ownership remains supported for active admin and super_admin
+  // owners unless explicit direct-membership precedence restricts their role.
+  const authorizedOwner =
+    Boolean(owner) &&
+    organizationRole === 'admin' &&
+    ['admin', 'super_admin'].includes(inviter?.role);
+
+  if (!directAdmin && !legacyAffiliatedAdmin && !authorizedOwner) {
+    throw invitationError(403, 'Recruiter invitation is unavailable.');
+  }
+}
+
+async function assertInviterAuthority({ invitation, organization, platform, session }) {
+  // Reuse the session-fenced actor and direct-membership authority contract so
+  // acceptance observes concurrent account, role, affiliation and membership revocations.
+  const {
+    actor: inviter,
+    organizationRole,
+    owner,
+    membership
+  } = await actorInSession({ actorId: invitation.invitedBy }, organization, session, false);
+
+  if (invitation.role === 'recruiter') {
+    assertRecruiterInviterAuthority({
+      inviter,
+      organization,
+      organizationRole,
+      owner,
+      membership,
+      platform
+    });
+    return { inviter, organizationRole, owner, membership };
+  }
+
+  const settings = platform.organization || getOrganizationSettingsSync();
+  if (
+    !['member', 'manager', 'admin'].includes(invitation.role) ||
+    !canManageRole(organizationRole, invitation.role) ||
+    (invitation.role === 'admin' && settings.adminInvitesRequireApproval)
+  ) {
+    throw invitationError(403, 'The inviter is no longer authorized.');
+  }
+
+  return { inviter, organizationRole, owner, membership };
+}
 
 async function claimInvitation({ selector, session }) {
   const invitation = await Invitation.findOneAndUpdate(
@@ -21,6 +98,12 @@ async function claimInvitation({ selector, session }) {
   if (!invitation) throw invitationError(400, 'Invitation is no longer pending or has expired.');
 
   await bumpOrganizationCapacityFence(invitation.organizationId, session);
+  const organization = await organizationPolicyInSession(
+    invitation.organizationId,
+    session,
+    'invitationCreation'
+  );
+  const platform = await platformInSession(session);
   if (invitation.teamId) {
     const team = await Team.exists({
       _id: invitation.teamId,
@@ -30,42 +113,7 @@ async function claimInvitation({ selector, session }) {
     if (!team) throw invitationError(409, 'The assigned team is unavailable.');
   }
 
-  const inviter = await User.findOne({ _id: invitation.invitedBy, isActive: { $ne: false } })
-    .select('role organizationId')
-    .session(session)
-    .lean();
-  if (!inviter) throw invitationError(403, 'The inviter is no longer authorized.');
-
-  const settings = getOrganizationSettingsSync();
-  if (invitation.role === 'recruiter') {
-    // Ownership is organization-specific authority, including for a platform
-    // account. The account role alone never grants invitation authority.
-    const ownsOrganization = await Organization.exists({
-      _id: invitation.organizationId,
-      ownerId: inviter._id,
-      isSuspended: { $ne: true }
-    }).session(session);
-    const affiliatedAdmin =
-      inviter.role === 'admin' && String(inviter.organizationId) === String(invitation.organizationId);
-    const authorizedOwner =
-      ownsOrganization &&
-      (await resolveOrganizationRole(inviter._id, invitation.organizationId, session)) === 'admin';
-    if (
-      getRecruiterSettingsSync().enableRecruiterAccess === false ||
-      (!affiliatedAdmin && !authorizedOwner)
-    ) {
-      throw invitationError(403, 'Recruiter invitation is unavailable.');
-    }
-  } else {
-    const role = await resolveOrganizationRole(inviter._id, invitation.organizationId, session);
-    if (
-      !['member', 'manager', 'admin'].includes(invitation.role) ||
-      !canManageRole(role, invitation.role) ||
-      (invitation.role === 'admin' && settings.adminInvitesRequireApproval)
-    ) {
-      throw invitationError(403, 'The inviter is no longer authorized.');
-    }
-  }
+  await assertInviterAuthority({ invitation, organization, platform, session });
   return invitation;
 }
 
@@ -92,13 +140,15 @@ async function assertRecipient({ account, invitation, session }) {
 }
 
 async function assertRecruiterCapacity(invitation, account, session) {
-  if (account?.role === 'recruiter' && account.organizationId?.equals(invitation.organizationId)) return;
+  if (account?.role === 'recruiter' && account.organizationId?.equals(invitation.organizationId))
+    return;
   const activeCount = await User.countDocuments({
     role: 'recruiter',
     organizationId: invitation.organizationId,
     isActive: { $ne: false }
   }).session(session);
-  const limit = Number(getOrganizationSettingsSync().recruiterLimitPerOrg || 5);
+  const platform = await platformInSession(session);
+  const limit = Number(platform.organization?.recruiterLimitPerOrg ?? 5);
   if (activeCount >= limit) throw createRecruiterLimitError(limit);
 }
 
@@ -136,6 +186,8 @@ async function acceptMembership(invitation, userId, session) {
 
 module.exports = {
   invitationError,
+  assertRecruiterInviterAuthority,
+  assertInviterAuthority,
   claimInvitation,
   assertRecipient,
   assertRecruiterCapacity,

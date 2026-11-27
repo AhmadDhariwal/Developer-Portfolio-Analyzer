@@ -1,3 +1,5 @@
+import { OrganizationPolicyState } from '../../../../shared/services/organization-policy-state.service';
+import { policyStateFixture } from '../../../../shared/testing/organization-policy-state.fixture';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -88,7 +90,11 @@ describe('JobsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [RecruiterModule],
-      providers: [provideRouter([]), { provide: RecruiterJobService, useValue: jobServiceMock }],
+      providers: [
+        { provide: OrganizationPolicyState, useFactory: policyStateFixture },
+        provideRouter([]),
+        { provide: RecruiterJobService, useValue: jobServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(JobsComponent);
@@ -177,7 +183,7 @@ describe('JobsComponent', () => {
     expect(payload.teamId).toBeUndefined();
     expect(payload.teamShared).toBeUndefined();
   });
-  it('closes a stale sharing editor and refreshes current access after conflict', () => {
+  it('preserves a stale sharing draft and requires explicit permission review after conflict', () => {
     const job = {
       _id: 'j1',
       title: 'Engineer',
@@ -195,7 +201,9 @@ describe('JobsComponent', () => {
     );
     component.saveJob();
     component.onConfirmAccepted();
-    expect(component.editorOpen).toBe(false);
+    expect(component.editorOpen).toBe(true);
+    expect(component.editingNeedsReview).toBe(true);
+    expect(component.jobForm.controls.title.value).toBe('Engineer');
     expect(component.error).toContain('Job changed');
     expect(jobServiceMock.listJobs).toHaveBeenCalledTimes(2);
   });
